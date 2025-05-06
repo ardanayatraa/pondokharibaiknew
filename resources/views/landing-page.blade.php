@@ -283,9 +283,45 @@
                     <a href="#location"
                         class="text-elegant-gold hover:text-elegant-white transition-colors duration-300 font-medium"
                         data-lang-key="nav_location">Location</a>
-                    <a href="#contact"
-                        class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-2 transition-all duration-300 btn-elegant border border-elegant-gold"
-                        data-lang-key="nav_book">Book Now</a>
+                    @php
+                        // Asumsikan kamu sudah menyimpan role di session atau di variabel $role
+                        $role = session('role') ?? null;
+                    @endphp
+
+                    @if ($role === 'guest')
+                        {{-- Tampilkan email guest --}}
+                        <div class="font-medium text-sm text-gray-500">
+                            {{ Auth::guard('guest')->user()->email }}
+                        </div>
+                    @elseif($role === 'owner')
+                        {{-- Tombol Dashboard untuk owner --}}
+                        <a href="{{ route('owner.dashboard') }}"
+                            class="bg-elegant-burgundy hover:bg-elegant-burgundy/80
+                                  text-elegant-white px-6 py-2 transition-all duration-300
+                                  btn-elegant border border-elegant-gold"
+                            data-lang-key="nav_dashboard">
+                            Dashboard
+                        </a>
+                    @elseif($role === 'admin')
+                        {{-- Tombol Dashboard untuk admin --}}
+                        <a href="{{ route('admin.dashboard') }}"
+                            class="bg-elegant-burgundy hover:bg-elegant-burgundy/80
+                                  text-elegant-white px-6 py-2 transition-all duration-300
+                                  btn-elegant border border-elegant-gold"
+                            data-lang-key="nav_dashboard">
+                            Dashboard
+                        </a>
+                    @else
+                        {{-- Belum login --}}
+                        <a href="{{ route('login') }}"
+                            class="bg-elegant-burgundy hover:bg-elegant-burgundy/80
+                                  text-elegant-white px-6 py-2 transition-all duration-300
+                                  btn-elegant border border-elegant-gold"
+                            data-lang-key="nav_book">
+                            Login
+                        </a>
+                    @endif
+
                 </nav>
             </div>
         </div>
@@ -309,9 +345,105 @@
                 <a href="#location"
                     class="text-elegant-gold hover:text-elegant-white transition-colors duration-300 font-medium py-2 border-b border-elegant-gold/20"
                     data-lang-key="nav_location">Location</a>
-                <a href="#contact"
-                    class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-3 transition-all duration-300 text-center mt-2 border border-elegant-gold"
-                    data-lang-key="nav_book">Book Now</a>
+                @php
+                    // Asumsikan kamu sudah menyimpan role di session atau di variabel $role
+                    $role = session('role') ?? null;
+                @endphp
+
+                @if ($role === 'guest')
+                    <div id="user-menu" class="relative inline-block text-left">
+                        {{-- Tombol bulat + email --}}
+                        <button id="user-menu-btn" class="flex items-center space-x-2 focus:outline-none">
+                            <span
+                                class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-600">
+                                <i class="fas fa-user"></i>
+                            </span>
+                            <span class="font-medium text-sm text-gray-500">
+                                {{ Auth::guard('guest')->user()->email }}
+                            </span>
+                        </button>
+
+                        {{-- Dropdown menu --}}
+                        <div id="user-dropdown"
+                            class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                            <button type="button" id="profile-btn"
+                                class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                Update Profil
+                            </button>
+                            <button type="button" id="transactions-btn"
+                                class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                Riwayat Transaksi
+                            </button>
+                        </div>
+                    </div>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const btn = document.getElementById('user-menu-btn');
+                            const dropdown = document.getElementById('user-dropdown');
+                            const profileBtn = document.getElementById('profile-btn');
+                            const transBtn = document.getElementById('transactions-btn');
+
+                            // Toggle dropdown
+                            btn.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                dropdown.classList.toggle('hidden');
+                            });
+
+                            // Klik di luar tutup dropdown
+                            document.addEventListener('click', function() {
+                                dropdown.classList.add('hidden');
+                            });
+
+                            // Jangan tutup kalau klik di dalam dropdown
+                            dropdown.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                            });
+
+                            // Dispatch Livewire event untuk Update Profil
+                            profileBtn.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                window.livewire.emit('editProfile'); // listener di Livewire: editProfile
+                                dropdown.classList.add('hidden');
+                            });
+
+                            // Dispatch Livewire event untuk Riwayat Transaksi
+                            transBtn.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                window.livewire.emit('showTransactions'); // listener di Livewire: showTransactions
+                                dropdown.classList.add('hidden');
+                            });
+                        });
+                    </script>
+                @elseif($role === 'owner')
+                    {{-- Tombol Dashboard untuk owner --}}
+                    <a href="{{ route('owner.dashboard') }}"
+                        class="bg-elegant-burgundy hover:bg-elegant-burgundy/80
+                              text-elegant-white px-6 py-2 transition-all duration-300
+                              btn-elegant border border-elegant-gold"
+                        data-lang-key="nav_dashboard">
+                        Dashboard
+                    </a>
+                @elseif($role === 'admin')
+                    {{-- Tombol Dashboard untuk admin --}}
+                    <a href="{{ route('admin.dashboard') }}"
+                        class="bg-elegant-burgundy hover:bg-elegant-burgundy/80
+                              text-elegant-white px-6 py-2 transition-all duration-300
+                              btn-elegant border border-elegant-gold"
+                        data-lang-key="nav_dashboard">
+                        Dashboard
+                    </a>
+                @else
+                    {{-- Belum login --}}
+                    <a href="{{ route('login') }}"
+                        class="bg-elegant-burgundy hover:bg-elegant-burgundy/80
+                              text-elegant-white px-6 py-2 transition-all duration-300
+                              btn-elegant border border-elegant-gold"
+                        data-lang-key="nav_book">
+                        Login
+                    </a>
+                @endif
+
             </div>
         </div>
     </header>
@@ -1112,7 +1244,7 @@
                 nav_amenities: "Amenities",
                 nav_location: "Location",
                 nav_contact: "Contact",
-                nav_book: "Book Now",
+                nav_book: "Login",
 
                 // Hero Section
                 hero_welcome: "Welcome to",
@@ -1244,7 +1376,7 @@
                 nav_amenities: "Fasilitas",
                 nav_location: "Lokasi",
                 nav_contact: "Kontak",
-                nav_book: "Pesan Sekarang",
+                nav_book: "Masuk",
 
                 // Hero Section
                 hero_welcome: "Selamat Datang di",

@@ -16,8 +16,7 @@ class RoleMiddleware
             $redirectTo = match ($role) {
                 'admin' => '/admin/dashboard',
                 'owner' => '/owner/dashboard',
-                'guest' => '/dashboard',
-                'kepsek' => '/kepsek/dashboard',
+                'guest' => '/',
                 default => '/',
             };
 

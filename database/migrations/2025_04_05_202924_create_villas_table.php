@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('tbl_villa', function (Blueprint $table) {
             $table->id('id_villa');
-            $table->foreignId('facility_id');
+            $table->json('facility_id');
             $table->foreignId('villa_pricing_id');
+            $table->foreignId('cek_ketersediaan_id');
             $table->string('name');
             $table->text('description')->nullable();
             $table->timestamps();

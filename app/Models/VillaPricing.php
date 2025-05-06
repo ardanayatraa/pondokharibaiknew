@@ -19,8 +19,9 @@ class VillaPricing extends Model
 
     public function villa()
     {
-        return $this->belongsTo(Villa::class, 'villa_id');
+        return $this->hasOne(Villa::class, 'villa_pricing_id', 'id_villa_pricing');
     }
+
 
     public function season()
     {

@@ -30,7 +30,7 @@ public function store(LoginRequest $request)
     $redirectTo = match ($role) {
         'admin' => '/admin/dashboard',
         'owner' => '/owner/dashboard',
-        'guest' => '/dashboard',
+        'guest' => '/',
         default => '/',
     };
 

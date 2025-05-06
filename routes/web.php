@@ -5,6 +5,10 @@ use App\Http\Controllers\Auth\CustomAuthenticatedSessionController;
 use App\Mail\MailToParent;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\GuestController;
+use App\Mail\MailToGuest;
+use Midtrans\Snap;
+use Midtrans\Config;
+use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,50 +32,46 @@ Route::post('/register', [GuestController::class, 'store'])->name('guests.store'
 
 Route::post('/logout', [CustomAuthenticatedSessionController::class, 'destroy'])
     ->name('logout');
-
+    // Admin
 // Admin
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
-    Route::get('/admin/data-akun', function () {
-        return view('admin.data-account');
-    })->name('admin.data-account');
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', fn() => view('admin.dashboard'))->name('dashboard');
+    Route::get('/villa', fn() => view('admin.villa'))->name('villa');
+    Route::get('/season', fn() => view('admin.season'))->name('season');
+    Route::get('/harga-villa', fn() => view('admin.harga-villa'))->name('harga-villa');
+    Route::get('/akun-guest', fn() => view('admin.akun-guest'))->name('akun-guest');
+    Route::get('/reservasi', fn() => view('admin.reservasi'))->name('reservasi');
+    Route::get('/pembayaran', fn() => view('admin.pembayaran'))->name('pembayaran');
+    Route::get('/laporan', fn() => view('admin.laporan'))->name('laporan');
 });
 
-// Guru
-Route::middleware(['auth', 'role:owner'])->group(function () {
-    Route::get('/owner/dashboard', function () {
-        return view('owner.dashboard');
-    })->name('owner.dashboard');
-    Route::get('/owner/aspek-penilaian', function () {
-        return view('owner.aspek-penilaian');
-    })->name('owner.aspek-penilaian');
-    Route::get('/owner/kategori', function () {
-        return view('owner.kategori');
-    })->name('owner.kategori');
-    Route::get('/owner/penilaian', function () {
-        return view('owner.penilaian');
-    })->name('owner.penilaian');
-    Route::get('/owner/penilaian/{id}', function ($id) {
-        return view('owner.penilaian-detail', ['id' => $id]);
-    })->name('owner.penilaian.detail');
+
+
+// Owner
+Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->group(function () {
+    Route::get('/dashboard', fn() => view('owner.dashboard'))->name('dashboard');
+    Route::get('/laporan', fn() => view('owner.laporan'))->name('laporan');
+    Route::get('/villa', fn() => view('owner.villa'))->name('villa'); // read-only view
 });
 
-// Siswa
+
+
+// Guest
 Route::middleware(['auth', 'role:guest'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard.guest');
+    // Route::get('/dashboard', fn() => view('guest.dashboard'))->name('dashboard');
+    Route::get('/villa', fn() => view('guest.villa'))->name('villa');
+    Route::get('/reservasi', fn() => view('guest.reservasi'))->name('reservasi');
+    Route::get('/pembayaran', fn() => view('guest.pembayaran'))->name('pembayaran');
+    Route::get('/pembayaran', fn() => view('guest.pembayaran'))->name('reservasi.create');
 });
 
+Route::get('/send', function () {
+    // Dummy data untuk testing
+    $nama    = 'Budi Santoso';
+    $email   = 'madaryadev@gmail.com';
 
+    // Kirim email menggunakan MailToGuest yang view-nya sudah berisi dummy
+    Mail::to($email)->send(new MailToGuest($nama));
 
-Route::get('/kirim', function () {
-    $namaAnak = 'Made';
-    $emailOrtu = 'ardanapastibisa@gmail.com';
-
-    Mail::to($emailOrtu)->send(new MailToParent($namaAnak));
-
-    return 'Email plus lampiran berhasil dikirim ke orang tua dari ' . $namaAnak;
+    return "Dummy email telah dikirim ke {$email} dengan nama “{$nama}”.";
 });
