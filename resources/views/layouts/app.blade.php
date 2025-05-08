@@ -180,7 +180,7 @@
                     <span class="ml-3">Harga Villa</span>
                 </a>
 
-                <a href="{{ route('akun-guest.index') }}"
+                <a href="{{ route('guest.index') }}"
                     class="flex items-center px-4 py-3 {{ request()->routeIs('akun-guest') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
                     <i class="fas fa-users w-5 text-center"></i>
                     <span class="ml-3">Akun Guest</span>
