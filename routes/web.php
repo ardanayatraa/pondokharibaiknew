@@ -67,7 +67,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     });
 
     // Guest
-    Route::prefix('akun-guest')->name('akun-guest.')->group(function () {
+    Route::prefix('guest')->name('guest.')->group(function () {
         Route::get('/', [GuestController::class, 'index'])->name('index');
         Route::get('/create', [GuestController::class, 'create'])->name('create');
         Route::post('/', [GuestController::class, 'store'])->name('store');
