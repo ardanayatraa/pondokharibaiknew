@@ -36,18 +36,7 @@ class VillaTable extends DataTableComponent
             Column::make("ID Villa", "id_villa")->sortable(),
             Column::make("Nama", "name")->sortable(),
             Column::make("Deskripsi", "description")->sortable(),
-            Column::make("Ketersediaan", "cek_ketersediaan_id")
-            ->label(function ($row) {
-
-
-                $data = \App\Models\CekKetersediaan::where('villa_id',$row->id_villa)->first();
-                return $data
-                    ? now()->parse($data->start_date)->translatedFormat('d M Y') . ' - ' . now()->parse($data->end_date)->translatedFormat('d M Y')
-                    : '<span class="text-gray-400">Tidak tersedia</span>';
-            })
-            ->html(),
-
-            Column::make("Fasilitas", "facility_id")
+                        Column::make("Fasilitas", "facility_id")
                 ->label(function ($row) {
                     return '<button wire:click="showFacility(' . $row->id_villa . ')" class="text-blue-600 underline text-sm hover:text-blue-800">Lihat Fasilitas</button>';
                 })
@@ -78,19 +67,14 @@ class VillaTable extends DataTableComponent
 
 
 
-            Column::make("Aksi")
-                ->label(fn ($row) => view('components.link-action', ['id' => $row->id_villa]))
+                Column::make("Aksi")
+                ->label(fn ($row) => view('components.link-action', [
+                    'id' => $row->id_villa,
+                    'routeName' => 'villa'
+                ]))
                 ->html(),
         ];
     }
 
-    public function delete($id)
-    {
-        $this->dispatch('delete', $id);
-    }
 
-    public function edit($id)
-    {
-        $this->dispatch('edit', $id);
-    }
 }

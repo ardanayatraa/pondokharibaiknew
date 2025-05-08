@@ -182,9 +182,9 @@
                 <div class="flex items-center">
                     <button id="toggle-sidebar"
                         class="lg:hidden mr-4 text-elegant-charcoal hover:text-elegant-burgundy">
-                        <i class="fas fa-bars text-xl"></i>
+                        <i class="fas fa-bars text-sm"></i>
                     </button>
-                    <h1 class="text-xl font-semibold text-elegant-charcoal">Dashboard</h1>
+                    <h1 class="text-sm font-semibold text-elegant-charcoal">Dashboard</h1>
                 </div>
 
                 <div class="flex items-center space-x-4">
@@ -200,7 +200,7 @@
                     <!-- Notifications -->
                     <div class="relative">
                         <button class="text-elegant-charcoal hover:text-elegant-burgundy relative">
-                            <i class="fas fa-bell text-xl"></i>
+                            <i class="fas fa-bell text-sm"></i>
                             <span
                                 class="absolute -top-1 -right-1 bg-elegant-burgundy text-elegant-white rounded-full w-4 h-4 flex items-center justify-center text-xs">3</span>
                         </button>
@@ -304,7 +304,7 @@
                 <!-- Recent Bookings -->
                 <div class="lg:col-span-2 bg-elegant-white rounded-lg shadow overflow-hidden">
                     <div class="flex items-center justify-between p-6 border-b border-elegant-gray/10">
-                        <h2 class="font-cormorant text-xl font-semibold text-elegant-navy">Recent Bookings</h2>
+                        <h2 class="font-cormorant text-sm font-semibold text-elegant-navy">Recent Bookings</h2>
                         <a href="#"
                             class="text-sm text-elegant-burgundy hover:text-elegant-burgundy/80 flex items-center">
                             <span>View All</span>
@@ -413,7 +413,7 @@
                 <!-- Room Availability -->
                 <div class="bg-elegant-white rounded-lg shadow overflow-hidden">
                     <div class="p-6 border-b border-elegant-gray/10">
-                        <h2 class="font-cormorant text-xl font-semibold text-elegant-navy">Room Availability</h2>
+                        <h2 class="font-cormorant text-sm font-semibold text-elegant-navy">Room Availability</h2>
                     </div>
                     <div class="p-6">
                         <div class="mb-6">
@@ -481,7 +481,7 @@
                 <!-- Recent Activities -->
                 <div class="lg:col-span-2 bg-elegant-white rounded-lg shadow">
                     <div class="flex items-center justify-between p-6 border-b border-elegant-gray/10">
-                        <h2 class="font-cormorant text-xl font-semibold text-elegant-navy">Recent Activities</h2>
+                        <h2 class="font-cormorant text-sm font-semibold text-elegant-navy">Recent Activities</h2>
                         <a href="#"
                             class="text-sm text-elegant-burgundy hover:text-elegant-burgundy/80 flex items-center">
                             <span>View All</span>
@@ -542,7 +542,7 @@
                 <!-- Tasks -->
                 <div class="bg-elegant-white rounded-lg shadow">
                     <div class="flex items-center justify-between p-6 border-b border-elegant-gray/10">
-                        <h2 class="font-cormorant text-xl font-semibold text-elegant-navy">Tasks</h2>
+                        <h2 class="font-cormorant text-sm font-semibold text-elegant-navy">Tasks</h2>
                         <a href="#"
                             class="text-sm text-elegant-burgundy hover:text-elegant-burgundy/80 flex items-center">
                             <span>Add Task</span>

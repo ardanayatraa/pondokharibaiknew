@@ -27,7 +27,10 @@ class SeasonTable extends DataTableComponent
             Column::make("Tgl akhir season", "tgl_akhir_season")
                 ->sortable(),
                 Column::make("Aksi")
-                ->label(fn ($row) => view('components.link-action', ['id' => $row->id_season]))
+                ->label(fn ($row) => view('components.link-action', [
+                    'id' => $row->id_season,
+                    'routeName' => 'season'
+                ]))
                 ->html(),
         ];
     }

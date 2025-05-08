@@ -40,9 +40,11 @@ class GuestTable extends DataTableComponent
             Column::make("Gender", "gender")
                 ->sortable(),
                 Column::make("Aksi")
-                ->label(fn ($row) => view('components.link-action', ['id' => $row->id_guest]))
+                ->label(fn ($row) => view('components.link-action', [
+                    'id' => $row->id_guest,
+                    'routeName' => 'guest'
+                ]))
                 ->html(),
-
 
         ];
     }

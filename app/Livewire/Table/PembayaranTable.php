@@ -34,7 +34,10 @@ class PembayaranTable extends DataTableComponent
             Column::make("Status", "status")
                 ->sortable(),
                 Column::make("Aksi")
-                ->label(fn ($row) => view('components.link-action', ['id' => $row->id_reservation]))
+                ->label(fn ($row) => view('components.link-action', [
+                    'id' => $row->id_pembayaran,
+                    'routeName' => 'pembayaran'
+                ]))
                 ->html(),
         ];
     }

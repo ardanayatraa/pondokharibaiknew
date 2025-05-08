@@ -7,22 +7,21 @@ use Illuminate\Http\Request;
 
 class RoleMiddleware
 {
-    public function handle(Request $request, Closure $next, string $role)
+    public function handle(Request $request, Closure $next, string $expectedRole)
     {
-        // Cek apakah role di session tidak sesuai dengan role yang diharapkan
-        if (session('role') !== $role) {
-            // Jika role tidak sesuai, arahkan ke dashboard yang sesuai berdasarkan session role
-            $role = session('role');  // Ambil role dari session
-            $redirectTo = match ($role) {
-                'admin' => '/admin/dashboard',
-                'owner' => '/owner/dashboard',
-                'guest' => '/',
-                default => '/',
-            };
+        $sessionRole = session('role') ;
 
-            return redirect($redirectTo); // Redirect ke halaman dashboard yang sesuai
+        // Jika role tidak sesuai
+        if ($sessionRole !== $expectedRole) {
+            // Kalau role guest → ke /
+            if ($sessionRole === 'guest') {
+                return redirect('/');
+            }
+
+            // Kalau role admin atau owner atau lainnya → ke /dashboard
+            return redirect('/dashboard');
         }
 
-        return $next($request); // Jika role sesuai, lanjutkan ke proses selanjutnya
+        return $next($request);
     }
 }

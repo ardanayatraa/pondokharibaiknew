@@ -40,9 +40,12 @@ class VillaPricingTable extends DataTableComponent
                 ->sortable(),
 
 
-            Column::make("Aksi")
-            ->label(fn ($row) => view('components.link-action', ['id' => $row->id_villa_pricing]))
-            ->html(),
+                Column::make("Aksi")
+                ->label(fn ($row) => view('components.link-action', [
+                    'id' => $row->id_villa_pricing,
+                    'routeName' => 'villa_pricing'
+                ]))
+                ->html(),
 
         ];
     }

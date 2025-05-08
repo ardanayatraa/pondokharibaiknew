@@ -21,6 +21,10 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             AccountSeeder::class,
+            SeasonSeeder::class,
+            VillaSeeder::class,
+            VillaPricingSeeder::class,
+            FacilitySeeder::class
             // Tambahkan seeder lain yang ingin dijalankan
         ]);
     }

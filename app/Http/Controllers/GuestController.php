@@ -5,25 +5,116 @@ namespace App\Http\Controllers;
 use App\Models\Guest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 
 class GuestController extends Controller
 {
+    /**
+     * Tampilkan daftar guest.
+     */
+    public function index()
+    {
+        $guests = Guest::paginate(10);
+        return view('guest.index', compact('guests'));
+    }
+
+    /**
+     * Tampilkan form pembuatan guest baru.
+     */
+    public function create()
+    {
+        return view('guest.create');
+    }
+
+    /**
+     * Simpan guest baru ke database.
+     */
     public function store(Request $request)
     {
-        $guest = Guest::create([
-            'username' => $request->username,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'full_name' => $request->full_name,
-            'gender' => $request->gender,
-            'birthdate' => $request->birthdate,
-            'phone_number' => $request->phone_number,
-            'address' => $request->address,
-            'id_card_number' => $request->id_card_number,
-            'passport_number' => $request->passport_number,
+        $validated = $request->validate([
+            'username'        => 'required|string|max:255|unique:tbl_guest,username',
+            'email'           => 'required|email|unique:tbl_guest,email',
+            'password'        => 'required|string|min:6|confirmed',
+            'full_name'       => 'required|string|max:255',
+            'address'         => 'nullable|string',
+            'phone_number'    => 'nullable|string|max:20',
+            'id_card_number'  => 'nullable|string|max:50',
+            'passport_number' => 'nullable|string|max:50',
+            'birthdate'       => 'nullable|date',
+            'gender'          => 'nullable|in:male,female',
         ]);
 
-        return redirect()->route('login')->with('success', 'Account successfully created!');
+        // Hash password sebelum simpan
+        $validated['password'] = Hash::make($validated['password']);
+
+        Guest::create($validated);
+
+        return redirect()
+            ->route('guest.index')
+            ->with('success', 'Guest berhasil dibuat.');
+    }
+
+    /**
+     * Tampilkan detail satu guest.
+     */
+    public function show(Guest $guest)
+    {
+        return view('guest.show', compact('guest'));
+    }
+
+    /**
+     * Tampilkan form edit guest.
+     */
+    public function edit(Guest $guest)
+    {
+        return view('guest.edit', compact('guest'));
+    }
+
+    /**
+     * Update data guest.
+     */
+    public function update(Request $request, Guest $guest)
+    {
+        $rules = [
+            'username'        => 'required|string|max:255|unique:tbl_guest,username,' . $guest->id_guest . ',id_guest',
+            'email'           => 'required|email|unique:tbl_guest,email,'     . $guest->id_guest . ',id_guest',
+            'full_name'       => 'required|string|max:255',
+            'address'         => 'nullable|string',
+            'phone_number'    => 'nullable|string|max:20',
+            'id_card_number'  => 'nullable|string|max:50',
+            'passport_number' => 'nullable|string|max:50',
+            'birthdate'       => 'nullable|date',
+            'gender'          => 'nullable|in:male,female',
+        ];
+
+        // Jika mengisi password baru, wajib confirm
+        if ($request->filled('password')) {
+            $rules['password'] = 'nullable|string|min:6|confirmed';
+        }
+
+        $validated = $request->validate($rules);
+
+        if ($request->filled('password')) {
+            $validated['password'] = Hash::make($request->password);
+        } else {
+            unset($validated['password']);
+        }
+
+        $guest->update($validated);
+
+        return redirect()
+            ->route('guest.index')
+            ->with('success', 'Guest berhasil diupdate.');
+    }
+
+    /**
+     * Hapus guest.
+     */
+    public function destroy(Guest $guest)
+    {
+        $guest->delete();
+
+        return redirect()
+            ->route('guest.index')
+            ->with('success', 'Guest berhasil dihapus.');
     }
 }

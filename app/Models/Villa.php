@@ -17,37 +17,29 @@ class Villa extends Model
 
     protected $fillable = [
         'facility_id',
-        'villa_pricing_id',
         'name',
         'description',
-        'cek_ketersediaan_id'
+        'picture',
+        'capacity',    // biarkan typo ini sesuai kolom DB-mu
     ];
 
     protected $casts = [
-        'facility_id' => 'array', // JSON ke array
+        'facility_id' => 'array',
     ];
 
-    /**
-     * Accessor untuk menampilkan nama fasilitas berdasarkan facility_id (array)
-     */
     public function getFacilityNamesAttribute()
     {
-        if (!is_array($this->facility_id)) return [];
-
-        return Facility::whereIn('id_facility', $this->facility_id)->pluck('name_facility')->toArray();
+        if (! is_array($this->facility_id)) return [];
+        return Facility::whereIn('id_facility', $this->facility_id)
+                       ->pluck('name_facility')
+                       ->toArray();
     }
 
-    /**
-     * Relasi ke reservasi
-     */
     public function reservasi()
     {
         return $this->hasMany(Reservasi::class, 'villa_id');
     }
 
-    /**
-     * Relasi ke harga / villa pricing
-     */
     public function harga()
     {
         return $this->belongsTo(VillaPricing::class, 'villa_pricing_id', 'id_villa_pricing');
@@ -62,6 +54,4 @@ class Villa extends Model
     {
         return $this->hasMany(CekKetersediaan::class, 'villa_id', 'id_villa');
     }
-
-
 }

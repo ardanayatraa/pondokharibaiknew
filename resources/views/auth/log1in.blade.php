@@ -29,7 +29,7 @@
 </head>
 
 <body class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-blue-50 to-purple-50">
-    <div class="w-full max-w-md overflow-hidden bg-white border-2 border-[#1ABC9C] rounded-xl shadow-xl">
+    <div class="w-full w-full overflow-hidden bg-white border-2 border-[#1ABC9C] rounded-xl shadow-xl">
         <!-- Colorful top bar -->
         <div class="bg-[#1ABC9C] h-3 w-full"></div>
 

@@ -41,6 +41,8 @@
             }
         }
     </script>
+
+    @livewireStyles
     <style>
         /* Animation classes */
         .animate-hidden {
@@ -304,7 +306,7 @@
                         </a>
                     @elseif($role === 'admin')
                         {{-- Tombol Dashboard untuk admin --}}
-                        <a href="{{ route('admin.dashboard') }}"
+                        <a href="{{ route('dashboard') }}"
                             class="bg-elegant-burgundy hover:bg-elegant-burgundy/80
                                   text-elegant-white px-6 py-2 transition-all duration-300
                                   btn-elegant border border-elegant-gold"
@@ -426,7 +428,7 @@
                     </a>
                 @elseif($role === 'admin')
                     {{-- Tombol Dashboard untuk admin --}}
-                    <a href="{{ route('admin.dashboard') }}"
+                    <a href="{{ route('dashboard') }}"
                         class="bg-elegant-burgundy hover:bg-elegant-burgundy/80
                               text-elegant-white px-6 py-2 transition-all duration-300
                               btn-elegant border border-elegant-gold"
@@ -460,7 +462,7 @@
                 </h1>
                 <div class="w-20 h-px bg-elegant-gold mx-auto"></div>
             </div>
-            <p class="text-xl md:text-2xl text-elegant-white mb-10 max-w-3xl mx-auto animate-hidden delay-200 font-light"
+            <p class="text-xl md:text-2xl text-elegant-white mb-10 w-full mx-auto animate-hidden delay-200 font-light"
                 data-lang-key="hero_subtitle">Experience the tranquility of Bali in our luxurious villa with stunning
                 views and exceptional service</p>
             <a href="#rooms"
@@ -534,138 +536,57 @@
                 <h2 class="font-cormorant text-4xl md:text-5xl font-bold text-elegant-burgundy mb-4 tracking-wide"
                     data-lang-key="rooms_title">Our Luxurious Rooms</h2>
                 <div class="decorative-line w-40 mx-auto mt-4"></div>
-                <p class="text-lg mt-6 max-w-3xl mx-auto text-elegant-charcoal" data-lang-key="rooms_subtitle">
+                <p class="text-lg mt-6 w-full mx-auto text-elegant-charcoal" data-lang-key="rooms_subtitle">
                     Discover our elegantly designed rooms offering comfort, privacy, and stunning views</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                <!-- Room 1 -->
-                <div
-                    class="bg-elegant-white border border-elegant-gold/30 overflow-hidden shadow-md transform hover:scale-105 transition-all duration-500 animate-hidden elegant-card">
-                    <div class="relative">
-                        <div class="bg-family-bungalow bg-cover bg-center h-72"></div>
-                        <div class="absolute top-4 right-4 bg-elegant-gold text-elegant-navy px-4 py-2 font-medium uppercase tracking-wider text-xs"
-                            data-lang-key="rooms_popular">
-                            Popular
+                @foreach ($villa as $item)
+                    <!-- Room 1 -->
+                    <div
+                        class="bg-elegant-white border border-elegant-gold/30 overflow-hidden shadow-md transform hover:scale-105 transition-all duration-500 animate-hidden elegant-card">
+                        <div class="relative">
+                            <div class="bg-family-bungalow bg-cover bg-center h-72"></div>
+                            <div class="absolute top-4 right-4 bg-elegant-gold text-elegant-navy px-4 py-2 font-medium uppercase tracking-wider text-xs"
+                                data-lang-key="rooms_popular">
+                                Popular
+                            </div>
+                        </div>
+                        <div class="p-8">
+                            <h3 class="font-cormorant text-2xl font-bold text-elegant-burgundy mb-2"
+                                data-lang-key="room1_title">Family Bungalow</h3>
+                            <div class="flex items-center mb-4">
+                                <div class="text-elegant-gold text-xl font-bold">Rp 450.000</div>
+                                <div class="text-elegant-gray ml-2" data-lang-key="rooms_per_night">/night</div>
+                            </div>
+                            <div class="flex items-center mb-6">
+                                <i class="fas fa-user-friends text-elegant-gold mr-2"></i>
+                                <span class="text-elegant-charcoal" data-lang-key="room1_capacity">Maximum capacity 4
+                                    people</span>
+                            </div>
+                            <ul class="mb-6 space-y-2 text-elegant-charcoal">
+                                <li class="flex items-center">
+                                    <i class="fas fa-check text-elegant-gold mr-2"></i>
+                                    <span data-lang-key="room_feature1">AC & Flat Screen TV</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check text-elegant-gold mr-2"></i>
+                                    <span data-lang-key="room_feature2">Private Balcony</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check text-elegant-gold mr-2"></i>
+                                    <span data-lang-key="room_feature3">Private Bathroom</span>
+                                </li>
+                            </ul>
+                            <a href="#contact"
+                                class="block text-center bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-3 transition-all duration-300 btn-elegant"
+                                data-lang-key="rooms_book">
+                                Book Now
+                            </a>
                         </div>
                     </div>
-                    <div class="p-8">
-                        <h3 class="font-cormorant text-2xl font-bold text-elegant-burgundy mb-2"
-                            data-lang-key="room1_title">Family Bungalow</h3>
-                        <div class="flex items-center mb-4">
-                            <div class="text-elegant-gold text-xl font-bold">Rp 450.000</div>
-                            <div class="text-elegant-gray ml-2" data-lang-key="rooms_per_night">/night</div>
-                        </div>
-                        <div class="flex items-center mb-6">
-                            <i class="fas fa-user-friends text-elegant-gold mr-2"></i>
-                            <span class="text-elegant-charcoal" data-lang-key="room1_capacity">Maximum capacity 4
-                                people</span>
-                        </div>
-                        <ul class="mb-6 space-y-2 text-elegant-charcoal">
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-elegant-gold mr-2"></i>
-                                <span data-lang-key="room_feature1">AC & Flat Screen TV</span>
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-elegant-gold mr-2"></i>
-                                <span data-lang-key="room_feature2">Private Balcony</span>
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-elegant-gold mr-2"></i>
-                                <span data-lang-key="room_feature3">Private Bathroom</span>
-                            </li>
-                        </ul>
-                        <a href="#contact"
-                            class="block text-center bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-3 transition-all duration-300 btn-elegant"
-                            data-lang-key="rooms_book">
-                            Book Now
-                        </a>
-                    </div>
-                </div>
+                @endforeach
 
-                <!-- Room 2 -->
-                <div
-                    class="bg-elegant-white border border-elegant-gold/30 overflow-hidden shadow-md transform hover:scale-105 transition-all duration-500 animate-hidden delay-200 elegant-card">
-                    <div class="relative">
-                        <div class="bg-family-garden bg-cover bg-center h-72"></div>
-                        <div class="absolute top-4 right-4 bg-elegant-gold text-elegant-navy px-4 py-2 font-medium uppercase tracking-wider text-xs"
-                            data-lang-key="rooms_best_value">
-                            Best Value
-                        </div>
-                    </div>
-                    <div class="p-8">
-                        <h3 class="font-cormorant text-2xl font-bold text-elegant-burgundy mb-2"
-                            data-lang-key="room2_title">Family Room with Garden View</h3>
-                        <div class="flex items-center mb-4">
-                            <div class="text-elegant-gold text-xl font-bold">Rp 750.000</div>
-                            <div class="text-elegant-gray ml-2" data-lang-key="rooms_per_night">/night</div>
-                        </div>
-                        <div class="flex items-center mb-6">
-                            <i class="fas fa-user-friends text-elegant-gold mr-2"></i>
-                            <span class="text-elegant-charcoal" data-lang-key="room2_capacity">Maximum capacity 4
-                                people</span>
-                        </div>
-                        <ul class="mb-6 space-y-2 text-elegant-charcoal">
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-elegant-gold mr-2"></i>
-                                <span data-lang-key="room_feature1">AC & Flat Screen TV</span>
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-elegant-gold mr-2"></i>
-                                <span data-lang-key="room_feature4">Garden View</span>
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-elegant-gold mr-2"></i>
-                                <span data-lang-key="room_feature5">Premium Bathroom</span>
-                            </li>
-                        </ul>
-                        <a href="#contact"
-                            class="block text-center bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-3 transition-all duration-300 btn-elegant"
-                            data-lang-key="rooms_book">
-                            Book Now
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Room 3 -->
-                <div
-                    class="bg-elegant-white border border-elegant-gold/30 overflow-hidden shadow-md transform hover:scale-105 transition-all duration-500 animate-hidden delay-300 elegant-card">
-                    <div class="relative">
-                        <div class="bg-twins-garden bg-cover bg-center h-72"></div>
-                    </div>
-                    <div class="p-8">
-                        <h3 class="font-cormorant text-2xl font-bold text-elegant-burgundy mb-2"
-                            data-lang-key="room3_title">Twins Room with Garden View</h3>
-                        <div class="flex items-center mb-4">
-                            <div class="text-elegant-gold text-xl font-bold">Rp 650.000</div>
-                            <div class="text-elegant-gray ml-2" data-lang-key="rooms_per_night">/night</div>
-                        </div>
-                        <div class="flex items-center mb-6">
-                            <i class="fas fa-user-friends text-elegant-gold mr-2"></i>
-                            <span class="text-elegant-charcoal" data-lang-key="room3_capacity">Maximum capacity 2
-                                people</span>
-                        </div>
-                        <ul class="mb-6 space-y-2 text-elegant-charcoal">
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-elegant-gold mr-2"></i>
-                                <span data-lang-key="room_feature1">AC & Flat Screen TV</span>
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-elegant-gold mr-2"></i>
-                                <span data-lang-key="room_feature4">Garden View</span>
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-elegant-gold mr-2"></i>
-                                <span data-lang-key="room_feature3">Private Bathroom</span>
-                            </li>
-                        </ul>
-                        <a href="#contact"
-                            class="block text-center bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-3 transition-all duration-300 btn-elegant"
-                            data-lang-key="rooms_book">
-                            Book Now
-                        </a>
-                    </div>
-                </div>
             </div>
         </div>
     </section>
@@ -678,7 +599,7 @@
                 <h2 class="font-cormorant text-4xl md:text-5xl font-bold mb-4 tracking-wide text-elegant-white"
                     data-lang-key="amenities_title">Premium Amenities</h2>
                 <div class="decorative-line w-40 mx-auto mt-4"></div>
-                <p class="text-lg mt-6 max-w-3xl mx-auto text-elegant-white/80" data-lang-key="amenities_subtitle">
+                <p class="text-lg mt-6 w-full mx-auto text-elegant-white/80" data-lang-key="amenities_subtitle">
                     Enjoy our world-class facilities designed for your comfort and relaxation</p>
             </div>
 
@@ -824,7 +745,7 @@
                 <h2 class="font-cormorant text-4xl md:text-5xl font-bold text-elegant-burgundy mb-4 tracking-wide"
                     data-lang-key="testimonials_title">Guest Experiences</h2>
                 <div class="decorative-line w-40 mx-auto mt-4"></div>
-                <p class="text-lg mt-6 max-w-3xl mx-auto text-elegant-charcoal" data-lang-key="testimonials_subtitle">
+                <p class="text-lg mt-6 w-full mx-auto text-elegant-charcoal" data-lang-key="testimonials_subtitle">
                     What our guests say about their stay at Pondok Hari Baik</p>
             </div>
 
@@ -923,7 +844,7 @@
                 <h2 class="font-cormorant text-4xl md:text-5xl font-bold text-elegant-gold mb-4 tracking-wide"
                     data-lang-key="location_title">Our Location</h2>
                 <div class="decorative-line w-40 mx-auto mt-4"></div>
-                <p class="text-lg mt-6 max-w-3xl mx-auto" data-lang-key="location_subtitle">Strategically located with
+                <p class="text-lg mt-6 w-full mx-auto" data-lang-key="location_subtitle">Strategically located with
                     easy access to Bali's most beautiful beaches</p>
             </div>
 
@@ -997,7 +918,7 @@
         class="py-24 bg-elegant-burgundy text-elegant-white bg-[url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')] bg-cover bg-center relative">
         <div class="absolute inset-0 bg-elegant-navy/80"></div>
         <div class="container mx-auto px-4 text-center relative z-10">
-            <div class="max-w-3xl mx-auto animate-hidden">
+            <div class="w-full mx-auto animate-hidden">
                 <h2 class="font-cormorant text-4xl md:text-5xl font-bold mb-6 text-elegant-gold"
                     data-lang-key="cta_title">Ready for an Unforgettable Experience?</h2>
                 <div class="w-20 h-px bg-elegant-gold mx-auto mb-6"></div>
@@ -1020,7 +941,7 @@
                 <h2 class="font-cormorant text-4xl md:text-5xl font-bold text-elegant-burgundy mb-4 tracking-wide"
                     data-lang-key="contact_title">Contact Us</h2>
                 <div class="decorative-line w-40 mx-auto mt-4"></div>
-                <p class="text-lg mt-6 max-w-3xl mx-auto text-elegant-charcoal" data-lang-key="contact_subtitle">Have
+                <p class="text-lg mt-6 w-full mx-auto text-elegant-charcoal" data-lang-key="contact_subtitle">Have
                     questions or ready to book? Reach out to us</p>
             </div>
 
@@ -1637,6 +1558,1141 @@
             });
         });
     </script>
+
+    <!-- Add this right before the closing </body> tag -->
+
+    <!-- Booking Stepper Modal -->
+    <div id="booking-stepper-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <!-- Overlay with blur effect -->
+            <div class="fixed inset-0 bg-elegant-black bg-opacity-60 backdrop-blur-sm transition-opacity"
+                id="modal-backdrop"></div>
+
+            <!-- Modal Content -->
+            <div class="relative bg-elegant-cream max-w-5xl w-full mx-auto rounded-lg shadow-2xl overflow-hidden z-10 transform transition-all duration-500 scale-95 opacity-0"
+                id="modal-content">
+                <!-- Decorative elements -->
+                <div
+                    class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-elegant-gold/20 via-elegant-gold to-elegant-gold/20">
+                </div>
+                <div
+                    class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-elegant-gold/20 via-elegant-gold to-elegant-gold/20">
+                </div>
+                <div
+                    class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-elegant-gold/20 via-elegant-gold to-elegant-gold/20">
+                </div>
+                <div
+                    class="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-elegant-gold/20 via-elegant-gold to-elegant-gold/20">
+                </div>
+
+                <!-- Close Button -->
+                <button id="close-modal"
+                    class="absolute top-6 right-6 text-elegant-gold hover:text-elegant-burgundy transition-colors z-20 group">
+                    <div class="relative">
+                        <div
+                            class="w-8 h-8 rounded-full bg-elegant-navy border border-elegant-gold/50 flex items-center justify-center group-hover:bg-elegant-burgundy transition-all duration-300">
+                            <i class="fas fa-times"></i>
+                        </div>
+                        <div
+                            class="absolute -inset-1 rounded-full border border-elegant-gold/30 group-hover:border-elegant-gold/50 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                        </div>
+                    </div>
+                </button>
+
+                <!-- Header -->
+                <div class="bg-elegant-navy p-8 border-b border-elegant-gold/30 relative overflow-hidden">
+                    <!-- Decorative pattern -->
+                    <div class="absolute inset-0 opacity-5">
+                        <div class="absolute inset-0"
+                            style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23C0A062\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');">
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <h3 class="font-cormorant text-3xl md:text-4xl font-bold text-elegant-gold mb-2">Book Your
+                            Luxury Stay</h3>
+                        <p class="text-elegant-white/80 max-w-2xl">Experience the tranquility of Bali in our luxurious
+                            villa with stunning views and exceptional service</p>
+                    </div>
+                </div>
+
+                <!-- Stepper Progress -->
+                <div class="px-8 pt-8 pb-4 bg-elegant-cream">
+                    <div class="relative">
+                        <!-- Progress bar background -->
+                        <div class="absolute top-1/2 left-0 w-full h-1 bg-elegant-gold/20 -translate-y-1/2"></div>
+
+                        <!-- Active progress bar -->
+                        <div id="progress-bar"
+                            class="absolute top-1/2 left-0 h-1 bg-elegant-burgundy -translate-y-1/2 transition-all duration-500"
+                            style="width: 0%"></div>
+
+                        <!-- Step circles -->
+                        <div class="relative flex justify-between">
+                            <div class="stepper-node flex flex-col items-center">
+                                <div
+                                    class="stepper-circle flex items-center justify-center w-12 h-12 rounded-full bg-elegant-burgundy text-elegant-white font-bold border-4 border-elegant-cream relative z-10 shadow-lg transition-all duration-300">
+                                    <span>1</span>
+                                </div>
+                                <div class="stepper-label mt-2 text-center">
+                                    <span class="block text-sm font-medium text-elegant-burgundy">Availability</span>
+                                </div>
+                            </div>
+
+                            <div class="stepper-node flex flex-col items-center">
+                                <div
+                                    class="stepper-circle flex items-center justify-center w-12 h-12 rounded-full bg-elegant-gold/30 text-elegant-navy font-bold border-4 border-elegant-cream relative z-10 shadow-lg transition-all duration-300">
+                                    <span>2</span>
+                                </div>
+                                <div class="stepper-label mt-2 text-center">
+                                    <span class="block text-sm font-medium text-elegant-charcoal">Villa Details</span>
+                                </div>
+                            </div>
+
+                            <div class="stepper-node flex flex-col items-center">
+                                <div
+                                    class="stepper-circle flex items-center justify-center w-12 h-12 rounded-full bg-elegant-gold/30 text-elegant-navy font-bold border-4 border-elegant-cream relative z-10 shadow-lg transition-all duration-300">
+                                    <span>3</span>
+                                </div>
+                                <div class="stepper-label mt-2 text-center">
+                                    <span class="block text-sm font-medium text-elegant-charcoal">Guest Info</span>
+                                </div>
+                            </div>
+
+                            <div class="stepper-node flex flex-col items-center">
+                                <div
+                                    class="stepper-circle flex items-center justify-center w-12 h-12 rounded-full bg-elegant-gold/30 text-elegant-navy font-bold border-4 border-elegant-cream relative z-10 shadow-lg transition-all duration-300">
+                                    <span>4</span>
+                                </div>
+                                <div class="stepper-label mt-2 text-center">
+                                    <span class="block text-sm font-medium text-elegant-charcoal">Payment</span>
+                                </div>
+                            </div>
+
+                            <div class="stepper-node flex flex-col items-center">
+                                <div
+                                    class="stepper-circle flex items-center justify-center w-12 h-12 rounded-full bg-elegant-gold/30 text-elegant-navy font-bold border-4 border-elegant-cream relative z-10 shadow-lg transition-all duration-300">
+                                    <span>5</span>
+                                </div>
+                                <div class="stepper-label mt-2 text-center">
+                                    <span class="block text-sm font-medium text-elegant-charcoal">Complete</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step Content -->
+                <div class="p-8 bg-elegant-cream min-h-[400px]">
+                    <!-- Step 1: Check Availability -->
+                    <div class="step-content" id="step-1">
+                        <div class="max-w-4xl mx-auto">
+                            <div class="flex items-center mb-6">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-elegant-burgundy/10 flex items-center justify-center mr-4">
+                                    <i class="fas fa-calendar-alt text-elegant-burgundy"></i>
+                                </div>
+                                <h4 class="font-cormorant text-2xl font-bold text-elegant-burgundy">Select Your Dates
+                                </h4>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                                <div
+                                    class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20 hover:border-elegant-gold/40 transition-all duration-300">
+                                    <label for="check-in"
+                                        class="block text-sm font-medium text-elegant-charcoal mb-2">Check-in
+                                        Date</label>
+                                    <div class="relative">
+                                        <input type="date" id="check-in"
+                                            class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10">
+                                        <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                            <i class="fas fa-calendar-day"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div
+                                    class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20 hover:border-elegant-gold/40 transition-all duration-300">
+                                    <label for="check-out"
+                                        class="block text-sm font-medium text-elegant-charcoal mb-2">Check-out
+                                        Date</label>
+                                    <div class="relative">
+                                        <input type="date" id="check-out"
+                                            class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10">
+                                        <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                            <i class="fas fa-calendar-day"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center mb-6">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-elegant-burgundy/10 flex items-center justify-center mr-4">
+                                    <i class="fas fa-users text-elegant-burgundy"></i>
+                                </div>
+                                <h4 class="font-cormorant text-2xl font-bold text-elegant-burgundy">Number of Guests
+                                </h4>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div
+                                    class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20 hover:border-elegant-gold/40 transition-all duration-300">
+                                    <label for="adults"
+                                        class="block text-sm font-medium text-elegant-charcoal mb-2">Adults</label>
+                                    <div class="relative">
+                                        <select id="adults"
+                                            class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10 appearance-none">
+                                            <option value="1">1 Adult</option>
+                                            <option value="2" selected>2 Adults</option>
+                                            <option value="3">3 Adults</option>
+                                            <option value="4">4 Adults</option>
+                                        </select>
+                                        <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div
+                                            class="absolute right-3 top-1/2 -translate-y-1/2 text-elegant-gold pointer-events-none">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div
+                                    class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20 hover:border-elegant-gold/40 transition-all duration-300">
+                                    <label for="children"
+                                        class="block text-sm font-medium text-elegant-charcoal mb-2">Children</label>
+                                    <div class="relative">
+                                        <select id="children"
+                                            class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10 appearance-none">
+                                            <option value="0" selected>0 Children</option>
+                                            <option value="1">1 Child</option>
+                                            <option value="2">2 Children</option>
+                                            <option value="3">3 Children</option>
+                                        </select>
+                                        <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                            <i class="fas fa-child"></i>
+                                        </div>
+                                        <div
+                                            class="absolute right-3 top-1/2 -translate-y-1/2 text-elegant-gold pointer-events-none">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Villa Details -->
+                    <div class="step-content hidden" id="step-2">
+                        <div class="max-w-4xl mx-auto">
+                            <div class="flex items-center mb-6">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-elegant-burgundy/10 flex items-center justify-center mr-4">
+                                    <i class="fas fa-home text-elegant-burgundy"></i>
+                                </div>
+                                <h4 class="font-cormorant text-2xl font-bold text-elegant-burgundy">Villa Details</h4>
+                            </div>
+
+                            <div class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20 mb-8">
+                                <div class="flex flex-col md:flex-row">
+                                    <div class="md:w-2/5 mb-4 md:mb-0 md:mr-6">
+                                        <div class="relative rounded-lg overflow-hidden shadow-md group">
+                                            <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945"
+                                                alt="Villa"
+                                                class="w-full h-64 object-cover transition-transform duration-700 group-hover:scale-110">
+                                            <div
+                                                class="absolute inset-0 bg-gradient-to-t from-elegant-navy/70 to-transparent">
+                                            </div>
+                                            <div class="absolute bottom-4 left-4 text-elegant-white">
+                                                <div class="flex items-center">
+                                                    <div class="text-elegant-gold">
+                                                        <i class="fas fa-star"></i>
+                                                        <i class="fas fa-star"></i>
+                                                        <i class="fas fa-star"></i>
+                                                        <i class="fas fa-star"></i>
+                                                        <i class="fas fa-star-half-alt"></i>
+                                                    </div>
+                                                    <span class="ml-2 text-sm">4.8/5</span>
+                                                </div>
+                                            </div>
+                                            <div
+                                                class="absolute top-4 right-4 bg-elegant-gold text-elegant-navy px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                                                Popular
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="md:w-3/5">
+                                        <h5 class="font-cormorant text-2xl font-bold text-elegant-burgundy mb-2">Family
+                                            Bungalow</h5>
+                                        <div class="flex items-center mb-4">
+                                            <div class="text-elegant-gold text-xl font-bold">Rp 450.000</div>
+                                            <div class="text-elegant-gray ml-2">/night</div>
+                                        </div>
+                                        <p class="text-elegant-charcoal/80 mb-4">Luxurious bungalow with private
+                                            balcony, perfect for families looking for comfort and privacy. Enjoy
+                                            stunning views and premium amenities.</p>
+                                        <div class="grid grid-cols-2 gap-2 mb-4">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-user-friends text-elegant-gold mr-2"></i>
+                                                <span class="text-elegant-charcoal">Up to 4 people</span>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <i class="fas fa-bed text-elegant-gold mr-2"></i>
+                                                <span class="text-elegant-charcoal">1 King + 2 Singles</span>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <i class="fas fa-bath text-elegant-gold mr-2"></i>
+                                                <span class="text-elegant-charcoal">Private Bathroom</span>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <i class="fas fa-tv text-elegant-gold mr-2"></i>
+                                                <span class="text-elegant-charcoal">Flat Screen TV</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center mb-6">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-elegant-burgundy/10 flex items-center justify-center mr-4">
+                                    <i class="fas fa-receipt text-elegant-burgundy"></i>
+                                </div>
+                                <h4 class="font-cormorant text-2xl font-bold text-elegant-burgundy">Booking Summary
+                                </h4>
+                            </div>
+
+                            <div class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <h6
+                                            class="font-medium text-elegant-burgundy mb-4 pb-2 border-b border-elegant-gold/20">
+                                            Stay Details</h6>
+                                        <div class="space-y-3 text-elegant-charcoal">
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-calendar-check text-elegant-gold mr-2"></i>
+                                                    <span>Check-in:</span>
+                                                </div>
+                                                <span id="summary-checkin" class="font-medium">May 10, 2025</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-calendar-times text-elegant-gold mr-2"></i>
+                                                    <span>Check-out:</span>
+                                                </div>
+                                                <span id="summary-checkout" class="font-medium">May 15, 2025</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-moon text-elegant-gold mr-2"></i>
+                                                    <span>Nights:</span>
+                                                </div>
+                                                <span id="summary-nights" class="font-medium">5</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-users text-elegant-gold mr-2"></i>
+                                                    <span>Guests:</span>
+                                                </div>
+                                                <span id="summary-guests" class="font-medium">2 Adults, 0
+                                                    Children</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h6
+                                            class="font-medium text-elegant-burgundy mb-4 pb-2 border-b border-elegant-gold/20">
+                                            Price Details</h6>
+                                        <div class="space-y-3 text-elegant-charcoal">
+                                            <div class="flex justify-between items-center">
+                                                <span>Room Rate (5 nights):</span>
+                                                <span>Rp 2,250,000</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span>Tax (10%):</span>
+                                                <span>Rp 225,000</span>
+                                            </div>
+                                            <div class="pt-3 mt-3 border-t border-elegant-gold/20">
+                                                <div
+                                                    class="flex justify-between items-center font-bold text-elegant-burgundy">
+                                                    <span>Total:</span>
+                                                    <span id="summary-total">Rp 2,475,000</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Guest Information -->
+                    <div class="step-content hidden" id="step-3">
+                        <div class="max-w-4xl mx-auto">
+                            <div class="flex items-center mb-6">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-elegant-burgundy/10 flex items-center justify-center mr-4">
+                                    <i class="fas fa-user-circle text-elegant-burgundy"></i>
+                                </div>
+                                <h4 class="font-cormorant text-2xl font-bold text-elegant-burgundy">Guest Information
+                                </h4>
+                            </div>
+
+                            <div class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20 mb-8">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <div>
+                                        <label for="guest-name"
+                                            class="block text-sm font-medium text-elegant-charcoal mb-2">Full
+                                            Name</label>
+                                        <div class="relative">
+                                            <input type="text" id="guest-name" placeholder="Enter your full name"
+                                                class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10">
+                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="guest-email"
+                                            class="block text-sm font-medium text-elegant-charcoal mb-2">Email
+                                            Address</label>
+                                        <div class="relative">
+                                            <input type="email" id="guest-email"
+                                                placeholder="Enter your email address"
+                                                class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10">
+                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                                <i class="fas fa-envelope"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <div>
+                                        <label for="guest-phone"
+                                            class="block text-sm font-medium text-elegant-charcoal mb-2">Phone
+                                            Number</label>
+                                        <div class="relative">
+                                            <input type="tel" id="guest-phone"
+                                                placeholder="Enter your phone number"
+                                                class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10">
+                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                                <i class="fas fa-phone"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="guest-country"
+                                            class="block text-sm font-medium text-elegant-charcoal mb-2">Country</label>
+                                        <div class="relative">
+                                            <select id="guest-country"
+                                                class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10 appearance-none">
+                                                <option value="Indonesia">Indonesia</option>
+                                                <option value="Singapore">Singapore</option>
+                                                <option value="Malaysia">Malaysia</option>
+                                                <option value="Australia">Australia</option>
+                                                <option value="United States">United States</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                                <i class="fas fa-globe"></i>
+                                            </div>
+                                            <div
+                                                class="absolute right-3 top-1/2 -translate-y-1/2 text-elegant-gold pointer-events-none">
+                                                <i class="fas fa-chevron-down"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center mb-6">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-elegant-burgundy/10 flex items-center justify-center mr-4">
+                                    <i class="fas fa-concierge-bell text-elegant-burgundy"></i>
+                                </div>
+                                <h4 class="font-cormorant text-2xl font-bold text-elegant-burgundy">Special Requests
+                                </h4>
+                            </div>
+
+                            <div class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20">
+                                <label for="special-requests"
+                                    class="block text-sm font-medium text-elegant-charcoal mb-2">Do you have any
+                                    special requests?</label>
+                                <div class="relative">
+                                    <textarea id="special-requests" rows="4"
+                                        placeholder="Let us know if you have any special requests or requirements..."
+                                        class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md"></textarea>
+                                </div>
+                                <p class="text-sm text-elegant-charcoal/70 mt-2">We'll do our best to accommodate your
+                                    requests, subject to availability.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Payment -->
+                    <div class="step-content hidden" id="step-4">
+                        <div class="max-w-4xl mx-auto">
+                            <div class="flex items-center mb-6">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-elegant-burgundy/10 flex items-center justify-center mr-4">
+                                    <i class="fas fa-credit-card text-elegant-burgundy"></i>
+                                </div>
+                                <h4 class="font-cormorant text-2xl font-bold text-elegant-burgundy">Payment Information
+                                </h4>
+                            </div>
+
+                            <div class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20 mb-8">
+                                <h5
+                                    class="font-medium text-elegant-burgundy mb-4 pb-2 border-b border-elegant-gold/20">
+                                    Payment Method</h5>
+                                <div class="space-y-4">
+                                    <div class="payment-option relative">
+                                        <input type="radio" id="payment-credit" name="payment-method"
+                                            class="hidden" checked>
+                                        <label for="payment-credit"
+                                            class="flex items-center p-4 border border-elegant-gold/30 rounded-lg cursor-pointer transition-all duration-300 hover:bg-elegant-cream/50 payment-label">
+                                            <div
+                                                class="w-6 h-6 rounded-full border-2 border-elegant-gold flex items-center justify-center mr-3 payment-radio">
+                                                <div
+                                                    class="w-3 h-3 rounded-full bg-elegant-burgundy payment-radio-dot">
+                                                </div>
+                                            </div>
+                                            <span class="mr-4">Credit Card</span>
+                                            <div class="flex space-x-2 ml-auto">
+                                                <i class="fab fa-cc-visa text-blue-700 text-xl"></i>
+                                                <i class="fab fa-cc-mastercard text-red-600 text-xl"></i>
+                                                <i class="fab fa-cc-amex text-blue-500 text-xl"></i>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <div class="payment-option relative">
+                                        <input type="radio" id="payment-paypal" name="payment-method"
+                                            class="hidden">
+                                        <label for="payment-paypal"
+                                            class="flex items-center p-4 border border-elegant-gold/30 rounded-lg cursor-pointer transition-all duration-300 hover:bg-elegant-cream/50 payment-label">
+                                            <div
+                                                class="w-6 h-6 rounded-full border-2 border-elegant-gold flex items-center justify-center mr-3 payment-radio">
+                                                <div
+                                                    class="w-3 h-3 rounded-full bg-elegant-burgundy payment-radio-dot">
+                                                </div>
+                                            </div>
+                                            <span class="mr-4">PayPal</span>
+                                            <div class="ml-auto">
+                                                <i class="fab fa-paypal text-blue-800 text-xl"></i>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <div class="payment-option relative">
+                                        <input type="radio" id="payment-bank" name="payment-method"
+                                            class="hidden">
+                                        <label for="payment-bank"
+                                            class="flex items-center p-4 border border-elegant-gold/30 rounded-lg cursor-pointer transition-all duration-300 hover:bg-elegant-cream/50 payment-label">
+                                            <div
+                                                class="w-6 h-6 rounded-full border-2 border-elegant-gold flex items-center justify-center mr-3 payment-radio">
+                                                <div
+                                                    class="w-3 h-3 rounded-full bg-elegant-burgundy payment-radio-dot">
+                                                </div>
+                                            </div>
+                                            <span class="mr-4">Bank Transfer</span>
+                                            <div class="ml-auto">
+                                                <i class="fas fa-university text-elegant-burgundy text-xl"></i>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="credit-card-form"
+                                class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20 mb-8">
+                                <h5
+                                    class="font-medium text-elegant-burgundy mb-4 pb-2 border-b border-elegant-gold/20">
+                                    Card Details</h5>
+
+                                <div class="mb-6">
+                                    <label for="card-name"
+                                        class="block text-sm font-medium text-elegant-charcoal mb-2">Name on
+                                        Card</label>
+                                    <div class="relative">
+                                        <input type="text" id="card-name"
+                                            placeholder="Enter the name on your card"
+                                            class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10">
+                                        <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-6">
+                                    <label for="card-number"
+                                        class="block text-sm font-medium text-elegant-charcoal mb-2">Card
+                                        Number</label>
+                                    <div class="relative">
+                                        <input type="text" id="card-number" placeholder="XXXX XXXX XXXX XXXX"
+                                            class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10">
+                                        <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                            <i class="fas fa-credit-card"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+                                    <div>
+                                        <label for="card-expiry-month"
+                                            class="block text-sm font-medium text-elegant-charcoal mb-2">Expiry
+                                            Month</label>
+                                        <div class="relative">
+                                            <select id="card-expiry-month"
+                                                class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10 appearance-none">
+                                                <option value="01">01</option>
+                                                <option value="02">02</option>
+                                                <option value="03">03</option>
+                                                <option value="04">04</option>
+                                                <option value="05">05</option>
+                                                <option value="06">06</option>
+                                                <option value="07">07</option>
+                                                <option value="08">08</option>
+                                                <option value="09">09</option>
+                                                <option value="10">10</option>
+                                                <option value="11">11</option>
+                                                <option value="12">12</option>
+                                            </select>
+                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </div>
+                                            <div
+                                                class="absolute right-3 top-1/2 -translate-y-1/2 text-elegant-gold pointer-events-none">
+                                                <i class="fas fa-chevron-down"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label for="card-expiry-year"
+                                            class="block text-sm font-medium text-elegant-charcoal mb-2">Expiry
+                                            Year</label>
+                                        <div class="relative">
+                                            <select id="card-expiry-year"
+                                                class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10 appearance-none">
+                                                <option value="2025">2025</option>
+                                                <option value="2026">2026</option>
+                                                <option value="2027">2027</option>
+                                                <option value="2028">2028</option>
+                                                <option value="2029">2029</option>
+                                                <option value="2030">2030</option>
+                                            </select>
+                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </div>
+                                            <div
+                                                class="absolute right-3 top-1/2 -translate-y-1/2 text-elegant-gold pointer-events-none">
+                                                <i class="fas fa-chevron-down"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label for="card-cvv"
+                                            class="block text-sm font-medium text-elegant-charcoal mb-2">CVV</label>
+                                        <div class="relative">
+                                            <input type="text" id="card-cvv" placeholder="XXX"
+                                                class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10">
+                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                                <i class="fas fa-lock"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20">
+                                <h5
+                                    class="font-medium text-elegant-burgundy mb-4 pb-2 border-b border-elegant-gold/20">
+                                    Payment Summary</h5>
+                                <div class="space-y-3 text-elegant-charcoal">
+                                    <div class="flex justify-between items-center">
+                                        <span>Room Rate (5 nights):</span>
+                                        <span>Rp 2,250,000</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span>Tax (10%):</span>
+                                        <span>Rp 225,000</span>
+                                    </div>
+                                    <div class="pt-3 mt-3 border-t border-elegant-gold/20">
+                                        <div class="flex justify-between items-center font-bold text-elegant-burgundy">
+                                            <span>Total Amount:</span>
+                                            <span>Rp 2,475,000</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Completion -->
+                    <div class="step-content hidden" id="step-5">
+                        <div class="max-w-4xl mx-auto text-center">
+                            <div class="mb-8">
+                                <div
+                                    class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 relative">
+                                    <div
+                                        class="absolute inset-0 rounded-full border-4 border-green-500 opacity-30 animate-ping">
+                                    </div>
+                                    <i class="fas fa-check text-green-600 text-4xl"></i>
+                                </div>
+                                <h4 class="font-cormorant text-3xl font-bold text-elegant-burgundy mb-4">Booking
+                                    Confirmed!</h4>
+                                <p class="text-elegant-charcoal mb-2">Thank you for your booking at Pondok Hari Baik.
+                                </p>
+                                <p class="text-elegant-charcoal mb-6">We've sent a confirmation email to your email
+                                    address.</p>
+                            </div>
+
+                            <div
+                                class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20 mb-8 text-left">
+                                <div class="flex items-center mb-4">
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-elegant-burgundy/10 flex items-center justify-center mr-4">
+                                        <i class="fas fa-receipt text-elegant-burgundy"></i>
+                                    </div>
+                                    <h5 class="font-cormorant text-xl font-bold text-elegant-burgundy">Booking Details
+                                    </h5>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <div class="space-y-3 text-elegant-charcoal">
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-hashtag text-elegant-gold mr-2"></i>
+                                                    <span>Booking ID:</span>
+                                                </div>
+                                                <span class="font-medium">PHB25052301</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-home text-elegant-gold mr-2"></i>
+                                                    <span>Room:</span>
+                                                </div>
+                                                <span class="font-medium">Family Bungalow</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-calendar-check text-elegant-gold mr-2"></i>
+                                                    <span>Check-in:</span>
+                                                </div>
+                                                <span class="font-medium">May 10, 2025</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-calendar-times text-elegant-gold mr-2"></i>
+                                                    <span>Check-out:</span>
+                                                </div>
+                                                <span class="font-medium">May 15, 2025</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div class="space-y-3 text-elegant-charcoal">
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-users text-elegant-gold mr-2"></i>
+                                                    <span>Guests:</span>
+                                                </div>
+                                                <span class="font-medium">2 Adults, 0 Children</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-credit-card text-elegant-gold mr-2"></i>
+                                                    <span>Payment Method:</span>
+                                                </div>
+                                                <span class="font-medium">Credit Card</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-money-bill-wave text-elegant-gold mr-2"></i>
+                                                    <span>Total Amount:</span>
+                                                </div>
+                                                <span class="font-medium">Rp 2,475,000</span>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-check-circle text-elegant-gold mr-2"></i>
+                                                    <span>Status:</span>
+                                                </div>
+                                                <span class="font-medium text-green-600">Confirmed</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col md:flex-row gap-4 justify-center">
+                                <button id="download-receipt"
+                                    class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-3 transition-all duration-300 btn-elegant border border-elegant-gold/30 rounded-md flex items-center justify-center">
+                                    <i class="fas fa-download mr-2"></i> Download Receipt
+                                </button>
+                                <button id="view-booking"
+                                    class="bg-elegant-navy hover:bg-elegant-navy/80 text-elegant-gold px-6 py-3 transition-all duration-300 btn-elegant border border-elegant-gold/30 rounded-md flex items-center justify-center">
+                                    <i class="fas fa-eye mr-2"></i> View Booking
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="bg-elegant-cream p-8 border-t border-elegant-gold/30 flex justify-between">
+                    <button id="prev-step"
+                        class="bg-elegant-navy hover:bg-elegant-navy/80 text-elegant-gold px-6 py-3 transition-all duration-300 btn-elegant border border-elegant-gold/30 rounded-md hidden group">
+                        <div class="flex items-center">
+                            <i
+                                class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-300"></i>
+                            <span>Previous</span>
+                        </div>
+                    </button>
+                    <div class="ml-auto">
+                        <button id="next-step"
+                            class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-3 transition-all duration-300 btn-elegant border border-elegant-gold/30 rounded-md group">
+                            <div class="flex items-center">
+                                <span>Next</span>
+                                <i
+                                    class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform duration-300"></i>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Booking Stepper Modal Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all "Book Now" buttons
+            const bookNowButtons = document.querySelectorAll('a[data-lang-key="rooms_book"]');
+            const modal = document.getElementById('booking-stepper-modal');
+            const modalContent = document.getElementById('modal-content');
+            const closeModalBtn = document.getElementById('close-modal');
+            const modalBackdrop = document.getElementById('modal-backdrop');
+            const nextBtn = document.getElementById('next-step');
+            const prevBtn = document.getElementById('prev-step');
+            const progressBar = document.getElementById('progress-bar');
+
+            let currentStep = 1;
+            const totalSteps = 5;
+
+            // Open modal when "Book Now" is clicked
+            bookNowButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    modal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden'; // Prevent scrolling
+
+                    // Animate modal in
+                    setTimeout(() => {
+                        modalContent.classList.remove('scale-95', 'opacity-0');
+                        modalContent.classList.add('scale-100', 'opacity-100');
+                    }, 10);
+
+                    resetStepper();
+                });
+            });
+
+            // Close modal
+            closeModalBtn.addEventListener('click', closeModal);
+            modalBackdrop.addEventListener('click', closeModal);
+
+            function closeModal() {
+                // Animate modal out
+                modalContent.classList.remove('scale-100', 'opacity-100');
+                modalContent.classList.add('scale-95', 'opacity-0');
+
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = ''; // Re-enable scrolling
+                }, 300);
+            }
+
+            // Next step
+            nextBtn.addEventListener('click', function() {
+                if (currentStep < totalSteps) {
+                    // Validate current step (simplified for demo)
+                    if (validateStep(currentStep)) {
+                        goToStep(currentStep + 1);
+                    }
+                } else {
+                    // On last step, close modal when "Finish" is clicked
+                    closeModal();
+                }
+            });
+
+            // Previous step
+            prevBtn.addEventListener('click', function() {
+                if (currentStep > 1) {
+                    goToStep(currentStep - 1);
+                }
+            });
+
+            // Go to specific step
+            function goToStep(step) {
+                // Hide all steps with fade effect
+                const currentStepContent = document.getElementById(`step-${currentStep}`);
+                const nextStepContent = document.getElementById(`step-${step}`);
+
+                // Fade out current step
+                currentStepContent.style.opacity = '0';
+
+                setTimeout(() => {
+                    // Hide all steps
+                    document.querySelectorAll('.step-content').forEach(content => {
+                        content.classList.add('hidden');
+                    });
+
+                    // Show target step
+                    nextStepContent.classList.remove('hidden');
+
+                    // Fade in next step
+                    setTimeout(() => {
+                        nextStepContent.style.opacity = '1';
+                    }, 50);
+                }, 300);
+
+                // Update progress bar
+                const progressPercentage = ((step - 1) / (totalSteps - 1)) * 100;
+                progressBar.style.width = `${progressPercentage}%`;
+
+                // Update stepper circles
+                document.querySelectorAll('.stepper-circle').forEach((circle, index) => {
+                    if (index + 1 < step) {
+                        circle.classList.add('bg-elegant-burgundy', 'text-elegant-white');
+                        circle.classList.remove('bg-elegant-gold/30', 'text-elegant-navy');
+                        // Add check icon to completed steps
+                        circle.innerHTML = '<i class="fas fa-check"></i>';
+                    } else if (index + 1 === step) {
+                        circle.classList.add('bg-elegant-burgundy', 'text-elegant-white');
+                        circle.classList.remove('bg-elegant-gold/30', 'text-elegant-navy');
+                        circle.textContent = index + 1;
+                    } else {
+                        circle.classList.add('bg-elegant-gold/30', 'text-elegant-navy');
+                        circle.classList.remove('bg-elegant-burgundy', 'text-elegant-white');
+                        circle.textContent = index + 1;
+                    }
+                });
+
+                // Update stepper labels
+                document.querySelectorAll('.stepper-label span').forEach((label, index) => {
+                    if (index + 1 <= step) {
+                        label.classList.add('text-elegant-burgundy');
+                        label.classList.remove('text-elegant-charcoal');
+                    } else {
+                        label.classList.add('text-elegant-charcoal');
+                        label.classList.remove('text-elegant-burgundy');
+                    }
+                });
+
+                // Update buttons
+                if (step === 1) {
+                    prevBtn.classList.add('hidden');
+                } else {
+                    prevBtn.classList.remove('hidden');
+                }
+
+                if (step === totalSteps) {
+                    nextBtn.innerHTML =
+                        '<div class="flex items-center"><span>Finish</span><i class="fas fa-check ml-2 group-hover:translate-x-1 transition-transform duration-300"></i></div>';
+                } else {
+                    nextBtn.innerHTML =
+                        '<div class="flex items-center"><span>Next</span><i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform duration-300"></i></div>';
+                }
+
+                // Update current step
+                currentStep = step;
+
+                // Update summary information when going to step 2
+                if (step === 2) {
+                    updateBookingSummary();
+                }
+            }
+
+            // Validate step (simplified for demo)
+            function validateStep(step) {
+                // In a real application, you would add proper validation here
+                return true;
+            }
+
+            // Reset stepper to first step
+            function resetStepper() {
+                // Reset opacity for all steps
+                document.querySelectorAll('.step-content').forEach(content => {
+                    content.style.opacity = '1';
+                });
+
+                goToStep(1);
+            }
+
+            // Update booking summary
+            function updateBookingSummary() {
+                const checkIn = document.getElementById('check-in').value || '2025-05-10';
+                const checkOut = document.getElementById('check-out').value || '2025-05-15';
+                const adults = document.getElementById('adults').value || '2';
+                const children = document.getElementById('children').value || '0';
+
+                // Format dates
+                const checkInDate = new Date(checkIn);
+                const checkOutDate = new Date(checkOut);
+                const nights = Math.round((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)) || 5;
+
+                // Update summary
+                document.getElementById('summary-checkin').textContent = formatDate(checkInDate);
+                document.getElementById('summary-checkout').textContent = formatDate(checkOutDate);
+                document.getElementById('summary-nights').textContent = nights;
+                document.getElementById('summary-guests').textContent = `${adults} Adults, ${children} Children`;
+
+                // Calculate total
+                const pricePerNight = 450000; // Rp 450,000
+                const totalPrice = pricePerNight * nights;
+                const tax = totalPrice * 0.1;
+                const grandTotal = totalPrice + tax;
+
+                document.getElementById('summary-total').textContent = `Rp ${formatCurrency(grandTotal)}`;
+            }
+
+            // Format date
+            function formatDate(date) {
+                const options = {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                };
+                return date.toLocaleDateString('en-US', options);
+            }
+
+            // Format currency
+            function formatCurrency(amount) {
+                return new Intl.NumberFormat('id-ID').format(amount);
+            }
+
+            // Payment method toggle
+            const paymentMethods = document.querySelectorAll('input[name="payment-method"]');
+            const creditCardForm = document.getElementById('credit-card-form');
+
+            // Style the payment method radio buttons
+            document.querySelectorAll('.payment-option input').forEach(input => {
+                input.addEventListener('change', function() {
+                    // Remove active class from all labels
+                    document.querySelectorAll('.payment-label').forEach(label => {
+                        label.classList.remove('bg-elegant-cream/50',
+                            'border-elegant-burgundy');
+                    });
+
+                    // Add active class to selected label
+                    if (this.checked) {
+                        this.parentElement.querySelector('label').classList.add(
+                            'bg-elegant-cream/50', 'border-elegant-burgundy');
+
+                        // Show/hide credit card form
+                        if (this.id === 'payment-credit') {
+                            creditCardForm.classList.remove('hidden');
+                        } else {
+                            creditCardForm.classList.add('hidden');
+                        }
+                    }
+                });
+            });
+
+            // Trigger change event on the checked radio button to initialize styles
+            document.querySelector('.payment-option input:checked').dispatchEvent(new Event('change'));
+
+            // Download receipt (demo functionality)
+            const downloadReceiptBtn = document.getElementById('download-receipt');
+            downloadReceiptBtn.addEventListener('click', function() {
+                alert('Receipt download functionality would be implemented here.');
+            });
+
+            // View booking (demo functionality)
+            const viewBookingBtn = document.getElementById('view-booking');
+            viewBookingBtn.addEventListener('click', function() {
+                alert('View booking functionality would be implemented here.');
+            });
+        });
+    </script>
+
+    <style>
+        /* Custom styles for the booking stepper */
+        .step-content {
+            transition: opacity 0.3s ease;
+        }
+
+        /* Payment radio button styles */
+        .payment-option input:checked~label .payment-radio {
+            border-color: #5E1224;
+        }
+
+        .payment-option input:not(:checked)~label .payment-radio-dot {
+            display: none;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        #modal-content {
+            animation: slideInUp 0.5s ease forwards;
+        }
+    </style>
+
+    <script>
+        // Update all "Book Now" links to trigger the booking stepper
+        document.addEventListener('DOMContentLoaded', function() {
+            const bookNowLinks = document.querySelectorAll('a[data-lang-key="rooms_book"]');
+
+            bookNowLinks.forEach(link => {
+                link.setAttribute('href', '#');
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const bookingStepperModal = document.getElementById('booking-stepper-modal');
+                    if (bookingStepperModal) {
+                        bookingStepperModal.classList.remove('hidden');
+                        document.body.style.overflow = 'hidden'; // Prevent scrolling
+
+                        // Animate modal in
+                        const modalContent = document.getElementById('modal-content');
+                        setTimeout(() => {
+                            modalContent.classList.remove('scale-95', 'opacity-0');
+                            modalContent.classList.add('scale-100', 'opacity-100');
+                        }, 10);
+                    }
+                });
+            });
+        });
+    </script>
+    @livewireScripts
 </body>
 
 </html>

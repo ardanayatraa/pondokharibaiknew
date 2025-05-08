@@ -28,8 +28,8 @@ public function store(LoginRequest $request)
     session(['role' => $role]);
 
     $redirectTo = match ($role) {
-        'admin' => '/admin/dashboard',
-        'owner' => '/owner/dashboard',
+        'admin' => '/dashboard',
+        'owner' => '/dashboard',
         'guest' => '/',
         default => '/',
     };

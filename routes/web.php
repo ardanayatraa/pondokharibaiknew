@@ -2,76 +2,165 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\CustomAuthenticatedSessionController;
-use App\Mail\MailToParent;
 use Illuminate\Support\Facades\Mail;
-use App\Http\Controllers\GuestController;
 use App\Mail\MailToGuest;
-use Midtrans\Snap;
-use Midtrans\Config;
-use Illuminate\Http\Request;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\FacilityController;
+use App\Http\Controllers\GuestController;
+use App\Http\Controllers\OwnerController;
+use App\Http\Controllers\PembayaranController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReservasiController;
+use App\Http\Controllers\SeasonController;
+use App\Http\Controllers\VillaController;
+use App\Http\Controllers\VillaPricingController;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
 */
 
-Route::get('/', function () {
-    return view('landing-page');
-});
-
+Route::get('/', [BookingController::class, 'index'])->name('home.index');
 
 Route::post('/login', [CustomAuthenticatedSessionController::class, 'store'])->name('login');
-
 Route::post('/register', [GuestController::class, 'store'])->name('guests.store');
+Route::post('/logout', [CustomAuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-Route::post('/logout', [CustomAuthenticatedSessionController::class, 'destroy'])
-    ->name('logout');
+Route::middleware('auth')->get('/dashboard', function () {
+    $role = session('role');
+
+    return match ($role) {
+        'admin' => view('dashboard'),
+        'owner' => view('owner.dashboard'),
+        'guest' => view('guest.dashboard'),
+        default => abort(403),
+    };
+})->name('dashboard');
+
+// Admin Group
+Route::middleware(['auth', 'role:admin'])->group(function () {
+
+    Route::get('/laporan', fn() => view('laporan'))->name('laporan');
+
     // Admin
-// Admin
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', fn() => view('admin.dashboard'))->name('dashboard');
-    Route::get('/villa', fn() => view('admin.villa'))->name('villa');
-    Route::get('/season', fn() => view('admin.season'))->name('season');
-    Route::get('/harga-villa', fn() => view('admin.harga-villa'))->name('harga-villa');
-    Route::get('/akun-guest', fn() => view('admin.akun-guest'))->name('akun-guest');
-    Route::get('/reservasi', fn() => view('admin.reservasi'))->name('reservasi');
-    Route::get('/pembayaran', fn() => view('admin.pembayaran'))->name('pembayaran');
-    Route::get('/laporan', fn() => view('admin.laporan'))->name('laporan');
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/', [AdminController::class, 'index'])->name('index');
+        Route::get('/create', [AdminController::class, 'create'])->name('create');
+        Route::post('/', [AdminController::class, 'store'])->name('store');
+        Route::get('/{admin}', [AdminController::class, 'show'])->name('show');
+        Route::get('/{admin}/edit', [AdminController::class, 'edit'])->name('edit');
+        Route::put('/{admin}', [AdminController::class, 'update'])->name('update');
+        Route::delete('/{admin}', [AdminController::class, 'destroy'])->name('destroy');
+    });
+
+    // Facility
+    Route::prefix('facility')->name('facility.')->group(function () {
+        Route::get('/', [FacilityController::class, 'index'])->name('index');
+        Route::get('/create', [FacilityController::class, 'create'])->name('create');
+        Route::post('/', [FacilityController::class, 'store'])->name('store');
+        Route::get('/{facility}', [FacilityController::class, 'show'])->name('show');
+        Route::get('/{facility}/edit', [FacilityController::class, 'edit'])->name('edit');
+        Route::put('/{facility}', [FacilityController::class, 'update'])->name('update');
+        Route::delete('/{facility}', [FacilityController::class, 'destroy'])->name('destroy');
+    });
+
+    // Guest
+    Route::prefix('akun-guest')->name('akun-guest.')->group(function () {
+        Route::get('/', [GuestController::class, 'index'])->name('index');
+        Route::get('/create', [GuestController::class, 'create'])->name('create');
+        Route::post('/', [GuestController::class, 'store'])->name('store');
+        Route::get('/{akun_guest}', [GuestController::class, 'show'])->name('show');
+        Route::get('/{akun_guest}/edit', [GuestController::class, 'edit'])->name('edit');
+        Route::put('/{akun_guest}', [GuestController::class, 'update'])->name('update');
+        Route::delete('/{akun_guest}', [GuestController::class, 'destroy'])->name('destroy');
+    });
+
+    // Owner
+    Route::prefix('owner')->name('owner.')->group(function () {
+        Route::get('/', [OwnerController::class, 'index'])->name('index');
+        Route::get('/create', [OwnerController::class, 'create'])->name('create');
+        Route::post('/', [OwnerController::class, 'store'])->name('store');
+        Route::get('/{owner}', [OwnerController::class, 'show'])->name('show');
+        Route::get('/{owner}/edit', [OwnerController::class, 'edit'])->name('edit');
+        Route::put('/{owner}', [OwnerController::class, 'update'])->name('update');
+        Route::delete('/{owner}', [OwnerController::class, 'destroy'])->name('destroy');
+    });
+
+    // Pembayaran
+    Route::prefix('pembayaran')->name('pembayaran.')->group(function () {
+        Route::get('/', [PembayaranController::class, 'index'])->name('index');
+        Route::get('/create', [PembayaranController::class, 'create'])->name('create');
+        Route::post('/', [PembayaranController::class, 'store'])->name('store');
+        Route::get('/{pembayaran}', [PembayaranController::class, 'show'])->name('show');
+        Route::get('/{pembayaran}/edit', [PembayaranController::class, 'edit'])->name('edit');
+        Route::put('/{pembayaran}', [PembayaranController::class, 'update'])->name('update');
+        Route::delete('/{pembayaran}', [PembayaranController::class, 'destroy'])->name('destroy');
+    });
+
+    // Report
+    Route::prefix('report')->name('report.')->group(function () {
+        Route::get('/', [ReportController::class, 'index'])->name('index');
+        Route::get('/create', [ReportController::class, 'create'])->name('create');
+        Route::post('/', [ReportController::class, 'store'])->name('store');
+        Route::get('/{report}', [ReportController::class, 'show'])->name('show');
+        Route::get('/{report}/edit', [ReportController::class, 'edit'])->name('edit');
+        Route::put('/{report}', [ReportController::class, 'update'])->name('update');
+        Route::delete('/{report}', [ReportController::class, 'destroy'])->name('destroy');
+    });
+
+    // Reservasi
+    Route::prefix('reservasi')->name('reservasi.')->group(function () {
+        Route::get('/', [ReservasiController::class, 'index'])->name('index');
+        Route::get('/create', [ReservasiController::class, 'create'])->name('create');
+        Route::post('/', [ReservasiController::class, 'store'])->name('store');
+        Route::get('/{reservasi}', [ReservasiController::class, 'show'])->name('show');
+        Route::get('/{reservasi}/edit', [ReservasiController::class, 'edit'])->name('edit');
+        Route::put('/{reservasi}', [ReservasiController::class, 'update'])->name('update');
+        Route::delete('/{reservasi}', [ReservasiController::class, 'destroy'])->name('destroy');
+    });
+
+    // Season
+    Route::prefix('season')->name('season.')->group(function () {
+        Route::get('/', [SeasonController::class, 'index'])->name('index');
+        Route::get('/create', [SeasonController::class, 'create'])->name('create');
+        Route::post('/', [SeasonController::class, 'store'])->name('store');
+        Route::get('/{season}', [SeasonController::class, 'show'])->name('show');
+        Route::get('/{season}/edit', [SeasonController::class, 'edit'])->name('edit');
+        Route::put('/{season}', [SeasonController::class, 'update'])->name('update');
+        Route::delete('/{season}', [SeasonController::class, 'destroy'])->name('destroy');
+    });
+
+    // Villa
+    Route::prefix('villa')->name('villa.')->group(function () {
+        Route::get('/', [VillaController::class, 'index'])->name('index');
+        Route::get('/create', [VillaController::class, 'create'])->name('create');
+        Route::post('/', [VillaController::class, 'store'])->name('store');
+        Route::get('/{villa}', [VillaController::class, 'show'])->name('show');
+        Route::get('/{villa}/edit', [VillaController::class, 'edit'])->name('edit');
+        Route::put('/{villa}', [VillaController::class, 'update'])->name('update');
+        Route::delete('/{villa}', [VillaController::class, 'destroy'])->name('destroy');
+    });
+
+    // Harga Villa
+    Route::prefix('harga-villa')->name('harga-villa.')->group(function () {
+        Route::get('/', [VillaPricingController::class, 'index'])->name('index');
+        Route::get('/create', [VillaPricingController::class, 'create'])->name('create');
+        Route::post('/', [VillaPricingController::class, 'store'])->name('store');
+        Route::get('/{harga_villa}', [VillaPricingController::class, 'show'])->name('show');
+        Route::get('/{harga_villa}/edit', [VillaPricingController::class, 'edit'])->name('edit');
+        Route::put('/{harga_villa}', [VillaPricingController::class, 'update'])->name('update');
+        Route::delete('/{harga_villa}', [VillaPricingController::class, 'destroy'])->name('destroy');
+    });
 });
 
-
-
-// Owner
-Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->group(function () {
-    Route::get('/dashboard', fn() => view('owner.dashboard'))->name('dashboard');
-    Route::get('/laporan', fn() => view('owner.laporan'))->name('laporan');
-    Route::get('/villa', fn() => view('owner.villa'))->name('villa'); // read-only view
-});
-
-
-
-// Guest
-Route::middleware(['auth', 'role:guest'])->group(function () {
-    // Route::get('/dashboard', fn() => view('guest.dashboard'))->name('dashboard');
-    Route::get('/villa', fn() => view('guest.villa'))->name('villa');
-    Route::get('/reservasi', fn() => view('guest.reservasi'))->name('reservasi');
-    Route::get('/pembayaran', fn() => view('guest.pembayaran'))->name('pembayaran');
-    Route::get('/pembayaran', fn() => view('guest.pembayaran'))->name('reservasi.create');
-});
-
+// Dummy mail tester
 Route::get('/send', function () {
-    // Dummy data untuk testing
-    $nama    = 'Budi Santoso';
-    $email   = 'madaryadev@gmail.com';
+    $nama  = 'Budi Santoso';
+    $email = 'madaryadev@gmail.com';
 
-    // Kirim email menggunakan MailToGuest yang view-nya sudah berisi dummy
     Mail::to($email)->send(new MailToGuest($nama));
 
     return "Dummy email telah dikirim ke {$email} dengan nama “{$nama}”.";
-});
+})->name('mail.test');

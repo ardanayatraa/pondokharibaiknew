@@ -37,7 +37,10 @@ class ReservasiTable extends DataTableComponent
             Column::make("Total amount", "total_amount")
                 ->sortable(),
                 Column::make("Aksi")
-                ->label(fn ($row) => view('components.link-action', ['id' => $row->id_reservation]))
+                ->label(fn ($row) => view('components.link-action', [
+                    'id' => $row->id_reservation,
+                    'routeName' => 'reservasi'
+                ]))
                 ->html(),
         ];
     }
