@@ -1,4 +1,4 @@
-{{-- resources/views/villa-pricing/create.blade.php --}}
+{{-- resources/views/harga-villa/create.blade.php --}}
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-sm text-gray-800">Tambah Villa Pricing</h2>

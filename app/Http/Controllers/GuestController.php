@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Guest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class GuestController extends Controller
@@ -74,9 +75,10 @@ class GuestController extends Controller
      */
     public function update(Request $request, Guest $guest)
     {
+
         $rules = [
-            'username'        => 'required|string|max:255|unique:tbl_guest,username,' . $guest->id_guest . ',id_guest',
-            'email'           => 'required|email|unique:tbl_guest,email,'     . $guest->id_guest . ',id_guest',
+            'username'        => 'required',
+            'email'           => 'required',
             'full_name'       => 'required|string|max:255',
             'address'         => 'nullable|string',
             'phone_number'    => 'nullable|string|max:20',
@@ -101,6 +103,10 @@ class GuestController extends Controller
 
         $guest->update($validated);
 
+
+        if(Auth::guard('guest')->user()){
+        return redirect('/');
+        }
         return redirect()
             ->route('guest.index')
             ->with('success', 'Guest berhasil diupdate.');

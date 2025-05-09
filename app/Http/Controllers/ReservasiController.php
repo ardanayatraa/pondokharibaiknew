@@ -30,11 +30,10 @@ class ReservasiController extends Controller
     {
         $guests            = Guest::all();
         $villas            = Villa::all();
-        $cekKetersediaans  = CekKetersediaan::all();
         $villaPricings     = VillaPricing::all();
 
         return view('reservasi.create', compact(
-            'guests', 'villas', 'cekKetersediaans', 'villaPricings'
+            'guests', 'villas',  'villaPricings'
         ));
     }
 
@@ -46,7 +45,6 @@ class ReservasiController extends Controller
         $validated = $request->validate([
             'guest_id'             => 'required|exists:tbl_guest,id_guest',
             'villa_id'             => 'required|exists:tbl_villa,id_villa',
-            'cek_ketersediaan_id'  => 'required|exists:tbl_cek_ketersediaan,id_cek_ketersediaan',
             'villa_pricing_id'     => 'required|exists:tbl_villa_pricing,id_villa_pricing',
             'start_date'           => 'required|date',
             'end_date'             => 'required|date|after_or_equal:start_date',
@@ -92,7 +90,7 @@ class ReservasiController extends Controller
         $validated = $request->validate([
             'guest_id'             => 'required|exists:tbl_guest,id_guest',
             'villa_id'             => 'required|exists:tbl_villa,id_villa',
-            'cek_ketersediaan_id'  => 'required|exists:tbl_cek_ketersediaan,id_cek_ketersediaan',
+
             'villa_pricing_id'     => 'required|exists:tbl_villa_pricing,id_villa_pricing',
             'start_date'           => 'required|date',
             'end_date'             => 'required|date|after_or_equal:start_date',

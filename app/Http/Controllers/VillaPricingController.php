@@ -17,7 +17,7 @@ class VillaPricingController extends Controller
         $pricings = VillaPricing::orderBy('created_at', 'desc')
            ->get();
 
-        return view('villa-pricing.index', compact('pricings'));
+        return view('harga-villa.index', compact('pricings'));
     }
 
     /**
@@ -28,7 +28,7 @@ class VillaPricingController extends Controller
         $villas  = Villa::all();
         $seasons = Season::orderBy('tgl_mulai_season','desc')->get();
 
-        return view('villa-pricing.create', compact('villas', 'seasons'));
+        return view('harga-villa.create', compact('villas', 'seasons'));
     }
 
     /**
@@ -51,7 +51,7 @@ class VillaPricingController extends Controller
         VillaPricing::create($validated);
 
         return redirect()
-            ->route('villa-pricing.index')
+            ->route('harga-villa.index')
             ->with('success', 'VillaPricing berhasil dibuat.');
     }
 
@@ -60,25 +60,27 @@ class VillaPricingController extends Controller
      */
     public function show(VillaPricing $villa_pricing)
     {
-        return view('villa-pricing.show', compact('villa_pricing'));
+        return view('harga-villa.show', compact('villa_pricing'));
     }
 
     /**
      * Tampilkan form edit villa pricing.
      */
-    public function edit(VillaPricing $villa_pricing)
+    public function edit(VillaPricing $harga_villa)
     {
+        $villa_pricing=$harga_villa;
         $villas  = Villa::all();
         $seasons = Season::orderBy('tgl_mulai_season','desc')->get();
 
-        return view('villa-pricing.edit', compact('villa_pricing', 'villas', 'seasons'));
+        return view('harga-villa.edit', compact('villa_pricing', 'villas', 'seasons'));
     }
 
     /**
      * Update data villa pricing.
      */
-    public function update(Request $request, VillaPricing $villa_pricing)
+    public function update(Request $request, VillaPricing $harga_villa)
     {
+        $villa_pricing=$harga_villa;
         $validated = $request->validate([
             'villa_id'        => 'required|exists:tbl_villa,id_villa',
             'season_id'       => 'required|exists:tbl_season,id_season',
@@ -94,7 +96,7 @@ class VillaPricingController extends Controller
         $villa_pricing->update($validated);
 
         return redirect()
-            ->route('villa-pricing.index')
+            ->route('harga-villa.index')
             ->with('success', 'VillaPricing berhasil diupdate.');
     }
 
@@ -106,7 +108,7 @@ class VillaPricingController extends Controller
         $villa_pricing->delete();
 
         return redirect()
-            ->route('villa-pricing.index')
+            ->route('harga-villa.index')
             ->with('success', 'VillaPricing berhasil dihapus.');
     }
 }

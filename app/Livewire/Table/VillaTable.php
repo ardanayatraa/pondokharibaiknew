@@ -22,7 +22,7 @@ class VillaTable extends DataTableComponent
 
     public function builder(): Builder
     {
-        return Villa::with('harga'); // penting: load relasi 'harga'
+        return Villa::query(); // penting: load relasi 'harga'
     }
 
     public function showFacility($id)

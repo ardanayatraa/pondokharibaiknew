@@ -45,21 +45,6 @@
                             @enderror
                         </div>
 
-                        <div>
-                            <x-label for="cek_ketersediaan_id" value="Cek Ketersediaan" />
-                            <select id="cek_ketersediaan_id" name="cek_ketersediaan_id"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
-                                <option value="">-- Pilih --</option>
-                                @foreach ($cekKetersediaans as $c)
-                                    <option value="{{ $c->id_cek_ketersediaan }}" @selected(old('cek_ketersediaan_id') == $c->id_cek_ketersediaan)>
-                                        {{ $c->date }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('cek_ketersediaan_id')
-                                <span class="text-sm text-red-600">{{ $message }}</span>
-                            @enderror
-                        </div>
 
                         <div>
                             <x-label for="villa_pricing_id" value="Villa Pricing" />
@@ -97,12 +82,19 @@
 
                         <div>
                             <x-label for="status" value="Status" />
-                            <x-input id="status" name="status" type="text" class="mt-1 block w-full"
-                                :value="old('status')" required />
+                            <select id="status" name="status"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                                <option value="">-- Pilih Status --</option>
+                                <option value="pending" @selected(old('status') == 'pending')>Pending</option>
+                                <option value="confirmed" @selected(old('status') == 'confirmed')>Confirmed</option>
+                                <option value="cancelled" @selected(old('status') == 'cancelled')>Cancelled</option>
+                                <option value="reschedule" @selected(old('status') == 'reschedule')>Reschedule</option>
+                            </select>
                             @error('status')
                                 <span class="text-sm text-red-600">{{ $message }}</span>
                             @enderror
                         </div>
+
 
                         <div>
                             <x-label for="total_amount" value="Total Amount" />

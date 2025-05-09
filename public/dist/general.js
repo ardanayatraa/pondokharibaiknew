@@ -152,8 +152,7 @@ const bookingData = {
     const res = await fetch(`/villa/${id}`);
     bookingData.room = await res.json();
     document.getElementById('selected-room-name').textContent = bookingData.room.name;
-    document.getElementById('selected-room-price').textContent =
-      `Rp ${formatCurrency(bookingData.room.price)} / night`;
+
   }
 
   // ----------------------------------
@@ -307,6 +306,8 @@ const bookingData = {
     document.getElementById('room-description').textContent = bookingData.room.description;
     document.getElementById('room-capacity').textContent = `Up to ${bookingData.room.capacity} people`;
     document.getElementById('room-beds').textContent = bookingData.room.beds;
+    document.getElementById('room-image').src = bookingData.room.picture;
+
 
     // Booking Summary — Stay Details
     document.getElementById('summary-checkin').textContent = bookingData.checkIn;

@@ -17,7 +17,7 @@
     <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}">
     </script>
 
-
+    @livewireStyles
 
     <script>
         tailwind.config = {
@@ -298,20 +298,48 @@
                 <nav class="hidden lg:flex items-center space-x-8">
                     <a href="#home"
                         class="text-elegant-gold hover:text-elegant-white transition-colors duration-300 font-medium">Home</a>
-                    <a href="#about"
-                        class="text-elegant-gold hover:text-elegant-white transition-colors duration-300 font-medium">About</a>
+
                     <a href="#rooms"
                         class="text-elegant-gold hover:text-elegant-white transition-colors duration-300 font-medium">Rooms</a>
                     <a href="#amenities"
                         class="text-elegant-gold hover:text-elegant-white transition-colors duration-300 font-medium">Amenities</a>
                     <a href="#location"
                         class="text-elegant-gold hover:text-elegant-white transition-colors duration-300 font-medium">Location</a>
-                    <a href="#"
-                        class="bg-elegant-burgundy hover:bg-elegant-burgundy/80
-                              text-elegant-white px-6 py-2 transition-all duration-300
-                              btn-elegant border border-elegant-gold">
-                        Login
-                    </a>
+
+                    @php
+                        $isGuest = Auth::guard('guest')->check();
+                        $user = Auth::guard('guest')->user();
+                        $isOwner = Auth::guard('owner')->check();
+                        $isAdmin = Auth::guard('admin')->check();
+                    @endphp
+
+                    <div class="relative inline-block">
+                        @if ($isGuest)
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit"
+                                    class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-2 rounded transition">
+                                    Logout
+                                </button>
+                            </form>
+                        @elseif($isOwner)
+                            <a href="{{ route('owner.dashboard') }}"
+                                class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-2 rounded transition">
+                                Dashboard Owner
+                            </a>
+                        @elseif($isAdmin)
+                            <a href="{{ route('admin.dashboard') }}"
+                                class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-2 rounded transition">
+                                Dashboard Admin
+                            </a>
+                        @else
+                            <a href="{{ route('login') }}"
+                                class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-2 rounded transition">
+                                Login
+                            </a>
+                        @endif
+                    </div>
+
                 </nav>
             </div>
         </div>
@@ -322,20 +350,47 @@
             <div class="container mx-auto px-4 py-4 flex flex-col space-y-4">
                 <a href="#home"
                     class="text-elegant-gold hover:text-elegant-white transition-colors duration-300 font-medium py-2 border-b border-elegant-gold/20">Home</a>
-                <a href="#about"
-                    class="text-elegant-gold hover:text-elegant-white transition-colors duration-300 font-medium py-2 border-b border-elegant-gold/20">About</a>
+
                 <a href="#rooms"
                     class="text-elegant-gold hover:text-elegant-white transition-colors duration-300 font-medium py-2 border-b border-elegant-gold/20">Rooms</a>
                 <a href="#amenities"
                     class="text-elegant-gold hover:text-elegant-white transition-colors duration-300 font-medium py-2 border-b border-elegant-gold/20">Amenities</a>
                 <a href="#location"
                     class="text-elegant-gold hover:text-elegant-white transition-colors duration-300 font-medium py-2 border-b border-elegant-gold/20">Location</a>
-                <a href="#"
-                    class="bg-elegant-burgundy hover:bg-elegant-burgundy/80
-                          text-elegant-white px-6 py-2 transition-all duration-300
-                          btn-elegant border border-elegant-gold">
-                    Login
-                </a>
+                @php
+                    $isGuest = Auth::guard('guest')->check();
+                    $user = Auth::guard('guest')->user();
+                    $isOwner = Auth::guard('owner')->check();
+                    $isAdmin = Auth::guard('admin')->check();
+                @endphp
+
+                <div class="relative inline-block">
+                    @if ($isGuest)
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit"
+                                class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-2 rounded transition">
+                                Logout
+                            </button>
+                        </form>
+                    @elseif($isOwner)
+                        <a href="{{ route('owner.dashboard') }}"
+                            class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-2 rounded transition">
+                            Dashboard Owner
+                        </a>
+                    @elseif($isAdmin)
+                        <a href="{{ route('admin.dashboard') }}"
+                            class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-2 rounded transition">
+                            Dashboard Admin
+                        </a>
+                    @else
+                        <a href="{{ route('login') }}"
+                            class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-2 rounded transition">
+                            Login
+                        </a>
+                    @endif
+                </div>
+
             </div>
         </div>
     </header>
@@ -380,11 +435,17 @@
                     <div
                         class="bg-elegant-white border border-elegant-gold/30 overflow-hidden shadow-md transform hover:scale-105 transition-all duration-500 animate-hidden elegant-card">
                         <div class="relative">
-                            <div class="bg-family-bungalow bg-cover bg-center h-72"></div>
+                            <div class="h-72 overflow-hidden rounded-lg shadow">
+                                <img src="{{ asset('storage/' . $item->picture) }}" alt="Villa"
+                                    class="w-full h-72 object-cover rounded">
+
+                            </div>
+
 
                         </div>
                         <div class="p-8">
-                            <h3 class="font-cormorant text-2xl font-bold text-elegant-burgundy mb-2">{{ $item->name }}
+                            <h3 class="font-cormorant text-2xl font-bold text-elegant-burgundy mb-2">
+                                {{ $item->name }}
                             </h3>
                             <div class="flex items-center mb-4">
 
@@ -394,20 +455,9 @@
                                 <span class="text-elegant-charcoal">Maximum capacity {{ $item->capacity }}
                                     people</span>
                             </div>
-                            <ul class="mb-6 space-y-2 text-elegant-charcoal">
-                                <li class="flex items-center">
-                                    <i class="fas fa-check text-elegant-gold mr-2"></i>
-                                    <span>AC & Flat Screen TV</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-check text-elegant-gold mr-2"></i>
-                                    <span>Private Balcony</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <i class="fas fa-check text-elegant-gold mr-2"></i>
-                                    <span>Private Bathroom</span>
-                                </li>
-                            </ul>
+                            <p class="mb-6 space-y-2 text-elegant-charcoal">
+                                {{ $item->description }}
+                            </p>
                             <button
                                 class="book-now-btn block text-center bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-3 transition-all duration-300 btn-elegant w-full"
                                 data-room-id="{{ $item->id_villa }}" data-room-name="{{ $item->name }}"
@@ -420,6 +470,329 @@
             </div>
         </div>
     </section>
+
+
+    <section id="amenities" class="py-24 bg-elegant-burgundy text-elegant-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16 animate-hidden">
+                <span class="text-elegant-gold text-sm uppercase tracking-widest">Services</span>
+                <h2 class="font-cormorant text-4xl md:text-5xl font-bold mb-4 tracking-wide text-elegant-white"
+                    data-lang-key="amenities_title">Premium Amenities</h2>
+                <div class="decorative-line w-40 mx-auto mt-4"></div>
+                <p class="text-lg mt-6 max-w-3xl mx-auto text-elegant-white/80" data-lang-key="amenities_subtitle">
+                    Enjoy our world-class facilities designed for your comfort and relaxation</p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
+                <!-- Amenity 1 -->
+                <div
+                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden border border-elegant-gold/30 subtle-shadow">
+                    <div
+                        class="bg-elegant-gold/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-gold">
+                        <i class="fas fa-swimming-pool text-2xl text-elegant-gold"></i>
+                    </div>
+                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-gold"
+                        data-lang-key="amenity1_title">Outdoor Pool</h3>
+                    <p class="text-elegant-white/70 text-sm" data-lang-key="amenity1_desc">Enjoy swimming with
+                        beautiful natural views</p>
+                </div>
+
+                <!-- Amenity 2 -->
+                <div
+                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-100 border border-elegant-gold/30 subtle-shadow">
+                    <div
+                        class="bg-elegant-gold/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-gold">
+                        <i class="fas fa-smoking-ban text-2xl text-elegant-gold"></i>
+                    </div>
+                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-gold"
+                        data-lang-key="amenity2_title">Non-Smoking Rooms</h3>
+                    <p class="text-elegant-white/70 text-sm" data-lang-key="amenity2_desc">Fresh air for your comfort
+                    </p>
+                </div>
+
+                <!-- Amenity 3 -->
+                <div
+                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-200 border border-elegant-gold/30 subtle-shadow">
+                    <div
+                        class="bg-elegant-gold/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-gold">
+                        <i class="fas fa-plane text-2xl text-elegant-gold"></i>
+                    </div>
+                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-gold"
+                        data-lang-key="amenity3_title">Airport Shuttle</h3>
+                    <p class="text-elegant-white/70 text-sm" data-lang-key="amenity3_desc">Exclusive transportation
+                        service</p>
+                </div>
+
+                <!-- Amenity 4 -->
+                <div
+                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-300 border border-elegant-gold/30 subtle-shadow">
+                    <div
+                        class="bg-elegant-gold/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-gold">
+                        <i class="fas fa-spa text-2xl text-elegant-gold"></i>
+                    </div>
+                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-gold"
+                        data-lang-key="amenity4_title">Spa & Wellness Center</h3>
+                    <p class="text-elegant-white/70 text-sm" data-lang-key="amenity4_desc">Premium relaxation and
+                        treatments</p>
+                </div>
+
+                <!-- Amenity 5 -->
+                <div
+                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-400 border border-elegant-gold/30 subtle-shadow">
+                    <div
+                        class="bg-elegant-gold/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-gold">
+                        <i class="fas fa-parking text-2xl text-elegant-gold"></i>
+                    </div>
+                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-gold"
+                        data-lang-key="amenity5_title">Free Parking</h3>
+                    <p class="text-elegant-white/70 text-sm" data-lang-key="amenity5_desc">Safe and convenient parking
+                    </p>
+                </div>
+
+                <!-- Amenity 6 -->
+                <div
+                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden border border-elegant-gold/30 subtle-shadow">
+                    <div
+                        class="bg-elegant-gold/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-gold">
+                        <i class="fas fa-concierge-bell text-2xl text-elegant-gold"></i>
+                    </div>
+                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-gold"
+                        data-lang-key="amenity6_title">Room Service</h3>
+                    <p class="text-elegant-white/70 text-sm" data-lang-key="amenity6_desc">24-hour service for your
+                        convenience</p>
+                </div>
+
+                <!-- Amenity 7 -->
+                <div
+                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-100 border border-elegant-gold/30 subtle-shadow">
+                    <div
+                        class="bg-elegant-gold/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-gold">
+                        <i class="fas fa-wifi text-2xl text-elegant-gold"></i>
+                    </div>
+                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-gold"
+                        data-lang-key="amenity7_title">Free WiFi</h3>
+                    <p class="text-elegant-white/70 text-sm" data-lang-key="amenity7_desc">Fast internet connection
+                        throughout</p>
+                </div>
+
+                <!-- Amenity 8 -->
+                <div
+                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-200 border border-elegant-gold/30 subtle-shadow">
+                    <div
+                        class="bg-elegant-gold/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-gold">
+                        <i class="fas fa-utensils text-2xl text-elegant-gold"></i>
+                    </div>
+                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-gold"
+                        data-lang-key="amenity8_title">Restaurant</h3>
+                    <p class="text-elegant-white/70 text-sm" data-lang-key="amenity8_desc">Indonesian and
+                        international cuisine</p>
+                </div>
+
+                <!-- Amenity 9 -->
+                <div
+                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-300 border border-elegant-gold/30 subtle-shadow">
+                    <div
+                        class="bg-elegant-gold/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-gold">
+                        <i class="fas fa-users text-2xl text-elegant-gold"></i>
+                    </div>
+                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-gold"
+                        data-lang-key="amenity9_title">Family Rooms</h3>
+                    <p class="text-elegant-white/70 text-sm" data-lang-key="amenity9_desc">Comfortable accommodation
+                        for families</p>
+                </div>
+
+                <!-- Amenity 10 -->
+                <div
+                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-400 border border-elegant-gold/30 subtle-shadow">
+                    <div
+                        class="bg-elegant-gold/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-gold">
+                        <i class="fas fa-coffee text-2xl text-elegant-gold"></i>
+                    </div>
+                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-gold"
+                        data-lang-key="amenity10_title">Breakfast</h3>
+                    <p class="text-elegant-white/70 text-sm" data-lang-key="amenity10_desc">Continental, Asian, and
+                        vegetarian options</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonial Section -->
+    <section class="py-24 bg-elegant-cream bg-pattern-bg">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16 animate-hidden">
+                <span class="text-elegant-gold text-sm uppercase tracking-widest">Reviews</span>
+                <h2 class="font-cormorant text-4xl md:text-5xl font-bold text-elegant-burgundy mb-4 tracking-wide"
+                    data-lang-key="testimonials_title">Guest Experiences</h2>
+                <div class="decorative-line w-40 mx-auto mt-4"></div>
+                <p class="text-lg mt-6 max-w-3xl mx-auto text-elegant-charcoal" data-lang-key="testimonials_subtitle">
+                    What our guests say about their stay at Pondok Hari Baik</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <!-- Testimonial 1 -->
+                <div class="bg-elegant-white p-8 shadow-md animate-hidden border border-elegant-gold/30 subtle-shadow">
+                    <div class="flex items-center mb-6">
+                        <div class="text-elegant-gold">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="ml-auto text-sm text-elegant-gray">June 2025</div>
+                    </div>
+                    <p class="text-lg mb-6 italic font-light text-elegant-charcoal" data-lang-key="testimonial1_text">
+                        "An amazing stay experience. Beautiful views, comfortable rooms, and friendly service. We will
+                        definitely be back!"</p>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-gray-300 rounded-full overflow-hidden">
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Guest"
+                                class="w-full h-full object-cover">
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="font-medium text-elegant-burgundy">Sarah Johnson</h4>
+                            <p class="text-sm text-elegant-gray">Jakarta, Indonesia</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 2 -->
+                <div
+                    class="bg-elegant-white p-8 shadow-md animate-hidden delay-200 border border-elegant-gold/30 subtle-shadow">
+                    <div class="flex items-center mb-6">
+                        <div class="text-elegant-gold">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="ml-auto text-sm text-elegant-gray">May 2025</div>
+                    </div>
+                    <p class="text-lg mb-6 italic font-light text-elegant-charcoal" data-lang-key="testimonial2_text">
+                        "The perfect place for a family vacation. Clean pool, delicious food, and strategic location
+                        near the beach made our holiday very enjoyable."</p>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-gray-300 rounded-full overflow-hidden">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Guest"
+                                class="w-full h-full object-cover">
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="font-medium text-elegant-burgundy">David Chen</h4>
+                            <p class="text-sm text-elegant-gray">Singapore</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 3 -->
+                <div
+                    class="bg-elegant-white p-8 shadow-md animate-hidden delay-300 border border-elegant-gold/30 subtle-shadow">
+                    <div class="flex items-center mb-6">
+                        <div class="text-elegant-gold">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <div class="ml-auto text-sm text-elegant-gray">April 2025</div>
+                    </div>
+                    <p class="text-lg mb-6 italic font-light text-elegant-charcoal" data-lang-key="testimonial3_text">
+                        "Very helpful and friendly staff. Clean and comfortable rooms. Delicious breakfast with many
+                        choices. Highly recommended!"</p>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-gray-300 rounded-full overflow-hidden">
+                            <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Guest"
+                                class="w-full h-full object-cover">
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="font-medium text-elegant-burgundy">Emma Wilson</h4>
+                            <p class="text-sm text-elegant-gray">Melbourne, Australia</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Location Section -->
+    <section id="location" class="py-24 bg-elegant-navy text-elegant-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16 animate-hidden">
+                <span class="text-elegant-gold text-sm uppercase tracking-widest">Find Us</span>
+                <h2 class="font-cormorant text-4xl md:text-5xl font-bold text-elegant-gold mb-4 tracking-wide"
+                    data-lang-key="location_title">Our Location</h2>
+                <div class="decorative-line w-40 mx-auto mt-4"></div>
+                <p class="text-lg mt-6 max-w-3xl mx-auto" data-lang-key="location_subtitle">Strategically located with
+                    easy access to Bali's most beautiful beaches</p>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-12">
+                <div class="lg:w-1/2 animate-hidden">
+                    <div class="overflow-hidden shadow-md h-96 border border-elegant-gold/30 subtle-shadow">
+                        <iframe
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3945.2170366854!2d114.97!3d-8.55!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zOMKwMzMnMDAuMCJTIDExNMKwNTgnMTIuMCJF!5e0!3m2!1sen!2sid!4v1617000000000!5m2!1sen!2sid"
+                            width="100%" height="100%" style="border:0;" allowfullscreen=""
+                            loading="lazy"></iframe>
+                    </div>
+                </div>
+
+                <div class="lg:w-1/2 animate-hidden delay-200">
+                    <div class="bg-elegant-burgundy/90 p-8 shadow-md h-full border border-elegant-gold/30">
+                        <h3 class="font-cormorant text-3xl font-bold text-elegant-gold mb-6">Pondok Hari Baik</h3>
+                        <p class="text-lg mb-6" data-lang-key="location_address">Jalan Raya Denpasar - Gilimanuk,
+                            Tabanan, Bali, Indonesia, 82162</p>
+                        <p class="text-lg mb-8" data-lang-key="location_description">Located in a strategic location
+                            with easy access to various popular tourist attractions in Bali.</p>
+
+                        <div class="space-y-4">
+                            <div class="flex items-center">
+                                <div
+                                    class="w-10 h-10 bg-elegant-gold/20 rounded-full flex items-center justify-center mr-4">
+                                    <i class="fas fa-umbrella-beach text-elegant-gold"></i>
+                                </div>
+                                <span data-lang-key="location_bonian">Bonian Beach: < 1 km</span>
+                            </div>
+
+                            <div class="flex items-center">
+                                <div
+                                    class="w-10 h-10 bg-elegant-gold/20 rounded-full flex items-center justify-center mr-4">
+                                    <i class="fas fa-umbrella-beach text-elegant-gold"></i>
+                                </div>
+                                <span data-lang-key="location_balian">Balian Beach: 2 km</span>
+                            </div>
+
+                            <div class="flex items-center">
+                                <div
+                                    class="w-10 h-10 bg-elegant-gold/20 rounded-full flex items-center justify-center mr-4">
+                                    <i class="fas fa-umbrella-beach text-elegant-gold"></i>
+                                </div>
+                                <span data-lang-key="location_batulumbang">Batulumbang Beach: 2.2 km</span>
+                            </div>
+
+                            <div class="flex items-center">
+                                <div
+                                    class="w-10 h-10 bg-elegant-gold/20 rounded-full flex items-center justify-center mr-4">
+                                    <i class="fas fa-landmark text-elegant-gold"></i>
+                                </div>
+                                <span data-lang-key="location_tanah_lot">Tanah Lot Temple: 36 km</span>
+                            </div>
+
+                            <div class="flex items-center">
+                                <div
+                                    class="w-10 h-10 bg-elegant-gold/20 rounded-full flex items-center justify-center mr-4">
+                                    <i class="fas fa-plane-departure text-elegant-gold"></i>
+                                </div>
+                                <span data-lang-key="location_airport">Ngurah Rai International Airport: 57 km</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
 
     <!-- CTA Section -->
     <section
@@ -649,38 +1022,45 @@
                                 </div>
                             </div>
 
-                            <div class="mt-8 bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20">
-                                <div class="flex items-center mb-4">
+                            <div
+                                class="mt-8 bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20 space-y-6">
+
+                                <!-- Header -->
+                                <div class="flex items-center">
                                     <div
-                                        class="w-8 h-8 rounded-full bg-elegant-burgundy/10 flex items-center justify-center mr-3">
-                                        <i class="fas fa-home text-elegant-burgundy"></i>
+                                        class="w-10 h-10 rounded-full bg-elegant-burgundy/10 flex items-center justify-center mr-4">
+                                        <i class="fas fa-home text-elegant-burgundy text-lg"></i>
                                     </div>
-                                    <h5 class="font-cormorant text-xl font-bold text-elegant-burgundy">Selected Room
+                                    <h5 class="font-cormorant text-2xl font-bold text-elegant-burgundy">
+                                        Selected Room
                                     </h5>
                                 </div>
 
-                                <!-- price calculation status -->
+                                <!-- Room Info -->
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p id="selected-room-name"
+                                            class="text-lg font-semibold text-elegant-charcoal">Family Bungalow</p>
+
+                                    </div>
+                                    <button id="change-room-btn"
+                                        class="text-elegant-burgundy hover:text-elegant-gold transition-colors text-sm font-medium">
+                                        <i class="fas fa-exchange-alt mr-1"></i> Change
+                                    </button>
+                                </div>
+
+                                <!-- Price Calculation -->
                                 <div id="price-calculation"
-                                    class="mt-4 p-4 bg-elegant-white text-elegant-charcoal rounded-lg border border-elegant-gold/20">
-                                    <span id="calc-status" class="italic">Please select check‑out date to see total
-                                        price.</span>
+                                    class="p-4 bg-elegant-white text-elegant-charcoal rounded-lg border border-elegant-gold/20">
+                                    <p id="calc-status" class="italic text-sm">Please select check‑out date to see
+                                        total price.</p>
                                     <div id="calc-total" class="mt-2 text-xl font-bold text-elegant-burgundy hidden">
                                         Total: <span id="calc-amount"></span>
                                     </div>
                                 </div>
 
-                                <div id="selected-room-info" class="flex items-center justify-between">
-                                    <div>
-                                        <p class="font-medium text-elegant-charcoal" id="selected-room-name">Family
-                                            Bungalow</p>
-                                        <p class="text-elegant-gold" id="selected-room-price"> / night</p>
-                                    </div>
-                                    <button id="change-room-btn"
-                                        class="text-elegant-burgundy hover:text-elegant-gold transition-colors">
-                                        <i class="fas fa-exchange-alt mr-1"></i> Change
-                                    </button>
-                                </div>
                             </div>
+
                         </div>
                     </div>
 
@@ -738,11 +1118,7 @@
                                                 <span id="room-capacity" class="text-elegant-charcoal">Up to 4
                                                     people</span>
                                             </div>
-                                            <div class="flex items-center">
-                                                <i class="fas fa-bed text-elegant-gold mr-2"></i>
-                                                <span id="room-beds" class="text-elegant-charcoal">1 King + 2
-                                                    Singles</span>
-                                            </div>
+
                                             <div class="flex items-center">
                                                 <i class="fas fa-bath text-elegant-gold mr-2"></i>
                                                 <span class="text-elegant-charcoal">Private Bathroom</span>
@@ -1039,6 +1415,238 @@
             </div>
         </div>
     </div>
+
+
+    @if (Auth::guard('guest')->check())
+        <!-- Floating Button -->
+        <div class="fixed bottom-6 right-6 z-50">
+            <button onclick="toggleGuestModal()"
+                class="bg-elegant-burgundy text-white p-4 rounded-full shadow-lg hover:bg-elegant-burgundy/90 transition">
+                <i class="fas fa-user"></i>
+            </button>
+        </div>
+
+
+
+        <!-- Modal -->
+        <div id="guest-modal"
+            class="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 hidden">
+            <div id="guest-modal-content"
+                class="bg-white w-full max-w-7xl mx-8 rounded-lg shadow-lg relative opacity-0 scale-95 transition-all duration-300 overflow-y-auto max-h-screen">
+
+                <!-- Close Button -->
+                <button onclick="toggleGuestModal()"
+                    class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold">
+                    &times;
+                </button>
+
+                <!-- Modal Content -->
+                <div class="p-6">
+                    <h2 class="text-lg font-bold text-elegant-burgundy mb-4">Akun Anda</h2>
+
+                    <!-- Tabs -->
+                    <div class="border-b mb-4">
+                        <nav class="-mb-px flex space-x-6" id="guest-tabs">
+                            <button
+                                class="tab-btn text-elegant-burgundy border-b-2 border-elegant-burgundy pb-2 font-semibold"
+                                onclick="switchTab('profil')">Profil</button>
+                            <button class="tab-btn text-gray-500 hover:text-elegant-burgundy pb-2"
+                                onclick="switchTab('riwayat')">Riwayat Reservasi</button>
+                        </nav>
+                    </div>
+
+                    <!-- Tab Contents -->
+                    <div id="tab-profil">
+                        <form action="{{ route('guest.update', ['guest' => $user]) }}" method="POST"
+                            class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            @csrf
+                            @method('PUT')
+
+                            <input type="hidden" name="_debug" value="1">
+
+                            {{-- Username --}}
+                            <div>
+                                <label class="block text-sm font-medium text-elegant-charcoal mb-1">Username</label>
+                                <div class="relative">
+                                    <input type="text" name="username" value="{{ $user->username }}"
+                                        placeholder="Enter your username"
+                                        class="w-full pl-11 pr-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal placeholder-gray-400 rounded-md shadow-sm focus:ring-2 focus:ring-elegant-gold focus:border-elegant-gold transition" />
+                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Email --}}
+                            <div>
+                                <label class="block text-sm font-medium text-elegant-charcoal mb-1">Email</label>
+                                <div class="relative">
+                                    <input type="email" name="email" value="{{ $user->email }}"
+                                        placeholder="Enter your email"
+                                        class="w-full pl-11 pr-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal placeholder-gray-400 rounded-md shadow-sm focus:ring-2 focus:ring-elegant-gold focus:border-elegant-gold transition" />
+                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                        <i class="fas fa-envelope"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            {{-- Full Name --}}
+                            <div>
+                                <label class="block text-sm font-medium text-elegant-charcoal mb-1">Full Name</label>
+                                <div class="relative">
+                                    <input type="text" name="full_name" value="{{ $user->full_name }}"
+                                        placeholder="Enter full name"
+                                        class="w-full pl-11 pr-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal rounded-md shadow-sm focus:ring-2 focus:ring-elegant-gold focus:border-elegant-gold transition" />
+                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                        <i class="fas fa-id-card"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Phone Number --}}
+                            <div>
+                                <label class="block text-sm font-medium text-elegant-charcoal mb-1">Phone
+                                    Number</label>
+                                <div class="relative">
+                                    <input type="text" name="phone_number" value="{{ $user->phone_number }}"
+                                        placeholder="Enter phone number"
+                                        class="w-full pl-11 pr-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal rounded-md shadow-sm focus:ring-2 focus:ring-elegant-gold focus:border-elegant-gold transition" />
+                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                        <i class="fas fa-phone"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- ID Card Number --}}
+                            <div>
+                                <label class="block text-sm font-medium text-elegant-charcoal mb-1">ID Card
+                                    Number</label>
+                                <div class="relative">
+                                    <input type="text" name="id_card_number" value="{{ $user->id_card_number }}"
+                                        placeholder="Enter ID number"
+                                        class="w-full pl-11 pr-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal rounded-md shadow-sm focus:ring-2 focus:ring-elegant-gold focus:border-elegant-gold transition" />
+                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                        <i class="fas fa-id-badge"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Passport Number --}}
+                            <div>
+                                <label class="block text-sm font-medium text-elegant-charcoal mb-1">Passport
+                                    Number</label>
+                                <div class="relative">
+                                    <input type="text" name="passport_number"
+                                        value="{{ $user->passport_number }}" placeholder="Enter passport number"
+                                        class="w-full pl-11 pr-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal rounded-md shadow-sm focus:ring-2 focus:ring-elegant-gold focus:border-elegant-gold transition" />
+                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                        <i class="fas fa-passport"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Birthdate --}}
+                            <div>
+                                <label class="block text-sm font-medium text-elegant-charcoal mb-1">Birthdate</label>
+                                <div class="relative">
+                                    <input type="date" name="birthdate" value="{{ $user->birthdate }}"
+                                        class="w-full pl-11 pr-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal rounded-md shadow-sm focus:ring-2 focus:ring-elegant-gold focus:border-elegant-gold transition" />
+                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Gender --}}
+                            <div>
+                                <label class="block text-sm font-medium text-elegant-charcoal mb-1">Gender</label>
+                                <select name="gender"
+                                    class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal rounded-md shadow-sm focus:ring-2 focus:ring-elegant-gold focus:border-elegant-gold transition">
+                                    <option value="male" {{ $user->gender === 'male' ? 'selected' : '' }}>Male
+                                    </option>
+                                    <option value="female" {{ $user->gender === 'female' ? 'selected' : '' }}>Female
+                                    </option>
+                                </select>
+                            </div>
+
+                            {{-- Address - full width --}}
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-elegant-charcoal mb-1">Address</label>
+                                <textarea name="address" rows="2" placeholder="Enter your address"
+                                    class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal placeholder-gray-400 rounded-md shadow-sm focus:ring-2 focus:ring-elegant-gold focus:border-elegant-gold transition">{{ $user->address }}</textarea>
+                            </div>
+
+                            {{-- Tombol --}}
+                            <div class="md:col-span-2">
+                                <button type="submit"
+                                    class="w-full bg-elegant-burgundy text-white py-3 rounded-md shadow hover:bg-elegant-burgundy/90 transition font-semibold">
+                                    Simpan Perubahan
+                                </button>
+                            </div>
+                        </form>
+
+
+                    </div>
+                    <div id="tab-riwayat" class="hidden">
+                        @livewire('table.guest-reservasi-table', ['guestId' => $user->id_guest])
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FontAwesome -->
+        <script src="https://kit.fontawesome.com/your-kit-code.js" crossorigin="anonymous"></script>
+
+        <!-- Script -->
+        <script>
+            function toggleGuestModal() {
+                const modal = document.getElementById('guest-modal');
+                const content = document.getElementById('guest-modal-content');
+
+                if (modal.classList.contains('hidden')) {
+                    modal.classList.remove('hidden');
+                    setTimeout(() => {
+                        content.classList.remove('opacity-0', 'scale-95');
+                        content.classList.add('opacity-100', 'scale-100');
+                    }, 10);
+                } else {
+                    content.classList.remove('opacity-100', 'scale-100');
+                    content.classList.add('opacity-0', 'scale-95');
+                    setTimeout(() => {
+                        modal.classList.add('hidden');
+                    }, 300);
+                }
+            }
+
+            function switchTab(tab) {
+                const profil = document.getElementById('tab-profil');
+                const riwayat = document.getElementById('tab-riwayat');
+                const buttons = document.querySelectorAll('#guest-tabs .tab-btn');
+
+                if (tab === 'profil') {
+                    profil.classList.remove('hidden');
+                    riwayat.classList.add('hidden');
+                    buttons[0].classList.add('text-elegant-burgundy', 'border-b-2', 'border-elegant-burgundy', 'font-semibold');
+                    buttons[1].classList.remove('text-elegant-burgundy', 'border-b-2', 'border-elegant-burgundy',
+                        'font-semibold');
+                } else {
+                    profil.classList.add('hidden');
+                    riwayat.classList.remove('hidden');
+                    buttons[0].classList.remove('text-elegant-burgundy', 'border-b-2', 'border-elegant-burgundy',
+                        'font-semibold');
+                    buttons[1].classList.add('text-elegant-burgundy', 'border-b-2', 'border-elegant-burgundy', 'font-semibold');
+                }
+            }
+
+            document.getElementById('guest-modal').addEventListener('click', function(e) {
+                if (e.target.id === 'guest-modal') {
+                    toggleGuestModal();
+                }
+            });
+        </script>
+    @endif
+    @livewireScripts
 
 </body>
 

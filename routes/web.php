@@ -40,7 +40,7 @@ Route::middleware('auth')->get('/dashboard', function () {
 })->name('dashboard');
 
 // Admin Group
-Route::middleware(['auth', 'role:admin'])->group(function () {
+Route::middleware(['auth'])->group(function () {
 
     Route::get('/laporan', fn() => view('laporan'))->name('laporan');
 
@@ -71,11 +71,12 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('/', [GuestController::class, 'index'])->name('index');
         Route::get('/create', [GuestController::class, 'create'])->name('create');
         Route::post('/', [GuestController::class, 'store'])->name('store');
-        Route::get('/{akun_guest}', [GuestController::class, 'show'])->name('show');
-        Route::get('/{akun_guest}/edit', [GuestController::class, 'edit'])->name('edit');
-        Route::put('/{akun_guest}', [GuestController::class, 'update'])->name('update');
-        Route::delete('/{akun_guest}', [GuestController::class, 'destroy'])->name('destroy');
+        Route::get('/{guest}', [GuestController::class, 'show'])->name('show');
+        Route::get('/{guest}/edit', [GuestController::class, 'edit'])->name('edit');
+        Route::put('/{guest}', [GuestController::class, 'update'])->name('update');
+        Route::delete('/{guest}', [GuestController::class, 'destroy'])->name('destroy');
     });
+
 
     // Owner
     Route::prefix('owner')->name('owner.')->group(function () {

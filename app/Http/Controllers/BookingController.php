@@ -20,8 +20,15 @@ class BookingController extends Controller
     public function index(Request $request)
     {
         $villa = Villa::all();
+        $user = null;
+        $reservation = null;
 
-        return view('landing-page',compact('villa'));
+        if (Auth::guard('guest')->check()) {
+            $user = Auth::guard('guest')->user();
+            $reservation = Reservasi::where('guest_id', $user->id_guest)->get();
+        }
+
+        return view('landing-page', compact('villa', 'user', 'reservation'));
     }
 
     /**
@@ -58,9 +65,9 @@ class BookingController extends Controller
             'id'          => $villa->id_villa,
             'name'        => $villa->name,
             'price'       => $villa->today_price,
-            'image'       => $villa->image_url,
+            'picture'     => asset('storage/' . $villa->picture),
             'capacity'    => $villa->capacity,
-            'beds'        => $villa->beds,
+
             'tag'         => $villa->tag,
             'description' => $villa->description,
         ]);

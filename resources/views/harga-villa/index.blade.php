@@ -1,4 +1,4 @@
-{{-- resources/views/villa-pricing/index.blade.php --}}
+{{-- resources/views/harga-villa/index.blade.php --}}
 <x-app-layout>
     <div class="py-2">
         <div class="w-full mx-auto sm:px-6 lg:px-8">
@@ -9,7 +9,7 @@
                         <x-button>Tambah Villa Pricing</x-button>
                     </a>
                 </div>
-                @livewire('table.villa-pricing-table')
+                @livewire('table.harga-villa-table')
             </div>
         </div>
     </div>
