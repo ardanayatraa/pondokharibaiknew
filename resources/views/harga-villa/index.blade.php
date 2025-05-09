@@ -9,7 +9,7 @@
                         <x-button>Tambah Villa Pricing</x-button>
                     </a>
                 </div>
-                @livewire('table.harga-villa-table')
+                @livewire('table.villa-pricing-table')
             </div>
         </div>
     </div>
