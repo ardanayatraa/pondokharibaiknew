@@ -524,7 +524,7 @@ const bookingData = {
               goToStep(5);
             },
             onPending: async r => {
-              await pushReservationToApi();
+
               goToStep(5);
             },
             onError: e => {

@@ -268,9 +268,13 @@
     @auth
         <script>
             window.apiToken = "{{ config('services.reservation_api.token') }}";
-
-            window.guestId = {{ Auth::guard('guest')->user()->id_guest }};
         </script>
+
+        @if (Auth::guard('guest')->check())
+            <script>
+                window.guestId = {{ Auth::guard('guest')->user()->id_guest }};
+            </script>
+        @endif
     @else
         <script>
             window.guestId = null;
