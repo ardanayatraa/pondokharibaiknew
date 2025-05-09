@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\VillaController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\CustomAuthenticatedSessionController;
 use Illuminate\Support\Facades\Mail;
@@ -13,8 +14,8 @@ use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReservasiController;
 use App\Http\Controllers\SeasonController;
-use App\Http\Controllers\VillaController;
 use App\Http\Controllers\VillaPricingController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,21 +29,16 @@ Route::post('/login', [CustomAuthenticatedSessionController::class, 'store'])->n
 Route::post('/register', [GuestController::class, 'store'])->name('guests.store');
 Route::post('/logout', [CustomAuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-Route::middleware('auth')->get('/dashboard', function () {
-    $role = session('role');
 
-    return match ($role) {
-        'admin' => view('dashboard'),
-        'owner' => view('owner.dashboard'),
-        'guest' => view('guest.dashboard'),
-        default => abort(403),
-    };
-})->name('dashboard');
+Route::middleware('auth')->get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
 
 // Admin Group
 Route::middleware(['auth'])->group(function () {
 
-    Route::get('/laporan', fn() => view('laporan'))->name('laporan');
+    Route::get('/laporan', [ReportController::class, 'index'])->name('laporan');
+    Route::get('/report/export', [ReportController::class, 'export'])->name('report.export');
+
 
     // Admin
     Route::prefix('admin')->name('admin.')->group(function () {
@@ -176,16 +172,3 @@ Route::post('/reservation/store', [BookingController::class,'storeReservation'])
 
 
 
-Route::get('/payment/test', function (\Illuminate\Http\Request $request, \App\Http\Controllers\BookingController $ctr) {
-    // simulate the POST payload:
-    $request->merge([
-      'villa_id'     => 1,
-      'check_in'     => now()->toDateString(),
-      'check_out'    => now()->addDays(3)->toDateString(),
-      'total_amount' => 300000,
-      'guest_name'   => 'Test User',
-      'guest_email'  => 'test@user.com',
-      'guest_phone'  => '08123456789',
-    ]);
-    return $ctr->paymentToken($request);
-});

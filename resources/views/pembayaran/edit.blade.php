@@ -4,7 +4,7 @@
         <h2 class="font-semibold text-sm text-gray-800">Edit Pembayaran</h2>
     </x-slot>
     <div class="py-2">
-        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
+        <div class="w-full mx-auto sm:px-6 lg:px-8">
             <div class="w-full mb-4 bg-white dark:bg-gray-900 py-4  px-6">
                 <h2 class="text-sm font-bold">
                     Edit Pembayaran

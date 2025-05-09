@@ -146,7 +146,6 @@
         @endphp
 
         @if ($role == 'admin')
-            <!-- Sidebar Admin -->
             <nav class="py-4">
                 <a href="{{ route('dashboard') }}"
                     class="flex items-center px-4 py-3 {{ request()->routeIs('dashboard') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
@@ -155,56 +154,58 @@
                 </a>
 
                 <a href="{{ route('villa.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('villa*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('villa.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
                     <i class="fas fa-hotel w-5 text-center"></i>
                     <span class="ml-3">Data Villa</span>
                 </a>
 
                 <a href="{{ route('facility.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('facility*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('facility.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
                     <i class="fas fa-tools w-5 text-center"></i>
                     <span class="ml-3">Data Fasilitas</span>
                 </a>
 
-
-
                 <a href="{{ route('season.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('season') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('season.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
                     <i class="fas fa-calendar-alt w-5 text-center"></i>
                     <span class="ml-3">Season</span>
                 </a>
 
                 <a href="{{ route('harga-villa.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('harga-villa') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('harga-villa.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
                     <i class="fas fa-tags w-5 text-center"></i>
                     <span class="ml-3">Harga Villa</span>
                 </a>
 
                 <a href="{{ route('guest.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('akun-guest') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('guest.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
                     <i class="fas fa-users w-5 text-center"></i>
                     <span class="ml-3">Akun Guest</span>
                 </a>
 
                 <a href="{{ route('reservasi.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('reservasi') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('reservasi.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
                     <i class="fas fa-calendar-check w-5 text-center"></i>
                     <span class="ml-3">Reservasi</span>
                 </a>
 
                 <a href="{{ route('pembayaran.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('pembayaran') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('pembayaran.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
                     <i class="fas fa-money-bill-wave w-5 text-center"></i>
                     <span class="ml-3">Pembayaran</span>
                 </a>
 
                 <a href="{{ route('laporan') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('laporan') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
+                    class="flex items-center px-4 py-3
+                {{ url()->current() == route('laporan') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }}
+                transition-colors duration-200">
                     <i class="fas fa-chart-line w-5 text-center"></i>
                     <span class="ml-3">Laporan</span>
                 </a>
+
             </nav>
         @endif
+
         @if ($role == 'owner')
             <!-- Sidebar Owner -->
             <nav class="py-4">
@@ -213,48 +214,21 @@
                     <i class="fas fa-home w-5 text-center"></i>
                     <span class="ml-3">Beranda</span>
                 </a>
-
                 <a href="{{ route('laporan') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('laporan') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }}">
-                    <i class="fas fa-calendar-check w-5 text-center"></i>
+                    class="flex items-center px-4 py-3
+            {{ url()->current() == route('laporan') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }}
+            transition-colors duration-200">
+                    <i class="fas fa-chart-line w-5 text-center"></i>
                     <span class="ml-3">Laporan</span>
                 </a>
-
-                <a href="{{ route('villa') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('villa') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }}">
-                    <i class="fas fa-building w-5 text-center"></i>
-                    <span class="ml-3">Lihat Villa</span>
-                </a>
-            </nav>
-        @endif
-        @if ($role == 'guest')
-            <!-- Sidebar Guest -->
-            <nav class="py-4">
-                <a href="{{ route('dashboard') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('dashboard') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }}">
-                    <i class="fas fa-home w-5 text-center"></i>
-                    <span class="ml-3">Beranda</span>
-                </a>
-
-                <a href="{{ route('villa') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('villa') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }}">
+                <a href="{{ route('villa.index') }}"
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('villa.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
                     <i class="fas fa-hotel w-5 text-center"></i>
-                    <span class="ml-3">Lihat Villa</span>
+                    <span class="ml-3">Data Villa</span>
                 </a>
-
-                <a href="{{ route('reservasi') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('reservasi') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }}">
-                    <i class="fas fa-history w-5 text-center"></i>
-                    <span class="ml-3">Riwayat Reservasi</span>
-                </a>
-
-                {{-- <a href="{{ route('pembayaran') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('pembayaran') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }}">
-                    <i class="fas fa-wallet w-5 text-center"></i>
-                    <span class="ml-3">Pembayaran</span>
-                </a> --}}
             </nav>
         @endif
+
     </aside>
 
     <!-- Main Content -->
@@ -272,39 +246,32 @@
                 <div class="flex items-center space-x-4">
                     <!-- Search -->
                     <div class="relative hidden md:block">
-                        <input type="text" placeholder="Search..."
-                            class="w-64 pl-10 pr-4 py-2 rounded-md border border-elegant-gray/20 focus:outline-none focus:ring-2 focus:ring-elegant-gold/50">
-                        <div class="absolute left-3 top-2.5 text-elegant-gray">
-                            <i class="fas fa-search"></i>
-                        </div>
+
                     </div>
 
                     <!-- Notifications -->
                     <div class="relative">
-                        <button class="text-elegant-charcoal hover:text-elegant-burgundy relative">
-                            <i class="fas fa-bell text-sm"></i>
-                            <span
-                                class="absolute -top-1 -right-1 bg-elegant-burgundy text-elegant-white rounded-full w-4 h-4 flex items-center justify-center text-xs">3</span>
-                        </button>
-                    </div>
 
-                    <!-- User Menu -->
-                    <div class="relative" x-data="{ open: false }">
-                        <button @click="open = !open" class="flex items-center space-x-2 focus:outline-none">
-                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Admin"
-                                class="w-8 h-8 rounded-full object-cover border-2 border-elegant-gold">
-                            <span class="hidden md:inline-block text-elegant-charcoal">Admin User</span>
+                    </div>
+                    @php
+                        $user = Auth::guard('owner')->check()
+                            ? Auth::guard('owner')->user()
+                            : (Auth::guard('guest')->check()
+                                ? Auth::guard('guest')->user()
+                                : Auth::user());
+                    @endphp
+
+                    <div class="relative" id="profile-dropdown">
+                        <button id="profileToggle" class="flex items-center space-x-2 focus:outline-none">
+                            <img src="https://ui-avatars.com/api/?name={{ urlencode($user->email ?? 'User') }}&background=FFEDD5&color=DC2626&size=256"
+                                alt="User" class="w-8 h-8 rounded-full object-cover border-2 border-elegant-gold">
+                            <span
+                                class="hidden md:inline-block text-elegant-charcoal">{{ $user->email ?? 'User' }}</span>
                             <i class="fas fa-chevron-down text-elegant-gray text-xs"></i>
                         </button>
 
-                        <div x-show="open" @click.outside="open = false"
-                            class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden z-50 border border-elegant-gold">
-                            <a href="#"
-                                class="block px-4 py-2 text-sm text-elegant-charcoal hover:bg-elegant-white/10 transition">
-                                Profil
-                            </a>
-
-                            <!-- Logout Form -->
+                        <div id="profileMenu"
+                            class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden z-50 border border-elegant-gold hidden">
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit"
@@ -314,6 +281,25 @@
                             </form>
                         </div>
                     </div>
+
+                    <script>
+                        const toggleBtn = document.getElementById('profileToggle');
+                        const menu = document.getElementById('profileMenu');
+
+                        toggleBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            menu.classList.toggle('hidden');
+                        });
+
+                        document.addEventListener('click', function(e) {
+                            const dropdown = document.getElementById('profile-dropdown');
+                            if (!dropdown.contains(e.target)) {
+                                menu.classList.add('hidden');
+                            }
+                        });
+                    </script>
+
+
                 </div>
             </div>
         </header>

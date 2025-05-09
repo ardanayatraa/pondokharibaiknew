@@ -2,87 +2,73 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Report;
 use Illuminate\Http\Request;
+use App\Models\Reservasi;
+use App\Models\Pembayaran;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReportController extends Controller
 {
-    /**
-     * Tampilkan daftar report.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        $reports = Report::paginate(10);
-        return view('report.index', compact('reports'));
+        $type  = $request->type;
+        $start = $request->start;
+        $end   = $request->end;
+
+        $data = collect(); // default collection kosong
+
+        if ($type === 'reservasi') {
+            $query = Reservasi::query();
+            if ($start && $end) {
+                $query->whereBetween('start_date', [$start, $end]);
+            }
+            $data = $query->paginate(20)->withQueryString();
+        } elseif ($type === 'pembayaran') {
+            $query = Pembayaran::query();
+            if ($start && $end) {
+                $query->whereBetween('payment_date', [$start, $end]);
+            }
+            $data = $query->paginate(20)->withQueryString();
+        } elseif ($type === 'pembatalan') {
+            $query = Reservasi::where('status', 'cancelled');
+            if ($start && $end) {
+                $query->whereBetween('start_date', [$start, $end]);
+            }
+            $data = $query->paginate(20)->withQueryString();
+        }
+
+        return view('report.index', compact('data', 'type', 'start', 'end'));
     }
 
-    /**
-     * Tampilkan form pembuatan report baru.
-     */
-    public function create()
+    public function export(Request $request)
     {
-        return view('report.create');
-    }
+        $type  = $request->type;
+        $start = $request->start;
+        $end   = $request->end;
 
-    /**
-     * Simpan report baru ke database.
-     */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'report_type' => 'required|string|max:255',
-            'date_range'  => 'required|string',
-        ]);
+        $data = collect();
 
-        Report::create($validated);
+        if ($type === 'reservasi') {
+            $query = Reservasi::query();
+            if ($start && $end) {
+                $query->whereBetween('start_date', [$start, $end]);
+            }
+            $data = $query->get();
+        } elseif ($type === 'pembayaran') {
+            $query = Pembayaran::query();
+            if ($start && $end) {
+                $query->whereBetween('payment_date', [$start, $end]);
+            }
+            $data = $query->get();
+        } elseif ($type === 'pembatalan') {
+            $query = Reservasi::where('status', 'cancelled');
+            if ($start && $end) {
+                $query->whereBetween('start_date', [$start, $end]);
+            }
+            $data = $query->get();
+        }
 
-        return redirect()
-            ->route('report.index')
-            ->with('success', 'Report berhasil dibuat.');
-    }
-
-    /**
-     * Tampilkan detail satu report.
-     */
-    public function show(Report $report)
-    {
-        return view('report.show', compact('report'));
-    }
-
-    /**
-     * Tampilkan form edit report.
-     */
-    public function edit(Report $report)
-    {
-        return view('report.edit', compact('report'));
-    }
-
-    /**
-     * Update data report.
-     */
-    public function update(Request $request, Report $report)
-    {
-        $validated = $request->validate([
-            'report_type' => 'required|string|max:255',
-            'date_range'  => 'required|string',
-        ]);
-
-        $report->update($validated);
-
-        return redirect()
-            ->route('report.index')
-            ->with('success', 'Report berhasil diupdate.');
-    }
-
-    /**
-     * Hapus report.
-     */
-    public function destroy(Report $report)
-    {
-        $report->delete();
-
-        return redirect()
-            ->route('report.index')
-            ->with('success', 'Report berhasil dihapus.');
+        $pdf = Pdf::loadView('report.pdf', compact('data', 'type', 'start', 'end'))->setPaper('a4', 'landscape');
+        return $pdf->download('laporan-' . $type . '.pdf');
     }
 }
