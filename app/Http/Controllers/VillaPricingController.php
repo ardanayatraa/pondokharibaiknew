@@ -105,7 +105,7 @@ class VillaPricingController extends Controller
      */
     public function destroy(VillaPricing $villa_pricing)
     {
-        $villa_pricing->delete();
+        $villa_pricing->first()->delete();
 
         return redirect()
             ->route('harga-villa.index')
