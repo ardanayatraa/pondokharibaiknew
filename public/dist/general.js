@@ -305,7 +305,6 @@ const bookingData = {
     document.getElementById('room-detail-name').textContent = bookingData.room.name;
     document.getElementById('room-description').textContent = bookingData.room.description;
     document.getElementById('room-capacity').textContent = `Up to ${bookingData.room.capacity} people`;
-    document.getElementById('room-beds').textContent = bookingData.room.beds;
     document.getElementById('room-image').src = bookingData.room.picture;
 
 
