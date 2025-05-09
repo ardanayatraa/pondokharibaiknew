@@ -327,12 +327,12 @@
                                 </button>
                             </form>
                         @elseif($isOwner)
-                            <a href="{{ route('owner.dashboard') }}"
+                            <a href="{{ route('dashboard') }}"
                                 class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-2 rounded transition">
                                 Dashboard Owner
                             </a>
                         @elseif($isAdmin)
-                            <a href="{{ route('admin.dashboard') }}"
+                            <a href="{{ route('dashboard') }}"
                                 class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-2 rounded transition">
                                 Dashboard Admin
                             </a>
