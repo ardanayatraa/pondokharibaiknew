@@ -97,7 +97,6 @@ class VillaController extends Controller
 
     public function destroy(Villa $villa)
     {
-        dd($villa);
         if ($villa->picture) {
             Storage::disk('public')->delete($villa->picture);
         }
