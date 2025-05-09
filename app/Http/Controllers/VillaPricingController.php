@@ -14,9 +14,8 @@ class VillaPricingController extends Controller
      */
     public function index()
     {
-        $pricings = VillaPricing::with(['villa', 'season'])
-            ->orderBy('id_villa_pricing', 'desc')
-            ->paginate(10);
+        $pricings = VillaPricing::orderBy('created_at', 'desc')
+           ->get();
 
         return view('villa-pricing.index', compact('pricings'));
     }

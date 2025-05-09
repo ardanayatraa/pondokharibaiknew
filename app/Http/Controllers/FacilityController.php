@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Facility;
+use App\Models\Villa;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class FacilityController extends Controller
 {
@@ -81,10 +83,26 @@ class FacilityController extends Controller
      */
     public function destroy(Facility $facility)
     {
+        // Ambil ID facility yang akan dihapus
+        $deletedId = (string) $facility->id_facility;
+
+        // Ambil semua villa yang memiliki facility_id mengandung ID tersebut
+        $villas = Villa::whereJsonContains('facility_id', $deletedId)->get();
+
+        foreach ($villas as $villa) {
+            $current = $villa->facility_id ?? [];
+            // Hapus ID yang ingin dihapus
+            $filtered = array_values(array_filter($current, fn($id) => $id != $deletedId));
+            // Simpan kembali
+            $villa->facility_id = $filtered;
+            $villa->save();
+        }
+
+        // Hapus facility-nya
         $facility->delete();
 
         return redirect()
             ->route('facility.index')
-            ->with('success', 'Facility berhasil dihapus.');
+            ->with('success', 'Facility berhasil dihapus dan villa terkait telah diperbarui.');
     }
 }

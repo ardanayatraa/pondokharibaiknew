@@ -22,13 +22,13 @@ class VillaPricingSeeder extends Seeder
                     'season_id'  => $normal->id_season,
                 ],
                 [
-                    'sunday_pricing'    => 0,
-                    'monday_pricing'    => 0,
-                    'tuesday_pricing'   => 0,
-                    'wednesday_pricing' => 0,
-                    'thursday_pricing'  => 0,
-                    'friday_pricing'    => 0,
-                    'saturday_pricing'  => 0,
+                    'sunday_pricing'    => 100000,
+                    'monday_pricing'    => 100000,
+                    'tuesday_pricing'   => 100000,
+                    'wednesday_pricing' => 100000,
+                    'thursday_pricing'  => 100000,
+                    'friday_pricing'    => 100000,
+                    'saturday_pricing'  => 100000,
                 ]
             );
         });
