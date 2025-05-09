@@ -137,7 +137,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('/', [VillaController::class, 'index'])->name('index');
         Route::get('/create', [VillaController::class, 'create'])->name('create');
         Route::post('/', [VillaController::class, 'store'])->name('store');
-        Route::get('/{villa}', [VillaController::class, 'show'])->name('show');
+
         Route::get('/{villa}/edit', [VillaController::class, 'edit'])->name('edit');
         Route::put('/{villa}', [VillaController::class, 'update'])->name('update');
         Route::delete('/{villa}', [VillaController::class, 'destroy'])->name('destroy');
@@ -164,3 +164,6 @@ Route::get('/send', function () {
 
     return "Dummy email telah dikirim ke {$email} dengan nama “{$nama}”.";
 })->name('mail.test');
+
+Route::get('/villa/{id}', [BookingController::class, 'villabyId']);
+Route::get('/villa/{villa}/reserved-dates', [BookingController::class, 'reservedDates']);
