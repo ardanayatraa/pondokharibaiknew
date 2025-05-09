@@ -167,3 +167,24 @@ Route::get('/send', function () {
 
 Route::get('/villa/{id}', [BookingController::class, 'villabyId']);
 Route::get('/villa/{villa}/reserved-dates', [BookingController::class, 'reservedDates']);
+Route::get('/villa/{villa}/calculate', [BookingController::class, 'calculate']);
+
+Route::middleware(['auth', 'role:guest'])->get('/guestbyID/{id}', [App\Http\Controllers\BookingController::class, 'guestInfo']);
+Route::post('/payment/token', [BookingController::class,'paymentToken']);
+Route::post('/reservation/store', [BookingController::class,'storeReservation']);
+
+
+
+Route::get('/payment/test', function (\Illuminate\Http\Request $request, \App\Http\Controllers\BookingController $ctr) {
+    // simulate the POST payload:
+    $request->merge([
+      'villa_id'     => 1,
+      'check_in'     => now()->toDateString(),
+      'check_out'    => now()->addDays(3)->toDateString(),
+      'total_amount' => 300000,
+      'guest_name'   => 'Test User',
+      'guest_email'  => 'test@user.com',
+      'guest_phone'  => '08123456789',
+    ]);
+    return $ctr->paymentToken($request);
+});

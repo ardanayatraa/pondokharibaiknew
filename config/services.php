@@ -37,6 +37,13 @@ return [
     'is_production' => env('MIDTRANS_IS_PRODUCTION', false),
     'is_sanitized'  => true,
     'is_3ds'        => true,
+
+
+
+],
+
+'reservation_api' => [
+    'token' => env('RESERVATION_API_TOKEN', 'fallback_token'),
 ],
 
 

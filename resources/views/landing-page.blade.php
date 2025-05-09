@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pondok Hari Baik - Luxury Villa in Balian, Bali</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet"
@@ -12,6 +13,10 @@
     <!-- CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}">
+    </script>
+
 
 
     <script>
@@ -260,6 +265,17 @@
             }
         }
     </style>
+    @auth
+        <script>
+            window.apiToken = "{{ config('services.reservation_api.token') }}";
+
+            window.guestId = {{ Auth::guard('guest')->user()->id_guest }};
+        </script>
+    @else
+        <script>
+            window.guestId = null;
+        </script>
+    @endauth
 
     <script src="/dist/general.js" defer></script>
     <script src="/dist/stepper.js" defer></script>
@@ -568,58 +584,7 @@
                             class="absolute top-1/2 left-0 h-1 bg-elegant-burgundy -translate-y-1/2 transition-all duration-500"
                             style="width: 0%"></div>
 
-                        <!-- Step circles -->
-                        <div class="relative flex justify-between">
-                            <div class="stepper-node flex flex-col items-center">
-                                <div
-                                    class="stepper-circle flex items-center justify-center w-12 h-12 rounded-full bg-elegant-burgundy text-elegant-white font-bold border-4 border-elegant-cream relative z-10 shadow-lg transition-all duration-300">
-                                    <span>1</span>
-                                </div>
-                                <div class="stepper-label mt-2 text-center">
-                                    <span class="block text-sm font-medium text-elegant-burgundy">Availability</span>
-                                </div>
-                            </div>
 
-                            <div class="stepper-node flex flex-col items-center">
-                                <div
-                                    class="stepper-circle flex items-center justify-center w-12 h-12 rounded-full bg-elegant-gold/30 text-elegant-navy font-bold border-4 border-elegant-cream relative z-10 shadow-lg transition-all duration-300">
-                                    <span>2</span>
-                                </div>
-                                <div class="stepper-label mt-2 text-center">
-                                    <span class="block text-sm font-medium text-elegant-charcoal">Room Details</span>
-                                </div>
-                            </div>
-
-                            <div class="stepper-node flex flex-col items-center">
-                                <div
-                                    class="stepper-circle flex items-center justify-center w-12 h-12 rounded-full bg-elegant-gold/30 text-elegant-navy font-bold border-4 border-elegant-cream relative z-10 shadow-lg transition-all duration-300">
-                                    <span>3</span>
-                                </div>
-                                <div class="stepper-label mt-2 text-center">
-                                    <span class="block text-sm font-medium text-elegant-charcoal">Guest Info</span>
-                                </div>
-                            </div>
-
-                            <div class="stepper-node flex flex-col items-center">
-                                <div
-                                    class="stepper-circle flex items-center justify-center w-12 h-12 rounded-full bg-elegant-gold/30 text-elegant-navy font-bold border-4 border-elegant-cream relative z-10 shadow-lg transition-all duration-300">
-                                    <span>4</span>
-                                </div>
-                                <div class="stepper-label mt-2 text-center">
-                                    <span class="block text-sm font-medium text-elegant-charcoal">Payment</span>
-                                </div>
-                            </div>
-
-                            <div class="stepper-node flex flex-col items-center">
-                                <div
-                                    class="stepper-circle flex items-center justify-center w-12 h-12 rounded-full bg-elegant-gold/30 text-elegant-navy font-bold border-4 border-elegant-cream relative z-10 shadow-lg transition-all duration-300">
-                                    <span>5</span>
-                                </div>
-                                <div class="stepper-label mt-2 text-center">
-                                    <span class="block text-sm font-medium text-elegant-charcoal">Complete</span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -684,9 +649,6 @@
                                 </div>
                             </div>
 
-
-
-
                             <div class="mt-8 bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20">
                                 <div class="flex items-center mb-4">
                                     <div
@@ -696,11 +658,22 @@
                                     <h5 class="font-cormorant text-xl font-bold text-elegant-burgundy">Selected Room
                                     </h5>
                                 </div>
+
+                                <!-- price calculation status -->
+                                <div id="price-calculation"
+                                    class="mt-4 p-4 bg-elegant-white text-elegant-charcoal rounded-lg border border-elegant-gold/20">
+                                    <span id="calc-status" class="italic">Please select check‑out date to see total
+                                        price.</span>
+                                    <div id="calc-total" class="mt-2 text-xl font-bold text-elegant-burgundy hidden">
+                                        Total: <span id="calc-amount"></span>
+                                    </div>
+                                </div>
+
                                 <div id="selected-room-info" class="flex items-center justify-between">
                                     <div>
                                         <p class="font-medium text-elegant-charcoal" id="selected-room-name">Family
                                             Bungalow</p>
-                                        <p class="text-elegant-gold" id="selected-room-price">Rp 450.000 / night</p>
+                                        <p class="text-elegant-gold" id="selected-room-price"> / night</p>
                                     </div>
                                     <button id="change-room-btn"
                                         class="text-elegant-burgundy hover:text-elegant-gold transition-colors">
@@ -745,10 +718,7 @@
                                                     <span class="ml-2 text-sm">4.8/5</span>
                                                 </div>
                                             </div>
-                                            <div id="room-tag"
-                                                class="absolute top-4 right-4 bg-elegant-gold text-elegant-navy px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                                                Popular
-                                            </div>
+
                                         </div>
                                     </div>
                                     <div class="md:w-3/5">
@@ -756,9 +726,7 @@
                                             class="font-cormorant text-2xl font-bold text-elegant-burgundy mb-2">Family
                                             Bungalow</h5>
                                         <div class="flex items-center mb-4">
-                                            <div id="room-detail-price" class="text-elegant-gold text-xl font-bold">Rp
-                                                450.000</div>
-                                            <div class="text-elegant-gray ml-2">/night</div>
+
                                         </div>
                                         <p class="text-elegant-charcoal/80 mb-4" id="room-description">Luxurious
                                             bungalow with private
@@ -825,14 +793,7 @@
                                                 </div>
                                                 <span id="summary-nights" class="font-medium">5</span>
                                             </div>
-                                            <div class="flex justify-between items-center">
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-users text-elegant-gold mr-2"></i>
-                                                    <span>Guests:</span>
-                                                </div>
-                                                <span id="summary-guests" class="font-medium">2 Adults, 0
-                                                    Children</span>
-                                            </div>
+
                                         </div>
                                     </div>
 
@@ -845,10 +806,7 @@
                                                 <span id="room-rate-label">Room Rate (5 nights):</span>
                                                 <span id="room-rate-total">Rp 2,250,000</span>
                                             </div>
-                                            <div class="flex justify-between items-center">
-                                                <span>Tax (10%):</span>
-                                                <span id="tax-amount">Rp 225,000</span>
-                                            </div>
+
                                             <div class="pt-3 mt-3 border-t border-elegant-gold/20">
                                                 <div
                                                     class="flex justify-between items-center font-bold text-elegant-burgundy">
@@ -925,55 +883,23 @@
                                             phone number</div>
                                     </div>
                                     <div>
-                                        <label for="guest-country"
-                                            class="block text-sm font-medium text-elegant-charcoal mb-2">Country <span
-                                                class="text-red-500">*</span></label>
+                                        <label for="guest-address"
+                                            class="block text-sm font-medium text-elegant-charcoal mb-2">Address
+                                            <span class="text-red-500">*</span></label>
                                         <div class="relative">
-                                            <select id="guest-country"
-                                                class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10 appearance-none">
-                                                <option value="">Select your country</option>
-                                                <option value="Indonesia">Indonesia</option>
-                                                <option value="Singapore">Singapore</option>
-                                                <option value="Malaysia">Malaysia</option>
-                                                <option value="Australia">Australia</option>
-                                                <option value="United States">United States</option>
-                                                <option value="Other">Other</option>
-                                            </select>
-                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
-                                                <i class="fas fa-globe"></i>
-                                            </div>
-                                            <div
-                                                class="absolute right-3 top-1/2 -translate-y-1/2 text-elegant-gold pointer-events-none">
-                                                <i class="fas fa-chevron-down"></i>
+                                            <textarea id="guest-address" rows="3" placeholder="Enter your address"
+                                                class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10 resize-none"></textarea>
+                                            <div class="absolute left-3 top-4 text-elegant-gold">
+                                                <i class="fas fa-map-marker-alt"></i>
                                             </div>
                                         </div>
-                                        <div id="guest-country-error" class="error-message hidden">Please select your
-                                            country</div>
+                                        <div id="guest-address-error" class="error-message hidden">Please enter your
+                                            address</div>
                                     </div>
+
                                 </div>
                             </div>
 
-                            <div class="flex items-center mb-6">
-                                <div
-                                    class="w-10 h-10 rounded-full bg-elegant-burgundy/10 flex items-center justify-center mr-4">
-                                    <i class="fas fa-concierge-bell text-elegant-burgundy"></i>
-                                </div>
-                                <h4 class="font-cormorant text-2xl font-bold text-elegant-burgundy">Special Requests
-                                </h4>
-                            </div>
-
-                            <div class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20">
-                                <label for="special-requests"
-                                    class="block text-sm font-medium text-elegant-charcoal mb-2">Do you have any
-                                    special requests?</label>
-                                <div class="relative">
-                                    <textarea id="special-requests" rows="4"
-                                        placeholder="Let us know if you have any special requests or requirements..."
-                                        class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md"></textarea>
-                                </div>
-                                <p class="text-sm text-elegant-charcoal/70 mt-2">We'll do our best to accommodate your
-                                    requests, subject to availability.</p>
-                            </div>
                         </div>
                     </div>
 
@@ -992,176 +918,36 @@
                             <div class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20 mb-8">
                                 <h5
                                     class="font-medium text-elegant-burgundy mb-4 pb-2 border-b border-elegant-gold/20">
-                                    Payment Method</h5>
-                                <div class="space-y-4">
-                                    <div class="payment-option relative">
-                                        <input type="radio" id="payment-credit" name="payment-method"
-                                            class="hidden" checked>
-                                        <label for="payment-credit"
-                                            class="flex items-center p-4 border border-elegant-gold/30 rounded-lg cursor-pointer transition-all duration-300 hover:bg-elegant-cream/50 payment-label">
-                                            <div
-                                                class="w-6 h-6 rounded-full border-2 border-elegant-gold flex items-center justify-center mr-3 payment-radio">
-                                                <div
-                                                    class="w-3 h-3 rounded-full bg-elegant-burgundy payment-radio-dot">
-                                                </div>
-                                            </div>
-                                            <span class="mr-4">Credit Card</span>
-                                            <div class="flex space-x-2 ml-auto">
-                                                <i class="fab fa-cc-visa text-blue-700 text-xl"></i>
-                                                <i class="fab fa-cc-mastercard text-red-600 text-xl"></i>
-                                                <i class="fab fa-cc-amex text-blue-500 text-xl"></i>
-                                            </div>
-                                        </label>
+                                    Payment Summary
+                                </h5>
+                                <div class="space-y-3 text-elegant-charcoal">
+                                    <div class="flex justify-between items-center">
+                                        <span>Villa Name:</span>
+                                        <span id="payment-villa-name" class="text-elegant-burgundy font-bold"></span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span>Check‑in Date:</span>
+                                        <span id="payment-checkin" class="text-elegant-burgundy font-bold"></span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span>Check‑out Date:</span>
+                                        <span id="payment-checkout" class="text-elegant-burgundy font-bold"></span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span>Number of Nights:</span>
+                                        <span id="payment-nights" class="text-elegant-burgundy font-bold"></span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span>Room Rate (<span id="payment-nights-label"></span>):</span>
+                                        <span id="payment-room-rate" class="text-elegant-burgundy font-bold"></span>
                                     </div>
 
-                                    <div class="payment-option relative">
-                                        <input type="radio" id="payment-paypal" name="payment-method"
-                                            class="hidden">
-                                        <label for="payment-paypal"
-                                            class="flex items-center p-4 border border-elegant-gold/30 rounded-lg cursor-pointer transition-all duration-300 hover:bg-elegant-cream/50 payment-label">
-                                            <div
-                                                class="w-6 h-6 rounded-full border-2 border-elegant-gold flex items-center justify-center mr-3 payment-radio">
-                                                <div
-                                                    class="w-3 h-3 rounded-full bg-elegant-burgundy payment-radio-dot">
-                                                </div>
-                                            </div>
-                                            <span class="mr-4">PayPal</span>
-                                            <div class="ml-auto">
-                                                <i class="fab fa-paypal text-blue-800 text-xl"></i>
-                                            </div>
-                                        </label>
-                                    </div>
 
-                                    <div class="payment-option relative">
-                                        <input type="radio" id="payment-bank" name="payment-method"
-                                            class="hidden">
-                                        <label for="payment-bank"
-                                            class="flex items-center p-4 border border-elegant-gold/30 rounded-lg cursor-pointer transition-all duration-300 hover:bg-elegant-cream/50 payment-label">
-                                            <div
-                                                class="w-6 h-6 rounded-full border-2 border-elegant-gold flex items-center justify-center mr-3 payment-radio">
-                                                <div
-                                                    class="w-3 h-3 rounded-full bg-elegant-burgundy payment-radio-dot">
-                                                </div>
-                                            </div>
-                                            <span class="mr-4">Bank Transfer</span>
-                                            <div class="ml-auto">
-                                                <i class="fas fa-university text-elegant-burgundy text-xl"></i>
-                                            </div>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div id="credit-card-form"
-                                class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20 mb-8">
-                                <h5
-                                    class="font-medium text-elegant-burgundy mb-4 pb-2 border-b border-elegant-gold/20">
-                                    Card Details</h5>
-
-                                <div class="mb-6">
-                                    <label for="card-name"
-                                        class="block text-sm font-medium text-elegant-charcoal mb-2">Name on
-                                        Card <span class="text-red-500">*</span></label>
-                                    <div class="relative">
-                                        <input type="text" id="card-name"
-                                            placeholder="Enter the name on your card"
-                                            class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10">
-                                        <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
-                                            <i class="fas fa-user"></i>
+                                    <div class="pt-3 mt-3 border-t border-elegant-gold/20">
+                                        <div class="flex justify-between items-center font-bold text-elegant-burgundy">
+                                            <span>Total Amount:</span>
+                                            <span id="payment-total" class="text-elegant-burgundy font-bold"></span>
                                         </div>
-                                    </div>
-                                    <div id="card-name-error" class="error-message hidden">Please enter the name on
-                                        your card</div>
-                                </div>
-
-                                <div class="mb-6">
-                                    <label for="card-number"
-                                        class="block text-sm font-medium text-elegant-charcoal mb-2">Card
-                                        Number <span class="text-red-500">*</span></label>
-                                    <div class="relative">
-                                        <input type="text" id="card-number" placeholder="XXXX XXXX XXXX XXXX"
-                                            class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10">
-                                        <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
-                                            <i class="fas fa-credit-card"></i>
-                                        </div>
-                                    </div>
-                                    <div id="card-number-error" class="error-message hidden">Please enter a valid card
-                                        number</div>
-                                </div>
-
-                                <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
-                                    <div>
-                                        <label for="card-expiry-month"
-                                            class="block text-sm font-medium text-elegant-charcoal mb-2">Expiry
-                                            Month <span class="text-red-500">*</span></label>
-                                        <div class="relative">
-                                            <select id="card-expiry-month"
-                                                class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10 appearance-none">
-                                                <option value="">Month</option>
-                                                <option value="01">01</option>
-                                                <option value="02">02</option>
-                                                <option value="03">03</option>
-                                                <option value="04">04</option>
-                                                <option value="05">05</option>
-                                                <option value="06">06</option>
-                                                <option value="07">07</option>
-                                                <option value="08">08</option>
-                                                <option value="09">09</option>
-                                                <option value="10">10</option>
-                                                <option value="11">11</option>
-                                                <option value="12">12</option>
-                                            </select>
-                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
-                                                <i class="fas fa-calendar-alt"></i>
-                                            </div>
-                                            <div
-                                                class="absolute right-3 top-1/2 -translate-y-1/2 text-elegant-gold pointer-events-none">
-                                                <i class="fas fa-chevron-down"></i>
-                                            </div>
-                                        </div>
-                                        <div id="card-month-error" class="error-message hidden">Please select expiry
-                                            month</div>
-                                    </div>
-
-                                    <div>
-                                        <label for="card-expiry-year"
-                                            class="block text-sm font-medium text-elegant-charcoal mb-2">Expiry
-                                            Year <span class="text-red-500">*</span></label>
-                                        <div class="relative">
-                                            <select id="card-expiry-year"
-                                                class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10 appearance-none">
-                                                <option value="">Year</option>
-                                                <option value="2025">2025</option>
-                                                <option value="2026">2026</option>
-                                                <option value="2027">2027</option>
-                                                <option value="2028">2028</option>
-                                                <option value="2029">2029</option>
-                                                <option value="2030">2030</option>
-                                            </select>
-                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
-                                                <i class="fas fa-calendar-alt"></i>
-                                            </div>
-                                            <div
-                                                class="absolute right-3 top-1/2 -translate-y-1/2 text-elegant-gold pointer-events-none">
-                                                <i class="fas fa-chevron-down"></i>
-                                            </div>
-                                        </div>
-                                        <div id="card-year-error" class="error-message hidden">Please select expiry
-                                            year</div>
-                                    </div>
-
-                                    <div>
-                                        <label for="card-cvv"
-                                            class="block text-sm font-medium text-elegant-charcoal mb-2">CVV <span
-                                                class="text-red-500">*</span></label>
-                                        <div class="relative">
-                                            <input type="text" id="card-cvv" placeholder="XXX"
-                                                class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10">
-                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
-                                                <i class="fas fa-lock"></i>
-                                            </div>
-                                        </div>
-                                        <div id="card-cvv-error" class="error-message hidden">Please enter CVV</div>
                                     </div>
                                 </div>
                             </div>
@@ -1169,26 +955,41 @@
                             <div class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20">
                                 <h5
                                     class="font-medium text-elegant-burgundy mb-4 pb-2 border-b border-elegant-gold/20">
-                                    Payment Summary</h5>
-                                <div class="space-y-3 text-elegant-charcoal">
-                                    <div class="flex justify-between items-center">
-                                        <span id="payment-room-rate-label">Room Rate (5 nights):</span>
-                                        <span id="payment-room-rate-total">Rp 2,250,000</span>
+                                    Payment Method</h5>
+                                <div class="space-y-4">
+                                    <!-- Metode Pembayaran - Midtrans (default) dan Tunai -->
+                                    <div class="payment-option relative">
+                                        <input type="radio" id="payment-midtrans" name="payment-method"
+                                            class="hidden" checked>
+                                        <label for="payment-midtrans"
+                                            class="flex items-center p-4 border border-elegant-gold/30 rounded-lg cursor-pointer transition-all duration-300 hover:bg-elegant-cream/50">
+                                            <div
+                                                class="w-6 h-6 rounded-full border-2 border-elegant-gold flex items-center justify-center mr-3">
+                                                <div class="w-3 h-3 rounded-full bg-elegant-burgundy"></div>
+                                            </div>
+                                            <span class="mr-4">Midtrans</span>
+                                            <div class="ml-auto">
+                                                <i class="fab fa-cc-visa text-blue-700 text-xl"></i>
+                                                <i class="fab fa-cc-mastercard text-red-600 text-xl"></i>
+                                                <i class="fab fa-cc-amex text-blue-500 text-xl"></i>
+                                            </div>
+                                        </label>
                                     </div>
-                                    <div class="flex justify-between items-center">
-                                        <span>Tax (10%):</span>
-                                        <span id="payment-tax-amount">Rp 225,000</span>
-                                    </div>
-                                    <div class="pt-3 mt-3 border-t border-elegant-gold/20">
-                                        <div class="flex justify-between items-center font-bold text-elegant-burgundy">
-                                            <span>Total Amount:</span>
-                                            <span id="payment-total">Rp 2,475,000</span>
-                                        </div>
-                                    </div>
+
+
                                 </div>
+                            </div>
+
+                            <div class="mt-6 flex justify-end space-x-4">
+
+                                <button id="btn-paynow"
+                                    class="px-4 py-2 bg-elegant-burgundy text-white rounded-md hover:bg-elegant-burgundy/80">
+                                    Pay Now
+                                </button>
                             </div>
                         </div>
                     </div>
+
 
                     <!-- Step 5: Completion -->
                     <div class="step-content hidden" id="step-5">
@@ -1209,100 +1010,7 @@
                                         id="confirmation-email" class="font-medium">your email address</span>.</p>
                             </div>
 
-                            <div
-                                class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20 mb-8 text-left">
-                                <div class="flex items-center mb-4">
-                                    <div
-                                        class="w-10 h-10 rounded-full bg-elegant-burgundy/10 flex items-center justify-center mr-4">
-                                        <i class="fas fa-receipt text-elegant-burgundy"></i>
-                                    </div>
-                                    <h5 class="font-cormorant text-xl font-bold text-elegant-burgundy">Booking Details
-                                    </h5>
-                                </div>
 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <div class="space-y-3 text-elegant-charcoal">
-                                            <div class="flex justify-between items-center">
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-hashtag text-elegant-gold mr-2"></i>
-                                                    <span>Booking ID:</span>
-                                                </div>
-                                                <span id="booking-id" class="font-medium">PHB25052301</span>
-                                            </div>
-                                            <div class="flex justify-between items-center">
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-home text-elegant-gold mr-2"></i>
-                                                    <span>Room:</span>
-                                                </div>
-                                                <span id="confirmation-room" class="font-medium">Family
-                                                    Bungalow</span>
-                                            </div>
-                                            <div class="flex justify-between items-center">
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-calendar-check text-elegant-gold mr-2"></i>
-                                                    <span>Check-in:</span>
-                                                </div>
-                                                <span id="confirmation-checkin" class="font-medium">May 10,
-                                                    2025</span>
-                                            </div>
-                                            <div class="flex justify-between items-center">
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-calendar-times text-elegant-gold mr-2"></i>
-                                                    <span>Check-out:</span>
-                                                </div>
-                                                <span id="confirmation-checkout" class="font-medium">May 15,
-                                                    2025</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <div class="space-y-3 text-elegant-charcoal">
-                                            <div class="flex justify-between items-center">
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-users text-elegant-gold mr-2"></i>
-                                                    <span>Guests:</span>
-                                                </div>
-                                                <span id="confirmation-guests" class="font-medium">2 Adults, 0
-                                                    Children</span>
-                                            </div>
-                                            <div class="flex justify-between items-center">
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-credit-card text-elegant-gold mr-2"></i>
-                                                    <span>Payment Method:</span>
-                                                </div>
-                                                <span id="confirmation-payment" class="font-medium">Credit Card</span>
-                                            </div>
-                                            <div class="flex justify-between items-center">
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-money-bill-wave text-elegant-gold mr-2"></i>
-                                                    <span>Total Amount:</span>
-                                                </div>
-                                                <span id="confirmation-total" class="font-medium">Rp 2,475,000</span>
-                                            </div>
-                                            <div class="flex justify-between items-center">
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-check-circle text-elegant-gold mr-2"></i>
-                                                    <span>Status:</span>
-                                                </div>
-                                                <span class="font-medium text-green-600">Confirmed</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="flex flex-col md:flex-row gap-4 justify-center">
-                                <button id="download-receipt"
-                                    class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-3 transition-all duration-300 btn-elegant border border-elegant-gold/30 rounded-md flex items-center justify-center">
-                                    <i class="fas fa-download mr-2"></i> Download Receipt
-                                </button>
-                                <button id="view-booking"
-                                    class="bg-elegant-navy hover:bg-elegant-navy/80 text-elegant-gold px-6 py-3 transition-all duration-300 btn-elegant border border-elegant-gold/30 rounded-md flex items-center justify-center">
-                                    <i class="fas fa-eye mr-2"></i> View Booking
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -1331,8 +1039,6 @@
             </div>
         </div>
     </div>
-
-
 
 </body>
 

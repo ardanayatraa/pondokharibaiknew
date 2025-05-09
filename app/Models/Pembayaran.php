@@ -23,4 +23,3 @@ class Pembayaran extends Model
         return $this->belongsTo(Reservasi::class, 'reservation_id');
     }
 }
-`
