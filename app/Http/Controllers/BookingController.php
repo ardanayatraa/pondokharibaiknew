@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ReservationCompleted;
 use App\Models\Reservasi;
 use App\Models\Villa;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\Guest;
+use App\Models\Pembayaran;
 use App\Models\VillaPricing;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class BookingController extends Controller
 {
@@ -162,60 +165,62 @@ public function storeReservation(Request $request)
     $token = $request->header('X-API-TOKEN');
     $expectedToken = config('services.reservation_api.token');
 
-
     if ($token !== $expectedToken) {
         return response()->json(['error' => 'Unauthorized'], 401);
     }
 
     // ✅ 2. Validasi input
     $validated = $request->validate([
-        'villa_id' => 'required|integer',
-        'start_date' => 'required|date',
-        'end_date' => 'required|date',
+        'villa_id'     => 'required|integer',
+        'start_date'   => 'required|date',
+        'end_date'     => 'required|date',
         'total_amount' => 'required|numeric',
-        'guest_id' => 'required|integer',
-        'snap_token' => 'nullable|string',     // untuk pembayaran
-        'notifikasi' => 'nullable|string',     // jika kamu ingin kirim info notifikasi
+        'guest_id'     => 'required|integer',
+        'snap_token'   => 'nullable|string',
+        'notifikasi'   => 'nullable|string',
     ]);
 
-
+    // hitung untuk pricing
     $start = Carbon::parse($validated['start_date']);
-
-// Cari season yang aktif untuk tanggal start_date
-$villaPricing = VillaPricing::where('villa_id', $validated['villa_id'])
-    ->whereHas('season', function ($query) use ($start) {
-        $query->whereDate('tgl_mulai_season', '<=', $start)
+    $villaPricing = VillaPricing::where('villa_id', $validated['villa_id'])
+        ->whereHas('season', function ($q) use ($start) {
+            $q->whereDate('tgl_mulai_season', '<=', $start)
               ->whereDate('tgl_akhir_season', '>=', $start);
-    })
-    ->first();
+        })
+        ->first();
 
     // ✅ 3. Simpan data reservasi
     $reservasi = Reservasi::create([
-        'villa_id' => $validated['villa_id'],
-        'start_date' => $validated['start_date'],
-        'end_date' => $validated['end_date'],
-        'total_amount' => $validated['total_amount'],
-        'guest_id' => $validated['guest_id'],
-       'villa_pricing_id' => $villaPricing?->id_villa_pricing ?? null,
-        'status' => 'confirmed', // default status setelah booking & sebelum konfirmasi
+        'villa_id'         => $validated['villa_id'],
+        'start_date'       => $validated['start_date'],
+        'end_date'         => $validated['end_date'],
+        'total_amount'     => $validated['total_amount'],
+        'guest_id'         => $validated['guest_id'],
+        'villa_pricing_id' => $villaPricing?->id_villa_pricing,
+        'status'           => 'confirmed',
     ]);
 
     // ✅ 4. Simpan data pembayaran
-    $pembayaran = \App\Models\Pembayaran::create([
-        'guest_id' => $validated['guest_id'],
+    $pembayaran = Pembayaran::create([
+        'guest_id'       => $validated['guest_id'],
         'reservation_id' => $reservasi->id_reservation,
-        'amount' => $validated['total_amount'],
-        'payment_date' => now(),
-        'snap_token' => $validated['snap_token']??0,
-        'notifikasi' => "Pesanan telah berhasil dibuat #".$reservasi->id_reservation,
-        'status' => 'paid', // default status sebelum konfirmasi
+        'amount'         => $validated['total_amount'],
+        'payment_date'   => now(),
+        'snap_token'     => $validated['snap_token'] ?? null,
+        'notifikasi'     => $validated['notifikasi'] ?? "Pesanan #{$reservasi->id_reservation} berhasil dibuat",
+        'status'         => 'paid',
     ]);
 
-    // ✅ 5. Return respons sukses
+    // ✅ 5. Kirim email dengan invoice
+    Mail::to($reservasi->guest->email)->queue(new ReservationCompleted($reservasi, $pembayaran));
+
+
+
+    // ✅ 6. Return respons sukses
     return response()->json([
-        'message' => 'Reservasi & pembayaran berhasil disimpan',
-        'data' => [
-            'reservasi' => $reservasi,
+        'message'   => 'Reservasi, pembayaran, & email invoice berhasil diproses',
+        'data'      => [
+            'reservasi'  => $reservasi,
             'pembayaran' => $pembayaran,
         ],
     ]);
