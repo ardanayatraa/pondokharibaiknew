@@ -25,6 +25,10 @@
                 extend: {
                     colors: {
                         elegant: {
+                            green: '#3F7D58',
+                            lightgray: '#FFFFFF',
+                            orange: '#EF9651',
+                            redorange: '#EC5228',
                             navy: '#0F1E2D',
                             burgundy: '#5E1224',
                             gold: '#C0A062',
@@ -45,7 +49,7 @@
                         'family-bungalow': "url('https://images.unsplash.com/photo-1590490360182-c33d57733427?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
                         'family-garden': "url('https://images.unsplash.com/photo-1578683010236-d716f9a3f461?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
                         'twins-garden': "url('https://images.unsplash.com/photo-1595576508898-0ad5c879a061?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
-                        'pattern-bg': "url('data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C0A062' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')"
+                        'pattern-bg': "url('data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233F7D58' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')"
                     }
                 }
             }
@@ -108,12 +112,12 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #C0A062;
+            background: #3F7D58;
             border-radius: 5px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #9A8050;
+            background: #2F5E42;
         }
 
         /* Gold border */
@@ -128,7 +132,7 @@
             left: -10px;
             right: -10px;
             bottom: -10px;
-            border: 1px solid #C0A062;
+            border: 1px solid #3F7D58;
             z-index: -1;
         }
 
@@ -136,7 +140,7 @@
         .decorative-line {
             position: relative;
             height: 1px;
-            background: linear-gradient(90deg, transparent, #C0A062, transparent);
+            background: linear-gradient(90deg, transparent, #3F7D58, transparent);
         }
 
         .decorative-line::before,
@@ -145,7 +149,7 @@
             position: absolute;
             width: 6px;
             height: 6px;
-            background-color: #C0A062;
+            background-color: #3F7D58;
             border-radius: 50%;
             top: -3px;
         }
@@ -200,7 +204,7 @@
 
         /* Payment radio button styles */
         .payment-option input:checked~label .payment-radio {
-            border-color: #5E1224;
+            border-color: #3F7D58;
         }
 
         .payment-option input:not(:checked)~label .payment-radio-dot {
@@ -247,9 +251,9 @@
 
         /* Loading spinner */
         .spinner {
-            border: 3px solid rgba(192, 160, 98, 0.3);
+            border: 3px solid rgba(63, 125, 88, 0.3);
             border-radius: 50%;
-            border-top: 3px solid #C0A062;
+            border-top: 3px solid #3F7D58;
             width: 24px;
             height: 24px;
             animation: spin 1s linear infinite;
@@ -285,30 +289,33 @@
     <script src="/dist/stepper.js" defer></script>
 </head>
 
-<body class="font-montserrat text-elegant-charcoal bg-elegant-cream bg-pattern-bg">
+<body class="font-montserrat text-elegant-charcoal bg-white bg-pattern-bg">
     <!-- Header -->
-    <header class="fixed w-full z-50 bg-elegant-navy/95 backdrop-blur-md shadow-md transition-all duration-300"
-        id="header">
+    <header class="fixed w-full z-50 bg-white/95 backdrop-blur-md shadow-md transition-all duration-300" id="header">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
             <a href="#" class="flex items-center">
-                <span class="font-cormorant text-3xl font-bold text-elegant-gold">Pondok Hari Baik</span>
+                <!-- Logo placeholder - replace with actual logo -->
+                <div class="w-10 h-10 bg-elegant-green rounded-full flex items-center justify-center mr-3">
+                    <span class="text-elegant-white font-bold text-xl">P</span>
+                </div>
+                <span class="font-cormorant text-3xl font-bold text-elegant-green">Pondok Hari Baik</span>
             </a>
 
             <div class="flex items-center">
-                <button class="lg:hidden text-elegant-gold focus:outline-none" id="mobile-menu-button">
+                <button class="lg:hidden text-elegant-white focus:outline-none" id="mobile-menu-button">
                     <i class="fas fa-bars text-2xl"></i>
                 </button>
 
                 <nav class="hidden lg:flex items-center space-x-8">
                     <a href="#home"
-                        class="text-elegant-gold hover:text-elegant-white transition-colors duration-300 font-medium">Home</a>
+                        class="text-elegant-green hover:text-elegant-orange transition-colors duration-300 font-medium">Home</a>
 
                     <a href="#rooms"
-                        class="text-elegant-gold hover:text-elegant-white transition-colors duration-300 font-medium">Rooms</a>
+                        class="text-elegant-green hover:text-elegant-orange transition-colors duration-300 font-medium">Rooms</a>
                     <a href="#amenities"
-                        class="text-elegant-gold hover:text-elegant-white transition-colors duration-300 font-medium">Amenities</a>
+                        class="text-elegant-green hover:text-elegant-orange transition-colors duration-300 font-medium">Amenities</a>
                     <a href="#location"
-                        class="text-elegant-gold hover:text-elegant-white transition-colors duration-300 font-medium">Location</a>
+                        class="text-elegant-green hover:text-elegant-orange transition-colors duration-300 font-medium">Location</a>
 
                     @php
                         $isGuest = Auth::guard('guest')->check();
@@ -322,23 +329,23 @@
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit"
-                                    class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-2 rounded transition">
+                                    class="bg-elegant-green hover:bg-elegant-green/80 text-elegant-white px-6 py-2 rounded transition">
                                     Logout
                                 </button>
                             </form>
                         @elseif($isOwner)
                             <a href="{{ route('dashboard') }}"
-                                class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-2 rounded transition">
+                                class="bg-elegant-green hover:bg-elegant-green/80 text-elegant-white px-6 py-2 rounded transition">
                                 Dashboard Owner
                             </a>
                         @elseif($isAdmin)
                             <a href="{{ route('dashboard') }}"
-                                class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-2 rounded transition">
+                                class="bg-elegant-green hover:bg-elegant-green/80 text-elegant-white px-6 py-2 rounded transition">
                                 Dashboard Admin
                             </a>
                         @else
                             <a href="{{ route('login') }}"
-                                class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-2 rounded transition">
+                                class="bg-elegant-green hover:bg-elegant-green/80 text-elegant-white px-6 py-2 rounded transition">
                                 Login
                             </a>
                         @endif
@@ -349,18 +356,18 @@
         </div>
 
         <!-- Mobile Menu -->
-        <div class="lg:hidden hidden bg-elegant-navy shadow-lg absolute w-full left-0 z-20 transition-all duration-300 border-t border-elegant-gold/20"
+        <div class="lg:hidden hidden bg-white shadow-lg absolute w-full left-0 z-20 transition-all duration-300 border-t border-elegant-green/20"
             id="mobile-menu">
             <div class="container mx-auto px-4 py-4 flex flex-col space-y-4">
                 <a href="#home"
-                    class="text-elegant-gold hover:text-elegant-white transition-colors duration-300 font-medium py-2 border-b border-elegant-gold/20">Home</a>
+                    class="text-elegant-green hover:text-elegant-orange transition-colors duration-300 font-medium py-2 border-b border-elegant-green/20">Home</a>
 
                 <a href="#rooms"
-                    class="text-elegant-gold hover:text-elegant-white transition-colors duration-300 font-medium py-2 border-b border-elegant-gold/20">Rooms</a>
+                    class="text-elegant-green hover:text-elegant-orange transition-colors duration-300 font-medium py-2 border-b border-elegant-green/20">Rooms</a>
                 <a href="#amenities"
-                    class="text-elegant-gold hover:text-elegant-white transition-colors duration-300 font-medium py-2 border-b border-elegant-gold/20">Amenities</a>
+                    class="text-elegant-green hover:text-elegant-orange transition-colors duration-300 font-medium py-2 border-b border-elegant-green/20">Amenities</a>
                 <a href="#location"
-                    class="text-elegant-gold hover:text-elegant-white transition-colors duration-300 font-medium py-2 border-b border-elegant-gold/20">Location</a>
+                    class="text-elegant-green hover:text-elegant-orange transition-colors duration-300 font-medium py-2 border-b border-elegant-green/20">Location</a>
                 @php
                     $isGuest = Auth::guard('guest')->check();
                     $user = Auth::guard('guest')->user();
@@ -373,23 +380,23 @@
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit"
-                                class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-2 rounded transition">
+                                class="bg-elegant-green hover:bg-elegant-green/80 text-elegant-white px-6 py-2 rounded transition">
                                 Logout
                             </button>
                         </form>
                     @elseif($isOwner)
                         <a href="{{ route('dashboard') }}"
-                            class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-2 rounded transition">
+                            class="bg-elegant-green hover:bg-elegant-green/80 text-elegant-white px-6 py-2 rounded transition">
                             Dashboard Owner
                         </a>
                     @elseif($isAdmin)
                         <a href="{{ route('dashboard') }}"
-                            class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-2 rounded transition">
+                            class="bg-elegant-green hover:bg-elegant-green/80 text-elegant-white px-6 py-2 rounded transition">
                             Dashboard Admin
                         </a>
                     @else
                         <a href="{{ route('login') }}"
-                            class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-2 rounded transition">
+                            class="bg-elegant-green hover:bg-elegant-green/80 text-elegant-white px-6 py-2 rounded transition">
                             Login
                         </a>
                     @endif
@@ -404,17 +411,17 @@
         class="bg-hero-pattern bg-cover bg-center h-screen flex items-center justify-center parallax">
         <div class="container mx-auto px-4 text-center">
             <div class="inline-block mb-6 animate-hidden">
-                <div class="w-20 h-px bg-elegant-gold mx-auto mb-6"></div>
+                <div class="w-20 h-px bg-elegant-orange mx-auto mb-6"></div>
                 <h1 class="font-cormorant text-5xl md:text-7xl font-bold text-elegant-white mb-6 tracking-wide">
-                    Welcome to <span class="text-elegant-gold">Pondok Hari Baik</span>
+                    Welcome to <span class="text-elegant-orange">Pondok Hari Baik</span>
                 </h1>
-                <div class="w-20 h-px bg-elegant-gold mx-auto"></div>
+                <div class="w-20 h-px bg-elegant-orange mx-auto"></div>
             </div>
             <p class="text-xl md:text-2xl text-elegant-white mb-10 w-full mx-auto animate-hidden delay-200 font-light">
                 Experience the tranquility of Bali in our luxurious villa with stunning views and exceptional service
             </p>
             <button id="hero-book-btn"
-                class="inline-block bg-transparent border border-elegant-gold text-elegant-gold hover:bg-elegant-gold hover:text-elegant-navy px-8 py-4 text-lg font-medium transition-all duration-300 animate-hidden delay-300 btn-elegant">
+                class="inline-block bg-transparent border border-elegant-orange text-elegant-orange hover:bg-elegant-orange hover:text-elegant-white px-8 py-4 text-lg font-medium transition-all duration-300 animate-hidden delay-300 btn-elegant">
                 Book Your Stay
                 <i class="fas fa-arrow-right ml-2"></i>
             </button>
@@ -422,11 +429,11 @@
     </section>
 
     <!-- Rooms Section -->
-    <section id="rooms" class="py-24 bg-elegant-cream bg-pattern-bg">
+    <section id="rooms" class="py-24 bg-white bg-pattern-bg">
         <div class="container mx-auto px-4">
             <div class="text-center mb-16 animate-hidden">
-                <span class="text-elegant-gold text-sm uppercase tracking-widest">Accommodation</span>
-                <h2 class="font-cormorant text-4xl md:text-5xl font-bold text-elegant-burgundy mb-4 tracking-wide">
+                <span class="text-elegant-green text-sm uppercase tracking-widest">Accommodation</span>
+                <h2 class="font-cormorant text-4xl md:text-5xl font-bold text-elegant-green mb-4 tracking-wide">
                     Our Luxurious Rooms</h2>
                 <div class="decorative-line w-40 mx-auto mt-4"></div>
                 <p class="text-lg mt-6 w-full mx-auto text-elegant-charcoal">
@@ -437,7 +444,7 @@
                 @foreach ($villa as $item)
                     <!-- Room 1 -->
                     <div
-                        class="bg-elegant-white border border-elegant-gold/30 overflow-hidden shadow-md transform hover:scale-105 transition-all duration-500 animate-hidden elegant-card">
+                        class="bg-elegant-white border border-elegant-green/30 overflow-hidden shadow-md transform hover:scale-105 transition-all duration-500 animate-hidden elegant-card">
                         <div class="relative">
                             <div class="h-72 overflow-hidden rounded-lg shadow">
                                 <img src="{{ asset('storage/' . $item->picture) }}" alt="Villa"
@@ -448,14 +455,14 @@
 
                         </div>
                         <div class="p-8">
-                            <h3 class="font-cormorant text-2xl font-bold text-elegant-burgundy mb-2">
+                            <h3 class="font-cormorant text-2xl font-bold text-elegant-green mb-2">
                                 {{ $item->name }}
                             </h3>
                             <div class="flex items-center mb-4">
 
                             </div>
                             <div class="flex items-center mb-6">
-                                <i class="fas fa-user-friends text-elegant-gold mr-2"></i>
+                                <i class="fas fa-user-friends text-elegant-orange mr-2"></i>
                                 <span class="text-elegant-charcoal">Maximum capacity {{ $item->capacity }}
                                     people</span>
                             </div>
@@ -463,7 +470,7 @@
                                 {{ $item->description }}
                             </p>
                             <button
-                                class="book-now-btn block text-center bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-3 transition-all duration-300 btn-elegant w-full"
+                                class="book-now-btn block text-center bg-elegant-green hover:bg-elegant-green/80 text-elegant-white px-6 py-3 transition-all duration-300 btn-elegant w-full"
                                 data-room-id="{{ $item->id_villa }}" data-room-name="{{ $item->name }}"
                                 data-room-price="{{ $item->today_price }}">
                                 Book Now
@@ -476,10 +483,10 @@
     </section>
 
 
-    <section id="amenities" class="py-24 bg-elegant-burgundy text-elegant-white">
+    <section id="amenities" class="py-24 bg-elegant-green text-elegant-white">
         <div class="container mx-auto px-4">
             <div class="text-center mb-16 animate-hidden">
-                <span class="text-elegant-gold text-sm uppercase tracking-widest">Services</span>
+                <span class="text-elegant-orange text-sm uppercase tracking-widest">Services</span>
                 <h2 class="font-cormorant text-4xl md:text-5xl font-bold mb-4 tracking-wide text-elegant-white"
                     data-lang-key="amenities_title">Premium Amenities</h2>
                 <div class="decorative-line w-40 mx-auto mt-4"></div>
@@ -490,12 +497,12 @@
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
                 <!-- Amenity 1 -->
                 <div
-                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden border border-elegant-gold/30 subtle-shadow">
+                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden border border-elegant-orange/30 subtle-shadow">
                     <div
-                        class="bg-elegant-gold/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-gold">
-                        <i class="fas fa-swimming-pool text-2xl text-elegant-gold"></i>
+                        class="bg-elegant-orange/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-orange">
+                        <i class="fas fa-swimming-pool text-2xl text-elegant-orange"></i>
                     </div>
-                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-gold"
+                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-orange"
                         data-lang-key="amenity1_title">Outdoor Pool</h3>
                     <p class="text-elegant-white/70 text-sm" data-lang-key="amenity1_desc">Enjoy swimming with
                         beautiful natural views</p>
@@ -503,12 +510,12 @@
 
                 <!-- Amenity 2 -->
                 <div
-                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-100 border border-elegant-gold/30 subtle-shadow">
+                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-100 border border-elegant-orange/30 subtle-shadow">
                     <div
-                        class="bg-elegant-gold/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-gold">
-                        <i class="fas fa-smoking-ban text-2xl text-elegant-gold"></i>
+                        class="bg-elegant-orange/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-orange">
+                        <i class="fas fa-smoking-ban text-2xl text-elegant-orange"></i>
                     </div>
-                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-gold"
+                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-orange"
                         data-lang-key="amenity2_title">Non-Smoking Rooms</h3>
                     <p class="text-elegant-white/70 text-sm" data-lang-key="amenity2_desc">Fresh air for your comfort
                     </p>
@@ -516,12 +523,12 @@
 
                 <!-- Amenity 3 -->
                 <div
-                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-200 border border-elegant-gold/30 subtle-shadow">
+                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-200 border border-elegant-orange/30 subtle-shadow">
                     <div
-                        class="bg-elegant-gold/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-gold">
-                        <i class="fas fa-plane text-2xl text-elegant-gold"></i>
+                        class="bg-elegant-orange/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-orange">
+                        <i class="fas fa-plane text-2xl text-elegant-orange"></i>
                     </div>
-                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-gold"
+                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-orange"
                         data-lang-key="amenity3_title">Airport Shuttle</h3>
                     <p class="text-elegant-white/70 text-sm" data-lang-key="amenity3_desc">Exclusive transportation
                         service</p>
@@ -529,12 +536,12 @@
 
                 <!-- Amenity 4 -->
                 <div
-                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-300 border border-elegant-gold/30 subtle-shadow">
+                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-300 border border-elegant-orange/30 subtle-shadow">
                     <div
-                        class="bg-elegant-gold/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-gold">
-                        <i class="fas fa-spa text-2xl text-elegant-gold"></i>
+                        class="bg-elegant-orange/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-orange">
+                        <i class="fas fa-spa text-2xl text-elegant-orange"></i>
                     </div>
-                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-gold"
+                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-orange"
                         data-lang-key="amenity4_title">Spa & Wellness Center</h3>
                     <p class="text-elegant-white/70 text-sm" data-lang-key="amenity4_desc">Premium relaxation and
                         treatments</p>
@@ -542,12 +549,12 @@
 
                 <!-- Amenity 5 -->
                 <div
-                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-400 border border-elegant-gold/30 subtle-shadow">
+                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-400 border border-elegant-orange/30 subtle-shadow">
                     <div
-                        class="bg-elegant-gold/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-gold">
-                        <i class="fas fa-parking text-2xl text-elegant-gold"></i>
+                        class="bg-elegant-orange/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-orange">
+                        <i class="fas fa-parking text-2xl text-elegant-orange"></i>
                     </div>
-                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-gold"
+                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-orange"
                         data-lang-key="amenity5_title">Free Parking</h3>
                     <p class="text-elegant-white/70 text-sm" data-lang-key="amenity5_desc">Safe and convenient parking
                     </p>
@@ -555,12 +562,12 @@
 
                 <!-- Amenity 6 -->
                 <div
-                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden border border-elegant-gold/30 subtle-shadow">
+                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden border border-elegant-orange/30 subtle-shadow">
                     <div
-                        class="bg-elegant-gold/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-gold">
-                        <i class="fas fa-concierge-bell text-2xl text-elegant-gold"></i>
+                        class="bg-elegant-orange/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-orange">
+                        <i class="fas fa-concierge-bell text-2xl text-elegant-orange"></i>
                     </div>
-                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-gold"
+                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-orange"
                         data-lang-key="amenity6_title">Room Service</h3>
                     <p class="text-elegant-white/70 text-sm" data-lang-key="amenity6_desc">24-hour service for your
                         convenience</p>
@@ -568,12 +575,12 @@
 
                 <!-- Amenity 7 -->
                 <div
-                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-100 border border-elegant-gold/30 subtle-shadow">
+                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-100 border border-elegant-orange/30 subtle-shadow">
                     <div
-                        class="bg-elegant-gold/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-gold">
-                        <i class="fas fa-wifi text-2xl text-elegant-gold"></i>
+                        class="bg-elegant-orange/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-orange">
+                        <i class="fas fa-wifi text-2xl text-elegant-orange"></i>
                     </div>
-                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-gold"
+                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-orange"
                         data-lang-key="amenity7_title">Free WiFi</h3>
                     <p class="text-elegant-white/70 text-sm" data-lang-key="amenity7_desc">Fast internet connection
                         throughout</p>
@@ -581,12 +588,12 @@
 
                 <!-- Amenity 8 -->
                 <div
-                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-200 border border-elegant-gold/30 subtle-shadow">
+                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-200 border border-elegant-orange/30 subtle-shadow">
                     <div
-                        class="bg-elegant-gold/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-gold">
-                        <i class="fas fa-utensils text-2xl text-elegant-gold"></i>
+                        class="bg-elegant-orange/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-orange">
+                        <i class="fas fa-utensils text-2xl text-elegant-orange"></i>
                     </div>
-                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-gold"
+                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-orange"
                         data-lang-key="amenity8_title">Restaurant</h3>
                     <p class="text-elegant-white/70 text-sm" data-lang-key="amenity8_desc">Indonesian and
                         international cuisine</p>
@@ -594,12 +601,12 @@
 
                 <!-- Amenity 9 -->
                 <div
-                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-300 border border-elegant-gold/30 subtle-shadow">
+                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-300 border border-elegant-orange/30 subtle-shadow">
                     <div
-                        class="bg-elegant-gold/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-gold">
-                        <i class="fas fa-users text-2xl text-elegant-gold"></i>
+                        class="bg-elegant-orange/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-orange">
+                        <i class="fas fa-users text-2xl text-elegant-orange"></i>
                     </div>
-                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-gold"
+                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-orange"
                         data-lang-key="amenity9_title">Family Rooms</h3>
                     <p class="text-elegant-white/70 text-sm" data-lang-key="amenity9_desc">Comfortable accommodation
                         for families</p>
@@ -607,12 +614,12 @@
 
                 <!-- Amenity 10 -->
                 <div
-                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-400 border border-elegant-gold/30 subtle-shadow">
+                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-400 border border-elegant-orange/30 subtle-shadow">
                     <div
-                        class="bg-elegant-gold/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-gold">
-                        <i class="fas fa-coffee text-2xl text-elegant-gold"></i>
+                        class="bg-elegant-orange/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-orange">
+                        <i class="fas fa-coffee text-2xl text-elegant-orange"></i>
                     </div>
-                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-gold"
+                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-orange"
                         data-lang-key="amenity10_title">Breakfast</h3>
                     <p class="text-elegant-white/70 text-sm" data-lang-key="amenity10_desc">Continental, Asian, and
                         vegetarian options</p>
@@ -622,11 +629,11 @@
     </section>
 
     <!-- Testimonial Section -->
-    <section class="py-24 bg-elegant-cream bg-pattern-bg">
+    <section class="py-24 bg-white bg-pattern-bg">
         <div class="container mx-auto px-4">
             <div class="text-center mb-16 animate-hidden">
-                <span class="text-elegant-gold text-sm uppercase tracking-widest">Reviews</span>
-                <h2 class="font-cormorant text-4xl md:text-5xl font-bold text-elegant-burgundy mb-4 tracking-wide"
+                <span class="text-elegant-green text-sm uppercase tracking-widest">Reviews</span>
+                <h2 class="font-cormorant text-4xl md:text-5xl font-bold text-elegant-green mb-4 tracking-wide"
                     data-lang-key="testimonials_title">Guest Experiences</h2>
                 <div class="decorative-line w-40 mx-auto mt-4"></div>
                 <p class="text-lg mt-6 max-w-3xl mx-auto text-elegant-charcoal" data-lang-key="testimonials_subtitle">
@@ -635,11 +642,10 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
                 <!-- Testimonial 1 -->
-                <div class="bg-elegant-white p-8 shadow-md animate-hidden border border-elegant-gold/30 subtle-shadow">
+                <div
+                    class="bg-elegant-white p-8 shadow-md animate-hidden border border-elegant-green/30 subtle-shadow">
                     <div class="flex items-center mb-6">
-                        <div class="text-elegant-gold">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
+                        <div class="text-elegant-orange">
                             <i class="fas fa-star"></i>
                             <i class="fas fa-star"></i>
                             <i class="fas fa-star"></i>
@@ -655,7 +661,7 @@
                                 class="w-full h-full object-cover">
                         </div>
                         <div class="ml-4">
-                            <h4 class="font-medium text-elegant-burgundy">Sarah Johnson</h4>
+                            <h4 class="font-medium text-elegant-green">Sarah Johnson</h4>
                             <p class="text-sm text-elegant-gray">Jakarta, Indonesia</p>
                         </div>
                     </div>
@@ -663,9 +669,9 @@
 
                 <!-- Testimonial 2 -->
                 <div
-                    class="bg-elegant-white p-8 shadow-md animate-hidden delay-200 border border-elegant-gold/30 subtle-shadow">
+                    class="bg-elegant-white p-8 shadow-md animate-hidden delay-200 border border-elegant-green/30 subtle-shadow">
                     <div class="flex items-center mb-6">
-                        <div class="text-elegant-gold">
+                        <div class="text-elegant-orange">
                             <i class="fas fa-star"></i>
                             <i class="fas fa-star"></i>
                             <i class="fas fa-star"></i>
@@ -683,7 +689,7 @@
                                 class="w-full h-full object-cover">
                         </div>
                         <div class="ml-4">
-                            <h4 class="font-medium text-elegant-burgundy">David Chen</h4>
+                            <h4 class="font-medium text-elegant-green">David Chen</h4>
                             <p class="text-sm text-elegant-gray">Singapore</p>
                         </div>
                     </div>
@@ -691,9 +697,9 @@
 
                 <!-- Testimonial 3 -->
                 <div
-                    class="bg-elegant-white p-8 shadow-md animate-hidden delay-300 border border-elegant-gold/30 subtle-shadow">
+                    class="bg-elegant-white p-8 shadow-md animate-hidden delay-300 border border-elegant-green/30 subtle-shadow">
                     <div class="flex items-center mb-6">
-                        <div class="text-elegant-gold">
+                        <div class="text-elegant-orange">
                             <i class="fas fa-star"></i>
                             <i class="fas fa-star"></i>
                             <i class="fas fa-star"></i>
@@ -711,7 +717,7 @@
                                 class="w-full h-full object-cover">
                         </div>
                         <div class="ml-4">
-                            <h4 class="font-medium text-elegant-burgundy">Emma Wilson</h4>
+                            <h4 class="font-medium text-elegant-green">Emma Wilson</h4>
                             <p class="text-sm text-elegant-gray">Melbourne, Australia</p>
                         </div>
                     </div>
@@ -721,11 +727,11 @@
     </section>
 
     <!-- Location Section -->
-    <section id="location" class="py-24 bg-elegant-navy text-elegant-white">
+    <section id="location" class="py-24 bg-elegant-green text-elegant-white">
         <div class="container mx-auto px-4">
             <div class="text-center mb-16 animate-hidden">
-                <span class="text-elegant-gold text-sm uppercase tracking-widest">Find Us</span>
-                <h2 class="font-cormorant text-4xl md:text-5xl font-bold text-elegant-gold mb-4 tracking-wide"
+                <span class="text-elegant-orange text-sm uppercase tracking-widest">Find Us</span>
+                <h2 class="font-cormorant text-4xl md:text-5xl font-bold text-elegant-orange mb-4 tracking-wide"
                     data-lang-key="location_title">Our Location</h2>
                 <div class="decorative-line w-40 mx-auto mt-4"></div>
                 <p class="text-lg mt-6 max-w-3xl mx-auto" data-lang-key="location_subtitle">Strategically located with
@@ -734,7 +740,7 @@
 
             <div class="flex flex-col lg:flex-row gap-12">
                 <div class="lg:w-1/2 animate-hidden">
-                    <div class="overflow-hidden shadow-md h-96 border border-elegant-gold/30 subtle-shadow">
+                    <div class="overflow-hidden shadow-md h-96 border border-elegant-orange/30 subtle-shadow">
                         <iframe
                             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3945.2170366854!2d114.97!3d-8.55!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zOMKwMzMnMDAuMCJTIDExNMKwNTgnMTIuMCJF!5e0!3m2!1sen!2sid!4v1617000000000!5m2!1sen!2sid"
                             width="100%" height="100%" style="border:0;" allowfullscreen=""
@@ -743,56 +749,60 @@
                 </div>
 
                 <div class="lg:w-1/2 animate-hidden delay-200">
-                    <div class="bg-elegant-burgundy/90 p-8 shadow-md h-full border border-elegant-gold/30">
-                        <h3 class="font-cormorant text-3xl font-bold text-elegant-gold mb-6">Pondok Hari Baik</h3>
-                        <p class="text-lg mb-6" data-lang-key="location_address">Jalan Raya Denpasar - Gilimanuk,
-                            Tabanan, Bali, Indonesia, 82162</p>
-                        <p class="text-lg mb-8" data-lang-key="location_description">Located in a strategic location
-                            with easy access to various popular tourist attractions in Bali.</p>
+                    <div class="bg-white p-8 shadow-md h-full border border-elegant-orange/30 text-elegant-orange">
+                        <h3 class="font-cormorant text-3xl font-bold mb-6">Pondok Hari Baik</h3>
+                        <p class="text-lg mb-6" data-lang-key="location_address">
+                            Jalan Raya Denpasar - Gilimanuk, Tabanan, Bali, Indonesia, 82162
+                        </p>
+                        <p class="text-lg mb-8" data-lang-key="location_description">
+                            Located in a strategic location with easy access to various popular tourist attractions in
+                            Bali.
+                        </p>
 
                         <div class="space-y-4">
                             <div class="flex items-center">
                                 <div
-                                    class="w-10 h-10 bg-elegant-gold/20 rounded-full flex items-center justify-center mr-4">
-                                    <i class="fas fa-umbrella-beach text-elegant-gold"></i>
+                                    class="w-10 h-10 bg-elegant-orange/20 rounded-full flex items-center justify-center mr-4">
+                                    <i class="fas fa-umbrella-beach text-elegant-orange"></i>
                                 </div>
                                 <span data-lang-key="location_bonian">Bonian Beach: < 1 km</span>
                             </div>
 
                             <div class="flex items-center">
                                 <div
-                                    class="w-10 h-10 bg-elegant-gold/20 rounded-full flex items-center justify-center mr-4">
-                                    <i class="fas fa-umbrella-beach text-elegant-gold"></i>
+                                    class="w-10 h-10 bg-elegant-orange/20 rounded-full flex items-center justify-center mr-4">
+                                    <i class="fas fa-umbrella-beach text-elegant-orange"></i>
                                 </div>
                                 <span data-lang-key="location_balian">Balian Beach: 2 km</span>
                             </div>
 
                             <div class="flex items-center">
                                 <div
-                                    class="w-10 h-10 bg-elegant-gold/20 rounded-full flex items-center justify-center mr-4">
-                                    <i class="fas fa-umbrella-beach text-elegant-gold"></i>
+                                    class="w-10 h-10 bg-elegant-orange/20 rounded-full flex items-center justify-center mr-4">
+                                    <i class="fas fa-umbrella-beach text-elegant-orange"></i>
                                 </div>
                                 <span data-lang-key="location_batulumbang">Batulumbang Beach: 2.2 km</span>
                             </div>
 
                             <div class="flex items-center">
                                 <div
-                                    class="w-10 h-10 bg-elegant-gold/20 rounded-full flex items-center justify-center mr-4">
-                                    <i class="fas fa-landmark text-elegant-gold"></i>
+                                    class="w-10 h-10 bg-elegant-orange/20 rounded-full flex items-center justify-center mr-4">
+                                    <i class="fas fa-landmark text-elegant-orange"></i>
                                 </div>
                                 <span data-lang-key="location_tanah_lot">Tanah Lot Temple: 36 km</span>
                             </div>
 
                             <div class="flex items-center">
                                 <div
-                                    class="w-10 h-10 bg-elegant-gold/20 rounded-full flex items-center justify-center mr-4">
-                                    <i class="fas fa-plane-departure text-elegant-gold"></i>
+                                    class="w-10 h-10 bg-elegant-orange/20 rounded-full flex items-center justify-center mr-4">
+                                    <i class="fas fa-plane-departure text-elegant-orange"></i>
                                 </div>
                                 <span data-lang-key="location_airport">Ngurah Rai International Airport: 57 km</span>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </section>
@@ -800,17 +810,17 @@
 
     <!-- CTA Section -->
     <section
-        class="py-24 bg-elegant-burgundy text-elegant-white bg-[url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')] bg-cover bg-center relative">
-        <div class="absolute inset-0 bg-elegant-navy/80"></div>
+        class="py-24 bg-elegant-redorange text-elegant-white bg-[url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')] bg-cover bg-center relative">
+        <div class="absolute inset-0 bg-black/50"></div>
         <div class="container mx-auto px-4 text-center relative z-10">
             <div class="w-full mx-auto animate-hidden">
-                <h2 class="font-cormorant text-4xl md:text-5xl font-bold mb-6 text-elegant-gold">
+                <h2 class="font-cormorant text-4xl md:text-5xl font-bold mb-6 text-elegant-orange">
                     Ready for an Unforgettable Experience?</h2>
-                <div class="w-20 h-px bg-elegant-gold mx-auto mb-6"></div>
+                <div class="w-20 h-px bg-elegant-orange mx-auto mb-6"></div>
                 <p class="text-xl mb-10 text-elegant-white/90">Book your stay now and
                     enjoy the tranquility of Bali at Pondok Hari Baik</p>
                 <button id="cta-book-btn"
-                    class="inline-block bg-elegant-gold hover:bg-elegant-gold/80 text-elegant-navy px-8 py-4 text-lg font-medium transition-all duration-300 btn-elegant border border-elegant-white/20">
+                    class="inline-block bg-elegant-orange hover:bg-elegant-orange/80 text-elegant-white px-8 py-4 text-lg font-medium transition-all duration-300 btn-elegant border border-elegant-white">
                     Book Your Stay
                     <i class="fas fa-arrow-right ml-2"></i>
                 </button>
@@ -819,78 +829,78 @@
     </section>
 
     <!-- Footer -->
-    <footer class="bg-elegant-navy text-elegant-white pt-16 pb-6 border-t border-elegant-gold/30">
+    <footer class="bg-elegant-green text-elegant-white pt-16 pb-6 border-t border-elegant-orange/30">
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
                 <div>
-                    <h3 class="font-cormorant text-2xl font-bold text-elegant-gold mb-6">Pondok Hari Baik</h3>
-                    <p class="mb-6 text-elegant-white/70">Luxury villa with
+                    <h3 class="font-cormorant text-2xl font-bold text-elegant-orange mb-6">Pondok Hari Baik</h3>
+                    <p class="mb-6 text-elegant-white">Luxury villa with
                         beautiful views and excellent service in Balian, Bali.</p>
                     <div class="flex space-x-4">
                         <a href="#"
-                            class="w-10 h-10 bg-elegant-gold/20 rounded-full flex items-center justify-center hover:bg-elegant-gold transition-colors duration-300 hover:text-elegant-navy text-elegant-gold">
+                            class="w-10 h-10 bg-elegant-orange/20 rounded-full flex items-center justify-center hover:bg-elegant-orange transition-colors duration-300 hover:text-elegant-green text-elegant-orange">
                             <i class="fab fa-facebook-f"></i>
                         </a>
                         <a href="#"
-                            class="w-10 h-10 bg-elegant-gold/20 rounded-full flex items-center justify-center hover:bg-elegant-gold transition-colors duration-300 hover:text-elegant-navy text-elegant-gold">
+                            class="w-10 h-10 bg-elegant-orange/20 rounded-full flex items-center justify-center hover:bg-elegant-orange transition-colors duration-300 hover:text-elegant-green text-elegant-orange">
                             <i class="fab fa-instagram"></i>
                         </a>
                         <a href="#"
-                            class="w-10 h-10 bg-elegant-gold/20 rounded-full flex items-center justify-center hover:bg-elegant-gold transition-colors duration-300 hover:text-elegant-navy text-elegant-gold">
+                            class="w-10 h-10 bg-elegant-orange/20 rounded-full flex items-center justify-center hover:bg-elegant-orange transition-colors duration-300 hover:text-elegant-green text-elegant-orange">
                             <i class="fab fa-twitter"></i>
                         </a>
                         <a href="#"
-                            class="w-10 h-10 bg-elegant-gold/20 rounded-full flex items-center justify-center hover:bg-elegant-gold transition-colors duration-300 hover:text-elegant-navy text-elegant-gold">
+                            class="w-10 h-10 bg-elegant-orange/20 rounded-full flex items-center justify-center hover:bg-elegant-orange transition-colors duration-300 hover:text-elegant-green text-elegant-orange">
                             <i class="fab fa-tripadvisor"></i>
                         </a>
                     </div>
                 </div>
 
                 <div>
-                    <h3 class="font-cormorant text-xl font-bold text-elegant-gold mb-6">
+                    <h3 class="font-cormorant text-xl font-bold text-elegant-orange mb-6">
                         Quick Links</h3>
                     <ul class="space-y-3">
                         <li><a href="#home"
-                                class="text-elegant-white/70 hover:text-elegant-gold transition-colors duration-300">Home</a>
+                                class="text-elegant-white hover:text-elegant-orange transition-colors duration-300">Home</a>
                         </li>
                         <li><a href="#about"
-                                class="text-elegant-white/70 hover:text-elegant-gold transition-colors duration-300">About</a>
+                                class="text-elegant-white hover:text-elegant-orange transition-colors duration-300">About</a>
                         </li>
                         <li><a href="#rooms"
-                                class="text-elegant-white/70 hover:text-elegant-gold transition-colors duration-300">Rooms</a>
+                                class="text-elegant-white hover:text-elegant-orange transition-colors duration-300">Rooms</a>
                         </li>
                         <li><a href="#amenities"
-                                class="text-elegant-white/70 hover:text-elegant-gold transition-colors duration-300">Amenities</a>
+                                class="text-elegant-white hover:text-elegant-orange transition-colors duration-300">Amenities</a>
                         </li>
                         <li><a href="#location"
-                                class="text-elegant-white/70 hover:text-elegant-gold transition-colors duration-300">Location</a>
+                                class="text-elegant-white hover:text-elegant-orange transition-colors duration-300">Location</a>
                         </li>
                     </ul>
                 </div>
 
                 <div>
-                    <h3 class="font-cormorant text-xl font-bold text-elegant-gold mb-6">
+                    <h3 class="font-cormorant text-xl font-bold text-elegant-orange mb-6">
                         Contact</h3>
                     <ul class="space-y-3">
                         <li class="flex items-start">
-                            <i class="fas fa-map-marker-alt text-elegant-gold mt-1 mr-3"></i>
-                            <span class="text-elegant-white/70">Jalan Raya Denpasar -
+                            <i class="fas fa-map-marker-alt text-elegant-orange mt-1 mr-3"></i>
+                            <span class="text-elegant-white">Jalan Raya Denpasar -
                                 Gilimanuk, Tabanan, Bali</span>
                         </li>
                         <li class="flex items-start">
-                            <i class="fas fa-phone text-elegant-gold mt-1 mr-3"></i>
-                            <span class="text-elegant-white/70">+62 812 3456 7890</span>
+                            <i class="fas fa-phone text-elegant-orange mt-1 mr-3"></i>
+                            <span class="text-elegant-white">+62 812 3456 7890</span>
                         </li>
                         <li class="flex items-start">
-                            <i class="fas fa-envelope text-elegant-gold mt-1 mr-3"></i>
-                            <span class="text-elegant-white/70">info@pondokharibaik.com</span>
+                            <i class="fas fa-envelope text-elegant-orange mt-1 mr-3"></i>
+                            <span class="text-elegant-white">info@pondokharibaik.com</span>
                         </li>
                     </ul>
                 </div>
             </div>
 
-            <div class="border-t border-elegant-gold/20 pt-6 text-center">
-                <p class="text-elegant-white/50">&copy; 2025 Pondok Hari Baik. All Rights Reserved.</p>
+            <div class="border-t border-elegant-orange/20 pt-6 text-center">
+                <p class="text-elegant-white">&copy; 2025 Pondok Hari Baik. All Rights Reserved.</p>
             </div>
         </div>
     </footer>
@@ -903,47 +913,47 @@
                 id="modal-backdrop"></div>
 
             <!-- Modal Content -->
-            <div class="relative bg-elegant-cream max-w-5xl w-full mx-auto rounded-lg shadow-2xl overflow-hidden z-10 transform transition-all duration-500 scale-95 opacity-0"
+            <div class="relative bg-elegant-lightgray max-w-5xl w-full mx-auto rounded-lg shadow-2xl overflow-hidden z-10 transform transition-all duration-500 scale-95 opacity-0"
                 id="modal-content">
                 <!-- Decorative elements -->
                 <div
-                    class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-elegant-gold/20 via-elegant-gold to-elegant-gold/20">
+                    class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-elegant-green/20 via-elegant-green to-elegant-green/20">
                 </div>
                 <div
-                    class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-elegant-gold/20 via-elegant-gold to-elegant-gold/20">
+                    class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-elegant-green/20 via-elegant-green to-elegant-green/20">
                 </div>
                 <div
-                    class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-elegant-gold/20 via-elegant-gold to-elegant-gold/20">
+                    class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-elegant-green/20 via-elegant-green to-elegant-green/20">
                 </div>
                 <div
-                    class="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-elegant-gold/20 via-elegant-gold to-elegant-gold/20">
+                    class="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-elegant-green/20 via-elegant-green to-elegant-green/20">
                 </div>
 
                 <!-- Close Button -->
                 <button id="close-modal"
-                    class="absolute top-6 right-6 text-elegant-gold hover:text-elegant-burgundy transition-colors z-20 group">
+                    class="absolute top-6 right-6 text-elegant-orange hover:text-elegant-redorange transition-colors z-20 group">
                     <div class="relative">
                         <div
-                            class="w-8 h-8 rounded-full bg-elegant-navy border border-elegant-gold/50 flex items-center justify-center group-hover:bg-elegant-burgundy transition-all duration-300">
+                            class="w-8 h-8 rounded-full bg-elegant-green border border-elegant-orange/50 flex items-center justify-center group-hover:bg-elegant-redorange transition-all duration-300">
                             <i class="fas fa-times"></i>
                         </div>
                         <div
-                            class="absolute -inset-1 rounded-full border border-elegant-gold/30 group-hover:border-elegant-gold/50 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                            class="absolute -inset-1 rounded-full border border-elegant-orange/30 group-hover:border-elegant-orange/50 opacity-0 group-hover:opacity-100 transition-all duration-300">
                         </div>
                     </div>
                 </button>
 
                 <!-- Header -->
-                <div class="bg-elegant-navy p-8 border-b border-elegant-gold/30 relative overflow-hidden">
+                <div class="bg-elegant-green p-8 border-b border-elegant-orange/30 relative overflow-hidden">
                     <!-- Decorative pattern -->
                     <div class="absolute inset-0 opacity-5">
                         <div class="absolute inset-0"
-                            style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23C0A062\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');">
+                            style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23EF9651\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');">
                         </div>
                     </div>
 
                     <div class="relative">
-                        <h3 class="font-cormorant text-3xl md:text-4xl font-bold text-elegant-gold mb-2">Book Your
+                        <h3 class="font-cormorant text-3xl md:text-4xl font-bold text-elegant-orange mb-2">Book Your
                             Luxury Stay</h3>
                         <p class="text-elegant-white/80 max-w-2xl">Experience the tranquility of Bali in our luxurious
                             villa with stunning views and exceptional service</p>
@@ -951,14 +961,14 @@
                 </div>
 
                 <!-- Stepper Progress -->
-                <div class="px-8 pt-8 pb-4 bg-elegant-cream">
+                <div class="px-8 pt-8 pb-4 bg-elegant-lightgray">
                     <div class="relative">
                         <!-- Progress bar background -->
-                        <div class="absolute top-1/2 left-0 w-full h-1 bg-elegant-gold/20 -translate-y-1/2"></div>
+                        <div class="absolute top-1/2 left-0 w-full h-1 bg-elegant-orange/20 -translate-y-1/2"></div>
 
                         <!-- Active progress bar -->
                         <div id="progress-bar"
-                            class="absolute top-1/2 left-0 h-1 bg-elegant-burgundy -translate-y-1/2 transition-all duration-500"
+                            class="absolute top-1/2 left-0 h-1 bg-elegant-redorange -translate-y-1/2 transition-all duration-500"
                             style="width: 0%"></div>
 
 
@@ -966,16 +976,16 @@
                 </div>
 
                 <!-- Step Content -->
-                <div class="p-8 bg-elegant-cream min-h-[400px]">
+                <div class="p-8 bg-elegant-lightgray min-h-[400px]">
                     <!-- Step 1: Check Availability -->
                     <div class="step-content" id="step-1">
                         <div class="max-w-4xl mx-auto">
                             <div class="flex items-center mb-6">
                                 <div
-                                    class="w-10 h-10 rounded-full bg-elegant-burgundy/10 flex items-center justify-center mr-4">
-                                    <i class="fas fa-calendar-alt text-elegant-burgundy"></i>
+                                    class="w-10 h-10 rounded-full bg-elegant-redorange/10 flex items-center justify-center mr-4">
+                                    <i class="fas fa-calendar-alt text-elegant-redorange"></i>
                                 </div>
-                                <h4 class="font-cormorant text-2xl font-bold text-elegant-burgundy">Select Your Dates
+                                <h4 class="font-cormorant text-2xl font-bold text-elegant-green">Select Your Dates
                                 </h4>
                             </div>
 
@@ -985,15 +995,15 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                                     {{-- Check-in --}}
                                     <div
-                                        class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20 hover:border-elegant-gold/40 transition-all duration-300">
+                                        class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-green/20 hover:border-elegant-green/40 transition-all duration-300">
                                         <label for="check-in"
                                             class="block text-sm font-medium text-elegant-charcoal mb-2">Check-in Date
                                             <span class="text-red-500">*</span></label>
                                         <div class="relative">
                                             <input type="text" id="check-in" name="start_date"
-                                                class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10"
+                                                class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green rounded-md pl-10"
                                                 placeholder="Pilih tanggal">
-                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green">
                                                 <i class="fas fa-calendar-day"></i>
                                             </div>
                                         </div>
@@ -1004,15 +1014,15 @@
 
                                     {{-- Check-out --}}
                                     <div
-                                        class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20 hover:border-elegant-gold/40 transition-all duration-300">
+                                        class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-green/20 hover:border-elegant-green/40 transition-all duration-300">
                                         <label for="check-out"
                                             class="block text-sm font-medium text-elegant-charcoal mb-2">Check-out Date
                                             <span class="text-red-500">*</span></label>
                                         <div class="relative">
                                             <input type="text" id="check-out" name="end_date"
-                                                class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10"
+                                                class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green rounded-md pl-10"
                                                 placeholder="Pilih tanggal">
-                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green">
                                                 <i class="fas fa-calendar-day"></i>
                                             </div>
                                         </div>
@@ -1027,15 +1037,15 @@
                             </div>
 
                             <div
-                                class="mt-8 bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20 space-y-6">
+                                class="mt-8 bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-green/20 space-y-6">
 
                                 <!-- Header -->
                                 <div class="flex items-center">
                                     <div
-                                        class="w-10 h-10 rounded-full bg-elegant-burgundy/10 flex items-center justify-center mr-4">
-                                        <i class="fas fa-home text-elegant-burgundy text-lg"></i>
+                                        class="w-10 h-10 rounded-full bg-elegant-redorange/10 flex items-center justify-center mr-4">
+                                        <i class="fas fa-home text-elegant-redorange text-lg"></i>
                                     </div>
-                                    <h5 class="font-cormorant text-2xl font-bold text-elegant-burgundy">
+                                    <h5 class="font-cormorant text-2xl font-bold text-elegant-green">
                                         Selected Room
                                     </h5>
                                 </div>
@@ -1048,17 +1058,17 @@
 
                                     </div>
                                     <button id="change-room-btn"
-                                        class="text-elegant-burgundy hover:text-elegant-gold transition-colors text-sm font-medium">
+                                        class="text-elegant-green hover:text-elegant-orange transition-colors text-sm font-medium">
                                         <i class="fas fa-exchange-alt mr-1"></i> Change
                                     </button>
                                 </div>
 
                                 <!-- Price Calculation -->
                                 <div id="price-calculation"
-                                    class="p-4 bg-elegant-white text-elegant-charcoal rounded-lg border border-elegant-gold/20">
+                                    class="p-4 bg-elegant-white text-elegant-charcoal rounded-lg border border-elegant-green/20">
                                     <p id="calc-status" class="italic text-sm">Please select check‑out date to see
                                         total price.</p>
-                                    <div id="calc-total" class="mt-2 text-xl font-bold text-elegant-burgundy hidden">
+                                    <div id="calc-total" class="mt-2 text-xl font-bold text-elegant-green hidden">
                                         Total: <span id="calc-amount"></span>
                                     </div>
                                 </div>
@@ -1073,13 +1083,13 @@
                         <div class="max-w-4xl mx-auto">
                             <div class="flex items-center mb-6">
                                 <div
-                                    class="w-10 h-10 rounded-full bg-elegant-burgundy/10 flex items-center justify-center mr-4">
-                                    <i class="fas fa-home text-elegant-burgundy"></i>
+                                    class="w-10 h-10 rounded-full bg-elegant-redorange/10 flex items-center justify-center mr-4">
+                                    <i class="fas fa-home text-elegant-redorange"></i>
                                 </div>
-                                <h4 class="font-cormorant text-2xl font-bold text-elegant-burgundy">Room Details</h4>
+                                <h4 class="font-cormorant text-2xl font-bold text-elegant-green">Room Details</h4>
                             </div>
 
-                            <div class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20 mb-8">
+                            <div class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-green/20 mb-8">
                                 <div class="flex flex-col md:flex-row">
                                     <div class="md:w-2/5 mb-4 md:mb-0 md:mr-6">
                                         <div class="relative rounded-lg overflow-hidden shadow-md group">
@@ -1088,11 +1098,11 @@
                                                 alt="Room"
                                                 class="w-full h-64 object-cover transition-transform duration-700 group-hover:scale-110">
                                             <div
-                                                class="absolute inset-0 bg-gradient-to-t from-elegant-navy/70 to-transparent">
+                                                class="absolute inset-0 bg-gradient-to-t from-elegant-green/70 to-transparent">
                                             </div>
                                             <div class="absolute bottom-4 left-4 text-elegant-white">
                                                 <div class="flex items-center">
-                                                    <div class="text-elegant-gold">
+                                                    <div class="text-elegant-orange">
                                                         <i class="fas fa-star"></i>
                                                         <i class="fas fa-star"></i>
                                                         <i class="fas fa-star"></i>
@@ -1107,7 +1117,7 @@
                                     </div>
                                     <div class="md:w-3/5">
                                         <h5 id="room-detail-name"
-                                            class="font-cormorant text-2xl font-bold text-elegant-burgundy mb-2">Family
+                                            class="font-cormorant text-2xl font-bold text-elegant-green mb-2">Family
                                             Bungalow</h5>
                                         <div class="flex items-center mb-4">
 
@@ -1118,17 +1128,17 @@
                                             stunning views and premium amenities.</p>
                                         <div class="grid grid-cols-2 gap-2 mb-4">
                                             <div class="flex items-center">
-                                                <i class="fas fa-user-friends text-elegant-gold mr-2"></i>
+                                                <i class="fas fa-user-friends text-elegant-orange mr-2"></i>
                                                 <span id="room-capacity" class="text-elegant-charcoal">Up to 4
                                                     people</span>
                                             </div>
 
                                             <div class="flex items-center">
-                                                <i class="fas fa-bath text-elegant-gold mr-2"></i>
+                                                <i class="fas fa-bath text-elegant-orange mr-2"></i>
                                                 <span class="text-elegant-charcoal">Private Bathroom</span>
                                             </div>
                                             <div class="flex items-center">
-                                                <i class="fas fa-tv text-elegant-gold mr-2"></i>
+                                                <i class="fas fa-tv text-elegant-orange mr-2"></i>
                                                 <span class="text-elegant-charcoal">Flat Screen TV</span>
                                             </div>
                                         </div>
@@ -1138,37 +1148,37 @@
 
                             <div class="flex items-center mb-6">
                                 <div
-                                    class="w-10 h-10 rounded-full bg-elegant-burgundy/10 flex items-center justify-center mr-4">
-                                    <i class="fas fa-receipt text-elegant-burgundy"></i>
+                                    class="w-10 h-10 rounded-full bg-elegant-redorange/10 flex items-center justify-center mr-4">
+                                    <i class="fas fa-receipt text-elegant-redorange"></i>
                                 </div>
-                                <h4 class="font-cormorant text-2xl font-bold text-elegant-burgundy">Booking Summary
+                                <h4 class="font-cormorant text-2xl font-bold text-elegant-green">Booking Summary
                                 </h4>
                             </div>
 
-                            <div class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20">
+                            <div class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-green/20">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <h6
-                                            class="font-medium text-elegant-burgundy mb-4 pb-2 border-b border-elegant-gold/20">
+                                            class="font-medium text-elegant-green mb-4 pb-2 border-b border-elegant-orange/20">
                                             Stay Details</h6>
                                         <div class="space-y-3 text-elegant-charcoal">
                                             <div class="flex justify-between items-center">
                                                 <div class="flex items-center">
-                                                    <i class="fas fa-calendar-check text-elegant-gold mr-2"></i>
+                                                    <i class="fas fa-calendar-check text-elegant-orange mr-2"></i>
                                                     <span>Check-in:</span>
                                                 </div>
                                                 <span id="summary-checkin" class="font-medium">May 10, 2025</span>
                                             </div>
                                             <div class="flex justify-between items-center">
                                                 <div class="flex items-center">
-                                                    <i class="fas fa-calendar-times text-elegant-gold mr-2"></i>
+                                                    <i class="fas fa-calendar-times text-elegant-orange mr-2"></i>
                                                     <span>Check-out:</span>
                                                 </div>
                                                 <span id="summary-checkout" class="font-medium">May 15, 2025</span>
                                             </div>
                                             <div class="flex justify-between items-center">
                                                 <div class="flex items-center">
-                                                    <i class="fas fa-moon text-elegant-gold mr-2"></i>
+                                                    <i class="fas fa-moon text-elegant-orange mr-2"></i>
                                                     <span>Nights:</span>
                                                 </div>
                                                 <span id="summary-nights" class="font-medium">5</span>
@@ -1179,7 +1189,7 @@
 
                                     <div>
                                         <h6
-                                            class="font-medium text-elegant-burgundy mb-4 pb-2 border-b border-elegant-gold/20">
+                                            class="font-medium text-elegant-green mb-4 pb-2 border-b border-elegant-orange/20">
                                             Price Details</h6>
                                         <div class="space-y-3 text-elegant-charcoal">
                                             <div class="flex justify-between items-center">
@@ -1187,9 +1197,9 @@
                                                 <span id="room-rate-total">Rp 2,250,000</span>
                                             </div>
 
-                                            <div class="pt-3 mt-3 border-t border-elegant-gold/20">
+                                            <div class="pt-3 mt-3 border-t border-elegant-orange/20">
                                                 <div
-                                                    class="flex justify-between items-center font-bold text-elegant-burgundy">
+                                                    class="flex justify-between items-center font-bold text-elegant-green">
                                                     <span>Total:</span>
                                                     <span id="summary-total">Rp 2,475,000</span>
                                                 </div>
@@ -1206,14 +1216,14 @@
                         <div class="max-w-4xl mx-auto">
                             <div class="flex items-center mb-6">
                                 <div
-                                    class="w-10 h-10 rounded-full bg-elegant-burgundy/10 flex items-center justify-center mr-4">
-                                    <i class="fas fa-user-circle text-elegant-burgundy"></i>
+                                    class="w-10 h-10 rounded-full bg-elegant-redorange/10 flex items-center justify-center mr-4">
+                                    <i class="fas fa-user-circle text-elegant-redorange"></i>
                                 </div>
-                                <h4 class="font-cormorant text-2xl font-bold text-elegant-burgundy">Guest Information
+                                <h4 class="font-cormorant text-2xl font-bold text-elegant-green">Guest Information
                                 </h4>
                             </div>
 
-                            <div class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20 mb-8">
+                            <div class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-green/20 mb-8">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                     <div>
                                         <label for="guest-name"
@@ -1221,8 +1231,8 @@
                                             Name <span class="text-red-500">*</span></label>
                                         <div class="relative">
                                             <input type="text" id="guest-name" placeholder="Enter your full name"
-                                                class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10">
-                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                                class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green rounded-md pl-10">
+                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green">
                                                 <i class="fas fa-user"></i>
                                             </div>
                                         </div>
@@ -1236,8 +1246,8 @@
                                         <div class="relative">
                                             <input type="email" id="guest-email"
                                                 placeholder="Enter your email address"
-                                                class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10">
-                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                                class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green rounded-md pl-10">
+                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green">
                                                 <i class="fas fa-envelope"></i>
                                             </div>
                                         </div>
@@ -1254,8 +1264,8 @@
                                         <div class="relative">
                                             <input type="tel" id="guest-phone"
                                                 placeholder="Enter your phone number"
-                                                class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10">
-                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                                class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green rounded-md pl-10">
+                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green">
                                                 <i class="fas fa-phone"></i>
                                             </div>
                                         </div>
@@ -1268,8 +1278,8 @@
                                             <span class="text-red-500">*</span></label>
                                         <div class="relative">
                                             <textarea id="guest-address" rows="3" placeholder="Enter your address"
-                                                class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-gold rounded-md pl-10 resize-none"></textarea>
-                                            <div class="absolute left-3 top-4 text-elegant-gold">
+                                                class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green rounded-md pl-10 resize-none"></textarea>
+                                            <div class="absolute left-3 top-4 text-elegant-green">
                                                 <i class="fas fa-map-marker-alt"></i>
                                             </div>
                                         </div>
@@ -1288,53 +1298,51 @@
                         <div class="max-w-4xl mx-auto">
                             <div class="flex items-center mb-6">
                                 <div
-                                    class="w-10 h-10 rounded-full bg-elegant-burgundy/10 flex items-center justify-center mr-4">
-                                    <i class="fas fa-credit-card text-elegant-burgundy"></i>
+                                    class="w-10 h-10 rounded-full bg-elegant-redorange/10 flex items-center justify-center mr-4">
+                                    <i class="fas fa-credit-card text-elegant-redorange"></i>
                                 </div>
-                                <h4 class="font-cormorant text-2xl font-bold text-elegant-burgundy">Payment Information
+                                <h4 class="font-cormorant text-2xl font-bold text-elegant-green">Payment Information
                                 </h4>
                             </div>
 
-                            <div class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20 mb-8">
-                                <h5
-                                    class="font-medium text-elegant-burgundy mb-4 pb-2 border-b border-elegant-gold/20">
+                            <div class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-green/20 mb-8">
+                                <h5 class="font-medium text-elegant-green mb-4 pb-2 border-b border-elegant-orange/20">
                                     Payment Summary
                                 </h5>
                                 <div class="space-y-3 text-elegant-charcoal">
                                     <div class="flex justify-between items-center">
                                         <span>Villa Name:</span>
-                                        <span id="payment-villa-name" class="text-elegant-burgundy font-bold"></span>
+                                        <span id="payment-villa-name" class="text-elegant-green font-bold"></span>
                                     </div>
                                     <div class="flex justify-between items-center">
                                         <span>Check‑in Date:</span>
-                                        <span id="payment-checkin" class="text-elegant-burgundy font-bold"></span>
+                                        <span id="payment-checkin" class="text-elegant-green font-bold"></span>
                                     </div>
                                     <div class="flex justify-between items-center">
                                         <span>Check‑out Date:</span>
-                                        <span id="payment-checkout" class="text-elegant-burgundy font-bold"></span>
+                                        <span id="payment-checkout" class="text-elegant-green font-bold"></span>
                                     </div>
                                     <div class="flex justify-between items-center">
                                         <span>Number of Nights:</span>
-                                        <span id="payment-nights" class="text-elegant-burgundy font-bold"></span>
+                                        <span id="payment-nights" class="text-elegant-green font-bold"></span>
                                     </div>
                                     <div class="flex justify-between items-center">
                                         <span>Room Rate (<span id="payment-nights-label"></span>):</span>
-                                        <span id="payment-room-rate" class="text-elegant-burgundy font-bold"></span>
+                                        <span id="payment-room-rate" class="text-elegant-green font-bold"></span>
                                     </div>
 
 
-                                    <div class="pt-3 mt-3 border-t border-elegant-gold/20">
-                                        <div class="flex justify-between items-center font-bold text-elegant-burgundy">
+                                    <div class="pt-3 mt-3 border-t border-elegant-orange/20">
+                                        <div class="flex justify-between items-center font-bold text-elegant-green">
                                             <span>Total Amount:</span>
-                                            <span id="payment-total" class="text-elegant-burgundy font-bold"></span>
+                                            <span id="payment-total" class="text-elegant-green font-bold"></span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-gold/20">
-                                <h5
-                                    class="font-medium text-elegant-burgundy mb-4 pb-2 border-b border-elegant-gold/20">
+                            <div class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-green/20">
+                                <h5 class="font-medium text-elegant-green mb-4 pb-2 border-b border-elegant-orange/20">
                                     Payment Method</h5>
                                 <div class="space-y-4">
                                     <!-- Metode Pembayaran - Midtrans (default) dan Tunai -->
@@ -1342,10 +1350,10 @@
                                         <input type="radio" id="payment-midtrans" name="payment-method"
                                             class="hidden" checked>
                                         <label for="payment-midtrans"
-                                            class="flex items-center p-4 border border-elegant-gold/30 rounded-lg cursor-pointer transition-all duration-300 hover:bg-elegant-cream/50">
+                                            class="flex items-center p-4 border border-elegant-green/30 rounded-lg cursor-pointer transition-all duration-300 hover:bg-elegant-lightgray/50">
                                             <div
-                                                class="w-6 h-6 rounded-full border-2 border-elegant-gold flex items-center justify-center mr-3">
-                                                <div class="w-3 h-3 rounded-full bg-elegant-burgundy"></div>
+                                                class="w-6 h-6 rounded-full border-2 border-elegant-orange flex items-center justify-center mr-3">
+                                                <div class="w-3 h-3 rounded-full bg-elegant-redorange"></div>
                                             </div>
                                             <span class="mr-4">Midtrans</span>
                                             <div class="ml-auto">
@@ -1363,7 +1371,7 @@
                             <div class="mt-6 flex justify-end space-x-4">
 
                                 <button id="btn-paynow"
-                                    class="px-4 py-2 bg-elegant-burgundy text-white rounded-md hover:bg-elegant-burgundy/80">
+                                    class="px-4 py-2 bg-elegant-green text-white rounded-md hover:bg-elegant-green/80">
                                     Pay Now
                                 </button>
                             </div>
@@ -1382,7 +1390,7 @@
                                     </div>
                                     <i class="fas fa-check text-green-600 text-4xl"></i>
                                 </div>
-                                <h4 class="font-cormorant text-3xl font-bold text-elegant-burgundy mb-4">Booking
+                                <h4 class="font-cormorant text-3xl font-bold text-elegant-green mb-4">Booking
                                     Confirmed!</h4>
                                 <p class="text-elegant-charcoal mb-2">Thank you for your booking at Pondok Hari Baik.
                                 </p>
@@ -1396,9 +1404,9 @@
                 </div>
 
                 <!-- Footer Actions -->
-                <div class="bg-elegant-cream p-8 border-t border-elegant-gold/30 flex justify-between">
+                <div class="bg-elegant-lightgray p-8 border-t border-elegant-orange/30 flex justify-between">
                     <button id="prev-step"
-                        class="bg-elegant-navy hover:bg-elegant-navy/80 text-elegant-gold px-6 py-3 transition-all duration-300 btn-elegant border border-elegant-gold/30 rounded-md hidden group">
+                        class="bg-elegant-green hover:bg-elegant-green/80 text-elegant-white px-6 py-3 transition-all duration-300 btn-elegant border border-elegant-orange/30 rounded-md hidden group">
                         <div class="flex items-center">
                             <i
                                 class="fas fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform duration-300"></i>
@@ -1407,7 +1415,7 @@
                     </button>
                     <div class="ml-auto">
                         <button id="next-step"
-                            class="bg-elegant-burgundy hover:bg-elegant-burgundy/80 text-elegant-white px-6 py-3 transition-all duration-300 btn-elegant border border-elegant-gold/30 rounded-md group">
+                            class="bg-elegant-green hover:bg-elegant-green/80 text-elegant-white px-6 py-3 transition-all duration-300 btn-elegant border border-elegant-orange/30 rounded-md group">
                             <div class="flex items-center">
                                 <span>Next</span>
                                 <i
@@ -1425,7 +1433,7 @@
         <!-- Floating Button -->
         <div class="fixed bottom-6 right-6 z-50">
             <button onclick="toggleGuestModal()"
-                class="bg-elegant-burgundy text-white p-4 rounded-full shadow-lg hover:bg-elegant-burgundy/90 transition">
+                class="bg-elegant-green text-white p-4 rounded-full shadow-lg hover:bg-elegant-green/90 transition">
                 <i class="fas fa-user"></i>
             </button>
         </div>
@@ -1446,15 +1454,15 @@
 
                 <!-- Modal Content -->
                 <div class="p-6">
-                    <h2 class="text-lg font-bold text-elegant-burgundy mb-4">Akun Anda</h2>
+                    <h2 class="text-lg font-bold text-elegant-green mb-4">Akun Anda</h2>
 
                     <!-- Tabs -->
                     <div class="border-b mb-4">
                         <nav class="-mb-px flex space-x-6" id="guest-tabs">
                             <button
-                                class="tab-btn text-elegant-burgundy border-b-2 border-elegant-burgundy pb-2 font-semibold"
+                                class="tab-btn text-elegant-green border-b-2 border-elegant-green pb-2 font-semibold"
                                 onclick="switchTab('profil')">Profil</button>
-                            <button class="tab-btn text-gray-500 hover:text-elegant-burgundy pb-2"
+                            <button class="tab-btn text-gray-500 hover:text-elegant-green pb-2"
                                 onclick="switchTab('riwayat')">Riwayat Reservasi</button>
                         </nav>
                     </div>
@@ -1474,8 +1482,8 @@
                                 <div class="relative">
                                     <input type="text" name="username" value="{{ $user->username }}"
                                         placeholder="Enter your username"
-                                        class="w-full pl-11 pr-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal placeholder-gray-400 rounded-md shadow-sm focus:ring-2 focus:ring-elegant-gold focus:border-elegant-gold transition" />
-                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                        class="w-full pl-11 pr-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50 text-elegant-charcoal placeholder-gray-400 rounded-md shadow-sm focus:ring-2 focus:ring-elegant-green focus:border-elegant-green transition" />
+                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green">
                                         <i class="fas fa-user"></i>
                                     </div>
                                 </div>
@@ -1487,8 +1495,8 @@
                                 <div class="relative">
                                     <input type="email" name="email" value="{{ $user->email }}"
                                         placeholder="Enter your email"
-                                        class="w-full pl-11 pr-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal placeholder-gray-400 rounded-md shadow-sm focus:ring-2 focus:ring-elegant-gold focus:border-elegant-gold transition" />
-                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                        class="w-full pl-11 pr-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50 text-elegant-charcoal placeholder-gray-400 rounded-md shadow-sm focus:ring-2 focus:ring-elegant-green focus:border-elegant-green transition" />
+                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green">
                                         <i class="fas fa-envelope"></i>
                                     </div>
                                 </div>
@@ -1501,8 +1509,8 @@
                                 <div class="relative">
                                     <input type="text" name="full_name" value="{{ $user->full_name }}"
                                         placeholder="Enter full name"
-                                        class="w-full pl-11 pr-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal rounded-md shadow-sm focus:ring-2 focus:ring-elegant-gold focus:border-elegant-gold transition" />
-                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                        class="w-full pl-11 pr-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50 text-elegant-charcoal rounded-md shadow-sm focus:ring-2 focus:ring-elegant-green focus:border-elegant-green transition" />
+                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green">
                                         <i class="fas fa-id-card"></i>
                                     </div>
                                 </div>
@@ -1515,8 +1523,8 @@
                                 <div class="relative">
                                     <input type="text" name="phone_number" value="{{ $user->phone_number }}"
                                         placeholder="Enter phone number"
-                                        class="w-full pl-11 pr-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal rounded-md shadow-sm focus:ring-2 focus:ring-elegant-gold focus:border-elegant-gold transition" />
-                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                        class="w-full pl-11 pr-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50 text-elegant-charcoal rounded-md shadow-sm focus:ring-2 focus:ring-elegant-green focus:border-elegant-green transition" />
+                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green">
                                         <i class="fas fa-phone"></i>
                                     </div>
                                 </div>
@@ -1529,8 +1537,8 @@
                                 <div class="relative">
                                     <input type="text" name="id_card_number" value="{{ $user->id_card_number }}"
                                         placeholder="Enter ID number"
-                                        class="w-full pl-11 pr-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal rounded-md shadow-sm focus:ring-2 focus:ring-elegant-gold focus:border-elegant-gold transition" />
-                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                        class="w-full pl-11 pr-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50 text-elegant-charcoal rounded-md shadow-sm focus:ring-2 focus:ring-elegant-green focus:border-elegant-green transition" />
+                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green">
                                         <i class="fas fa-id-badge"></i>
                                     </div>
                                 </div>
@@ -1543,8 +1551,8 @@
                                 <div class="relative">
                                     <input type="text" name="passport_number"
                                         value="{{ $user->passport_number }}" placeholder="Enter passport number"
-                                        class="w-full pl-11 pr-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal rounded-md shadow-sm focus:ring-2 focus:ring-elegant-gold focus:border-elegant-gold transition" />
-                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                        class="w-full pl-11 pr-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50 text-elegant-charcoal rounded-md shadow-sm focus:ring-2 focus:ring-elegant-green focus:border-elegant-green transition" />
+                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green">
                                         <i class="fas fa-passport"></i>
                                     </div>
                                 </div>
@@ -1555,8 +1563,8 @@
                                 <label class="block text-sm font-medium text-elegant-charcoal mb-1">Birthdate</label>
                                 <div class="relative">
                                     <input type="date" name="birthdate" value="{{ $user->birthdate }}"
-                                        class="w-full pl-11 pr-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal rounded-md shadow-sm focus:ring-2 focus:ring-elegant-gold focus:border-elegant-gold transition" />
-                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-gold">
+                                        class="w-full pl-11 pr-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50 text-elegant-charcoal rounded-md shadow-sm focus:ring-2 focus:ring-elegant-green focus:border-elegant-green transition" />
+                                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green">
                                         <i class="fas fa-calendar-alt"></i>
                                     </div>
                                 </div>
@@ -1566,7 +1574,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-elegant-charcoal mb-1">Gender</label>
                                 <select name="gender"
-                                    class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal rounded-md shadow-sm focus:ring-2 focus:ring-elegant-gold focus:border-elegant-gold transition">
+                                    class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50 text-elegant-charcoal rounded-md shadow-sm focus:ring-2 focus:ring-elegant-green focus:border-elegant-green transition">
                                     <option value="male" {{ $user->gender === 'male' ? 'selected' : '' }}>Male
                                     </option>
                                     <option value="female" {{ $user->gender === 'female' ? 'selected' : '' }}>Female
@@ -1578,13 +1586,13 @@
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-medium text-elegant-charcoal mb-1">Address</label>
                                 <textarea name="address" rows="2" placeholder="Enter your address"
-                                    class="w-full px-4 py-3 border border-elegant-gold/30 bg-elegant-cream/50 text-elegant-charcoal placeholder-gray-400 rounded-md shadow-sm focus:ring-2 focus:ring-elegant-gold focus:border-elegant-gold transition">{{ $user->address }}</textarea>
+                                    class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50 text-elegant-charcoal placeholder-gray-400 rounded-md shadow-sm focus:ring-2 focus:ring-elegant-green focus:border-elegant-green transition">{{ $user->address }}</textarea>
                             </div>
 
                             {{-- Tombol --}}
                             <div class="md:col-span-2">
                                 <button type="submit"
-                                    class="w-full bg-elegant-burgundy text-white py-3 rounded-md shadow hover:bg-elegant-burgundy/90 transition font-semibold">
+                                    class="w-full bg-elegant-green text-white py-3 rounded-md shadow hover:bg-elegant-green/90 transition font-semibold">
                                     Simpan Perubahan
                                 </button>
                             </div>
@@ -1631,15 +1639,15 @@
                 if (tab === 'profil') {
                     profil.classList.remove('hidden');
                     riwayat.classList.add('hidden');
-                    buttons[0].classList.add('text-elegant-burgundy', 'border-b-2', 'border-elegant-burgundy', 'font-semibold');
-                    buttons[1].classList.remove('text-elegant-burgundy', 'border-b-2', 'border-elegant-burgundy',
+                    buttons[0].classList.add('text-elegant-green', 'border-b-2', 'border-elegant-green', 'font-semibold');
+                    buttons[1].classList.remove('text-elegant-green', 'border-b-2', 'border-elegant-green',
                         'font-semibold');
                 } else {
                     profil.classList.add('hidden');
                     riwayat.classList.remove('hidden');
-                    buttons[0].classList.remove('text-elegant-burgundy', 'border-b-2', 'border-elegant-burgundy',
+                    buttons[0].classList.remove('text-elegant-green', 'border-b-2', 'border-elegant-green',
                         'font-semibold');
-                    buttons[1].classList.add('text-elegant-burgundy', 'border-b-2', 'border-elegant-burgundy', 'font-semibold');
+                    buttons[1].classList.add('text-elegant-green', 'border-b-2', 'border-elegant-green', 'font-semibold');
                 }
             }
 
