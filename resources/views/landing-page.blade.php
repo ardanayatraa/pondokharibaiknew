@@ -294,10 +294,10 @@
     <header class="fixed w-full z-50 bg-white/95 backdrop-blur-md shadow-md transition-all duration-300" id="header">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
             <a href="#" class="flex items-center">
-                <!-- Logo placeholder - replace with actual logo -->
-                <div class="w-10 h-10 bg-elegant-green rounded-full flex items-center justify-center mr-3">
-                    <span class="text-elegant-white font-bold text-xl">P</span>
+                <div class="w-12 h-12  rounded-full flex items-center justify-center mr-3 overflow-hidden">
+                    <img src="{{ asset('assets/logo.png') }}" alt="Logo" class="w-full h-full object-cover">
                 </div>
+
                 <span class="font-cormorant text-3xl font-bold text-elegant-green">Pondok Hari Baik</span>
             </a>
 
