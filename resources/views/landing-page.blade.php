@@ -5,6 +5,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pondok Hari Baik - Luxury Villa in Balian, Bali</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Experience the tranquility of Bali in our luxurious villa with stunning views and exceptional service. Book your stay at Pondok Hari Baik in Balian Beach, Bali.">
+    <meta name="keywords"
+        content="luxury villa bali, balian beach accommodation, pondok hari baik, bali villa, beach villa, family bungalow bali">
+    <meta name="author" content="Pondok Hari Baik">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.pondokharibaik.com/">
+    <meta property="og:title" content="Pondok Hari Baik - Luxury Villa in Balian, Bali">
+    <meta property="og:description"
+        content="Experience the tranquility of Bali in our luxurious villa with stunning views and exceptional service.">
+    <meta property="og:image" content="{{ asset('assets/logo.png') }}">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://www.pondokharibaik.com/">
+    <meta property="twitter:title" content="Pondok Hari Baik - Luxury Villa in Balian, Bali">
+    <meta property="twitter:description"
+        content="Experience the tranquility of Bali in our luxurious villa with stunning views and exceptional service.">
+    <meta property="twitter:image" content="{{ asset('assets/logo.png') }}">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://www.pondokharibaik.com/">
+
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -272,6 +300,44 @@
     <link rel="shortcut icon" href="{{ asset('assets/logo.png') }}" type="image/png">
     <link rel="icon" href="{{ asset('assets/logo.png') }}" type="image/png">
 
+    <!-- Structured Data for Rich Snippets -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LodgingBusiness",
+      "name": "Pondok Hari Baik",
+      "image": "{{ asset('assets/logo.png') }}",
+      "description": "Experience the tranquility of Bali in our luxurious villa with stunning views and exceptional service.",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Jalan Raya Denpasar - Gilimanuk",
+        "addressLocality": "Tabanan",
+        "addressRegion": "Bali",
+        "postalCode": "82162",
+        "addressCountry": "ID"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": -8.55,
+        "longitude": 114.97
+      },
+      "telephone": "+6281234567890",
+      "priceRange": "$$",
+      "amenityFeature": [
+        {"@type": "LocationFeatureSpecification", "name": "Outdoor Pool"},
+        {"@type": "LocationFeatureSpecification", "name": "Free WiFi"},
+        {"@type": "LocationFeatureSpecification", "name": "Restaurant"},
+        {"@type": "LocationFeatureSpecification", "name": "Spa & Wellness Center"},
+        {"@type": "LocationFeatureSpecification", "name": "Free Parking"}
+      ],
+      "starRating": {
+        "@type": "Rating",
+        "ratingValue": "4.8",
+        "bestRating": "5"
+      }
+    }
+    </script>
+
     @auth
         <script>
             window.apiToken = "{{ config('services.reservation_api.token') }}";
@@ -298,14 +364,16 @@
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
             <a href="#" class="flex items-center">
                 <div class="w-12 h-12  rounded-full flex items-center justify-center mr-3 overflow-hidden">
-                    <img src="{{ asset('assets/logo.png') }}" alt="Logo" class="w-full h-full object-cover">
+                    <img src="{{ asset('assets/logo.png') }}" alt="Pondok Hari Baik Logo"
+                        class="w-full h-full object-cover">
                 </div>
 
                 <span class="font-cormorant text-3xl font-bold text-elegant-green">Pondok Hari Baik</span>
             </a>
 
             <div class="flex items-center">
-                <button class="lg:hidden text-elegant-white focus:outline-none" id="mobile-menu-button">
+                <button class="lg:hidden text-elegant-white focus:outline-none" id="mobile-menu-button"
+                    aria-label="Toggle menu">
                     <i class="fas fa-bars text-2xl"></i>
                 </button>
 
@@ -450,7 +518,8 @@
                         class="bg-elegant-white border border-elegant-green/30 overflow-hidden shadow-md transform hover:scale-105 transition-all duration-500 animate-hidden elegant-card">
                         <div class="relative">
                             <div class="h-72 overflow-hidden rounded-lg shadow">
-                                <img src="{{ asset('storage/' . $item->picture) }}" alt="Villa"
+                                <img src="{{ asset('storage/' . $item->picture) }}"
+                                    alt="{{ $item->name }} - Luxury Villa in Bali"
                                     class="w-full h-72 object-cover rounded">
 
                             </div>
@@ -660,8 +729,8 @@
                         definitely be back!"</p>
                     <div class="flex items-center">
                         <div class="w-12 h-12 bg-gray-300 rounded-full overflow-hidden">
-                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Guest"
-                                class="w-full h-full object-cover">
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg"
+                                alt="Sarah Johnson - Guest Review" class="w-full h-full object-cover">
                         </div>
                         <div class="ml-4">
                             <h4 class="font-medium text-elegant-green">Sarah Johnson</h4>
@@ -688,7 +757,7 @@
                         near the beach made our holiday very enjoyable."</p>
                     <div class="flex items-center">
                         <div class="w-12 h-12 bg-gray-300 rounded-full overflow-hidden">
-                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Guest"
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="David Chen - Guest Review"
                                 class="w-full h-full object-cover">
                         </div>
                         <div class="ml-4">
@@ -716,8 +785,8 @@
                         choices. Highly recommended!"</p>
                     <div class="flex items-center">
                         <div class="w-12 h-12 bg-gray-300 rounded-full overflow-hidden">
-                            <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Guest"
-                                class="w-full h-full object-cover">
+                            <img src="https://randomuser.me/api/portraits/women/68.jpg"
+                                alt="Emma Wilson - Guest Review" class="w-full h-full object-cover">
                         </div>
                         <div class="ml-4">
                             <h4 class="font-medium text-elegant-green">Emma Wilson</h4>
@@ -746,8 +815,8 @@
                     <div class="overflow-hidden shadow-md h-96 border border-elegant-orange/30 subtle-shadow">
                         <iframe
                             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3945.2170366854!2d114.97!3d-8.55!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zOMKwMzMnMDAuMCJTIDExNMKwNTgnMTIuMCJF!5e0!3m2!1sen!2sid!4v1617000000000!5m2!1sen!2sid"
-                            width="100%" height="100%" style="border:0;" allowfullscreen=""
-                            loading="lazy"></iframe>
+                            width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"
+                            title="Pondok Hari Baik Location Map"></iframe>
                     </div>
                 </div>
 
@@ -840,19 +909,19 @@
                     <p class="mb-6 text-elegant-white">Luxury villa with
                         beautiful views and excellent service in Balian, Bali.</p>
                     <div class="flex space-x-4">
-                        <a href="#"
+                        <a href="#" aria-label="Facebook"
                             class="w-10 h-10 bg-elegant-orange/20 rounded-full flex items-center justify-center hover:bg-elegant-orange transition-colors duration-300 hover:text-elegant-green text-elegant-orange">
                             <i class="fab fa-facebook-f"></i>
                         </a>
-                        <a href="#"
+                        <a href="#" aria-label="Instagram"
                             class="w-10 h-10 bg-elegant-orange/20 rounded-full flex items-center justify-center hover:bg-elegant-orange transition-colors duration-300 hover:text-elegant-green text-elegant-orange">
                             <i class="fab fa-instagram"></i>
                         </a>
-                        <a href="#"
+                        <a href="#" aria-label="Twitter"
                             class="w-10 h-10 bg-elegant-orange/20 rounded-full flex items-center justify-center hover:bg-elegant-orange transition-colors duration-300 hover:text-elegant-green text-elegant-orange">
                             <i class="fab fa-twitter"></i>
                         </a>
-                        <a href="#"
+                        <a href="#" aria-label="TripAdvisor"
                             class="w-10 h-10 bg-elegant-orange/20 rounded-full flex items-center justify-center hover:bg-elegant-orange transition-colors duration-300 hover:text-elegant-green text-elegant-orange">
                             <i class="fab fa-tripadvisor"></i>
                         </a>
@@ -934,7 +1003,8 @@
 
                 <!-- Close Button -->
                 <button id="close-modal"
-                    class="absolute top-6 right-6 text-elegant-orange hover:text-elegant-redorange transition-colors z-20 group">
+                    class="absolute top-6 right-6 text-elegant-orange hover:text-elegant-redorange transition-colors z-20 group"
+                    aria-label="Close booking modal">
                     <div class="relative">
                         <div
                             class="w-8 h-8 rounded-full bg-elegant-green border border-elegant-orange/50 flex items-center justify-center group-hover:bg-elegant-redorange transition-all duration-300">

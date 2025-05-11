@@ -9,7 +9,17 @@
     @endphp
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{{ ucfirst($role) }} Dashboard - Pondok Hari Baik Villa</title>
-    {{-- <script src="https://cdn.tailwindcss.com"></script> --}}
+
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Admin dashboard for Pondok Hari Baik Villa management system. Manage reservations, villas, and reports.">
+    <meta name="robots" content="noindex, nofollow"> <!-- Prevent search engines from indexing admin pages -->
+    <meta name="author" content="Pondok Hari Baik">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{{ asset('assets/logo.png') }}" type="image/png">
+    <link rel="icon" href="{{ asset('assets/logo.png') }}" type="image/png">
+
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -126,17 +136,25 @@
 </head>
 
 <body class="font-montserrat text-elegant-charcoal bg-elegant-cream min-h-screen">
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content"
+        class="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-elegant-navy focus:text-elegant-white focus:z-50">
+        Skip to main content
+    </a>
+
     <!-- Sidebar -->
     <aside id="sidebar"
-        class="bg-elegant-navy text-elegant-white w-64 min-h-screen fixed left-0 top-0 z-30 sidebar-transition lg:translate-x-0 -translate-x-full overflow-y-auto">
+        class="bg-elegant-navy text-elegant-white w-64 min-h-screen fixed left-0 top-0 z-30 sidebar-transition lg:translate-x-0 -translate-x-full overflow-y-auto"
+        aria-label="Main Navigation">
         <!-- Logo -->
         <div class="p-4 border-b border-elegant-white/10">
             <div class="flex items-center justify-between">
                 <a href="#" class="flex items-center">
                     <span class="font-cormorant text-2xl font-bold text-elegant-gold">Pondok Hari Baik</span>
                 </a>
-                <button id="close-sidebar" class="lg:hidden text-elegant-white/70 hover:text-elegant-white">
-                    <i class="fas fa-times"></i>
+                <button id="close-sidebar" class="lg:hidden text-elegant-white/70 hover:text-elegant-white"
+                    aria-label="Close sidebar">
+                    <i class="fas fa-times" aria-hidden="true"></i>
                 </button>
             </div>
         </div>
@@ -146,60 +164,69 @@
         @endphp
 
         @if ($role == 'admin')
-            <nav class="py-4">
+            <nav class="py-4" aria-label="Admin Navigation">
                 <a href="{{ route('dashboard') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('dashboard') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
-                    <i class="fas fa-home w-5 text-center"></i>
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('dashboard') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200"
+                    aria-current="{{ request()->routeIs('dashboard') ? 'page' : 'false' }}">
+                    <i class="fas fa-home w-5 text-center" aria-hidden="true"></i>
                     <span class="ml-3">Beranda</span>
                 </a>
 
                 <a href="{{ route('villa.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('villa.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
-                    <i class="fas fa-hotel w-5 text-center"></i>
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('villa.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200"
+                    aria-current="{{ request()->routeIs('villa.*') ? 'page' : 'false' }}">
+                    <i class="fas fa-hotel w-5 text-center" aria-hidden="true"></i>
                     <span class="ml-3">Data Villa</span>
                 </a>
 
                 <a href="{{ route('facility.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('facility.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
-                    <i class="fas fa-tools w-5 text-center"></i>
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('facility.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200"
+                    aria-current="{{ request()->routeIs('facility.*') ? 'page' : 'false' }}">
+                    <i class="fas fa-tools w-5 text-center" aria-hidden="true"></i>
                     <span class="ml-3">Data Fasilitas</span>
                 </a>
 
                 <a href="{{ route('season.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('season.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
-                    <i class="fas fa-calendar-alt w-5 text-center"></i>
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('season.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200"
+                    aria-current="{{ request()->routeIs('season.*') ? 'page' : 'false' }}">
+                    <i class="fas fa-calendar-alt w-5 text-center" aria-hidden="true"></i>
                     <span class="ml-3">Season</span>
                 </a>
 
                 <a href="{{ route('harga-villa.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('harga-villa.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
-                    <i class="fas fa-tags w-5 text-center"></i>
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('harga-villa.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200"
+                    aria-current="{{ request()->routeIs('harga-villa.*') ? 'page' : 'false' }}">
+                    <i class="fas fa-tags w-5 text-center" aria-hidden="true"></i>
                     <span class="ml-3">Harga Villa</span>
                 </a>
 
                 <a href="{{ route('guest.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('guest.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
-                    <i class="fas fa-users w-5 text-center"></i>
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('guest.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200"
+                    aria-current="{{ request()->routeIs('guest.*') ? 'page' : 'false' }}">
+                    <i class="fas fa-users w-5 text-center" aria-hidden="true"></i>
                     <span class="ml-3">Akun Guest</span>
                 </a>
 
                 <a href="{{ route('reservasi.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('reservasi.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
-                    <i class="fas fa-calendar-check w-5 text-center"></i>
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('reservasi.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200"
+                    aria-current="{{ request()->routeIs('reservasi.*') ? 'page' : 'false' }}">
+                    <i class="fas fa-calendar-check w-5 text-center" aria-hidden="true"></i>
                     <span class="ml-3">Reservasi</span>
                 </a>
 
                 <a href="{{ route('pembayaran.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('pembayaran.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
-                    <i class="fas fa-money-bill-wave w-5 text-center"></i>
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('pembayaran.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200"
+                    aria-current="{{ request()->routeIs('pembayaran.*') ? 'page' : 'false' }}">
+                    <i class="fas fa-money-bill-wave w-5 text-center" aria-hidden="true"></i>
                     <span class="ml-3">Pembayaran</span>
                 </a>
 
                 <a href="{{ route('laporan') }}"
                     class="flex items-center px-4 py-3
                 {{ url()->current() == route('laporan') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }}
-                transition-colors duration-200">
-                    <i class="fas fa-chart-line w-5 text-center"></i>
+                transition-colors duration-200"
+                    aria-current="{{ url()->current() == route('laporan') ? 'page' : 'false' }}">
+                    <i class="fas fa-chart-line w-5 text-center" aria-hidden="true"></i>
                     <span class="ml-3">Laporan</span>
                 </a>
 
@@ -208,22 +235,25 @@
 
         @if ($role == 'owner')
             <!-- Sidebar Owner -->
-            <nav class="py-4">
+            <nav class="py-4" aria-label="Owner Navigation">
                 <a href="{{ route('dashboard') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('dashboard') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }}">
-                    <i class="fas fa-home w-5 text-center"></i>
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('dashboard') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }}"
+                    aria-current="{{ request()->routeIs('dashboard') ? 'page' : 'false' }}">
+                    <i class="fas fa-home w-5 text-center" aria-hidden="true"></i>
                     <span class="ml-3">Beranda</span>
                 </a>
                 <a href="{{ route('laporan') }}"
                     class="flex items-center px-4 py-3
             {{ url()->current() == route('laporan') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }}
-            transition-colors duration-200">
-                    <i class="fas fa-chart-line w-5 text-center"></i>
+            transition-colors duration-200"
+                    aria-current="{{ url()->current() == route('laporan') ? 'page' : 'false' }}">
+                    <i class="fas fa-chart-line w-5 text-center" aria-hidden="true"></i>
                     <span class="ml-3">Laporan</span>
                 </a>
                 <a href="{{ route('villa.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('villa.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200">
-                    <i class="fas fa-hotel w-5 text-center"></i>
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('villa.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200"
+                    aria-current="{{ request()->routeIs('villa.*') ? 'page' : 'false' }}">
+                    <i class="fas fa-hotel w-5 text-center" aria-hidden="true"></i>
                     <span class="ml-3">Data Villa</span>
                 </a>
             </nav>
@@ -238,8 +268,9 @@
             <div class="flex items-center justify-between px-6 py-3">
                 <div class="flex items-center">
                     <button id="toggle-sidebar"
-                        class="lg:hidden mr-4 text-elegant-charcoal hover:text-elegant-burgundy">
-                        <i class="fas fa-bars text-sm"></i>
+                        class="lg:hidden mr-4 text-elegant-charcoal hover:text-elegant-burgundy"
+                        aria-label="Toggle sidebar menu">
+                        <i class="fas fa-bars text-sm" aria-hidden="true"></i>
                     </button>
                 </div>
 
@@ -262,20 +293,24 @@
                     @endphp
 
                     <div class="relative" id="profile-dropdown">
-                        <button id="profileToggle" class="flex items-center space-x-2 focus:outline-none">
+                        <button id="profileToggle" class="flex items-center space-x-2 focus:outline-none"
+                            aria-label="User profile menu" aria-expanded="false" aria-haspopup="true">
                             <img src="https://ui-avatars.com/api/?name={{ urlencode($user->email ?? 'User') }}&background=FFEDD5&color=DC2626&size=256"
-                                alt="User" class="w-8 h-8 rounded-full object-cover border-2 border-elegant-gold">
+                                alt="Profile picture of {{ $user->email ?? 'User' }}"
+                                class="w-8 h-8 rounded-full object-cover border-2 border-elegant-gold">
                             <span
                                 class="hidden md:inline-block text-elegant-charcoal">{{ $user->email ?? 'User' }}</span>
-                            <i class="fas fa-chevron-down text-elegant-gray text-xs"></i>
+                            <i class="fas fa-chevron-down text-elegant-gray text-xs" aria-hidden="true"></i>
                         </button>
 
                         <div id="profileMenu"
-                            class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden z-50 border border-elegant-gold hidden">
+                            class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden z-50 border border-elegant-gold hidden"
+                            role="menu" aria-orientation="vertical" aria-labelledby="profileToggle">
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit"
-                                    class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition">
+                                    class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"
+                                    role="menuitem">
                                     Keluar
                                 </button>
                             </form>
@@ -288,6 +323,8 @@
 
                         toggleBtn.addEventListener('click', function(e) {
                             e.stopPropagation();
+                            const expanded = this.getAttribute('aria-expanded') === 'true' || false;
+                            this.setAttribute('aria-expanded', !expanded);
                             menu.classList.toggle('hidden');
                         });
 
@@ -295,6 +332,7 @@
                             const dropdown = document.getElementById('profile-dropdown');
                             if (!dropdown.contains(e.target)) {
                                 menu.classList.add('hidden');
+                                toggleBtn.setAttribute('aria-expanded', 'false');
                             }
                         });
                     </script>
@@ -305,7 +343,7 @@
         </header>
 
         <!-- Main Content Area -->
-        <main>
+        <main id="main-content" tabindex="-1">
             {{ $slot }}
         </main>
     </div>
@@ -324,18 +362,24 @@
             sidebar.classList.toggle('-translate-x-full');
             sidebarOverlay.classList.toggle('hidden');
             document.body.classList.toggle('overflow-hidden');
+
+            // Update ARIA attributes
+            const expanded = sidebar.classList.contains('-translate-x-full') ? 'false' : 'true';
+            toggleSidebar.setAttribute('aria-expanded', expanded);
         });
 
         closeSidebar.addEventListener('click', () => {
             sidebar.classList.add('-translate-x-full');
             sidebarOverlay.classList.add('hidden');
             document.body.classList.remove('overflow-hidden');
+            toggleSidebar.setAttribute('aria-expanded', 'false');
         });
 
         sidebarOverlay.addEventListener('click', () => {
             sidebar.classList.add('-translate-x-full');
             sidebarOverlay.classList.add('hidden');
             document.body.classList.remove('overflow-hidden');
+            toggleSidebar.setAttribute('aria-expanded', 'false');
         });
 
         // Responsive adjustments
