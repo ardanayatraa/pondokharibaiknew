@@ -269,6 +269,9 @@
             }
         }
     </style>
+    <link rel="shortcut icon" href="{{ asset('assets/logo.png') }}" type="image/png">
+    <link rel="icon" href="{{ asset('assets/logo.png') }}" type="image/png">
+
     @auth
         <script>
             window.apiToken = "{{ config('services.reservation_api.token') }}";
