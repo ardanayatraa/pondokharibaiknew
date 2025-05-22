@@ -310,30 +310,39 @@ const bookingData = {
     return ok;
   }
 
-  /**
-   * Menampilkan detail kamar dan ringkasan pemesanan pada langkah 2
-   */
-  function renderStep2() {
-    // Room Details
-    document.getElementById('room-detail-name').textContent = bookingData.room.name;
-    document.getElementById('room-description').textContent = bookingData.room.description;
-    document.getElementById('room-capacity').textContent = `Up to ${bookingData.room.capacity} people`;
-    document.getElementById('room-image').src = bookingData.room.picture;
+/**
+ * Menampilkan detail kamar dan ringkasan pemesanan pada langkah 2
+ * — sekarang sudah pakai totalAmount yang dihitung oleh calculateCost()
+ */
+async function renderStep2() {
+  // Room Details
+  document.getElementById('room-detail-name').textContent = bookingData.room.name;
+  document.getElementById('room-description').textContent = bookingData.room.description;
+  document.getElementById('room-capacity').textContent = `Up to ${bookingData.room.capacity} people`;
+  document.getElementById('room-image').src = bookingData.room.picture;
 
+  // Booking Summary — Stay Details
+  document.getElementById('summary-checkin').textContent = bookingData.checkIn;
+  document.getElementById('summary-checkout').textContent = bookingData.checkOut;
+  document.getElementById('summary-nights').textContent = bookingData.nights;
 
-    // Booking Summary — Stay Details
-    document.getElementById('summary-checkin').textContent = bookingData.checkIn;
-    document.getElementById('summary-checkout').textContent = bookingData.checkOut;
-    document.getElementById('summary-nights').textContent = bookingData.nights;
-
-    // Booking Summary — Price Details
-    const roomTotal = bookingData.room.price * bookingData.nights;
-    const grandTotal = roomTotal;
-
-    document.getElementById('room-rate-label').textContent = `Room Rate (${bookingData.nights} nights):`;
-    document.getElementById('room-rate-total').textContent = 'Rp ' + formatCurrency(roomTotal);
-    document.getElementById('summary-total').textContent = 'Rp ' + formatCurrency(grandTotal);
+  // — jika totalAmount belum dihitung, panggil calculateCost()
+  if (!bookingData.totalAmount) {
+    await calculateCost();
   }
+
+  // Booking Summary — Price Details
+  const roomTotal = bookingData.totalAmount;
+  // tampilkan label yang sesuai
+  document.getElementById('room-rate-label').textContent =
+    `Total Rate for ${bookingData.nights} night${bookingData.nights > 1 ? 's' : ''}:`;
+  document.getElementById('room-rate-total').textContent =
+    'Rp ' + formatCurrency(roomTotal);
+
+  // jika kamu juga punya summary‐total terpisah
+  document.getElementById('summary-total').textContent =
+    'Rp ' + formatCurrency(roomTotal);
+}
 
   /**
    * Memuat informasi tamu saat masuk ke langkah 3
