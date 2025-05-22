@@ -4,7 +4,7 @@
     </x-slot>
 
     <div class="py-6">
-        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
+        <div class="w-full mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-lg rounded-lg p-6">
                 <form action="{{ route('harga-villa.update', $villa_pricing->id_villa_pricing) }}" method="POST"
                     id="pricing-form">
