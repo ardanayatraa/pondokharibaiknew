@@ -118,13 +118,13 @@
             if (val === '1') {
                 weekly.classList.remove('hidden');
                 range.classList.add('hidden');
-                weekly.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.required = true);
+                weekly.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.required = false);
                 range.querySelectorAll('input[type="date"]').forEach(d => d.required = false);
             } else {
                 weekly.classList.add('hidden');
                 range.classList.remove('hidden');
                 weekly.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.required = false);
-                range.querySelectorAll('input[type="date"]').forEach(d => d.required = true);
+                range.querySelectorAll('input[type="date"]').forEach(d => d.required = false);
             }
         }
 

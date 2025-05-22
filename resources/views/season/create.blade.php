@@ -115,7 +115,7 @@
                 range.classList.add('hidden');
                 // make weekly inputs required, range optional
                 weekly.querySelectorAll('input[type="checkbox"]')
-                    .forEach(cb => cb.required = true);
+                    .forEach(cb => cb.required = false);
                 range.querySelectorAll('input[type="date"]')
                     .forEach(d => d.required = false);
             } else {
@@ -124,7 +124,7 @@
                 weekly.querySelectorAll('input[type="checkbox"]')
                     .forEach(cb => cb.required = false);
                 range.querySelectorAll('input[type="date"]')
-                    .forEach(d => d.required = true);
+                    .forEach(d => d.required = false);
             }
         }
 
