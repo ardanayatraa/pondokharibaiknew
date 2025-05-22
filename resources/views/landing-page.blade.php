@@ -16,7 +16,7 @@
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.pondokharibaik.com/">
+    <meta property="og:url" content="https://www.pondokharibaik.id/">
     <meta property="og:title" content="Pondok Hari Baik - Luxury Villa in Balian, Bali">
     <meta property="og:description"
         content="Experience the tranquility of Bali in our luxurious villa with stunning views and exceptional service.">
@@ -24,14 +24,14 @@
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://www.pondokharibaik.com/">
+    <meta property="twitter:url" content="https://www.pondokharibaik.id/">
     <meta property="twitter:title" content="Pondok Hari Baik - Luxury Villa in Balian, Bali">
     <meta property="twitter:description"
         content="Experience the tranquility of Bali in our luxurious villa with stunning views and exceptional service.">
     <meta property="twitter:image" content="{{ asset('assets/logo.png') }}">
 
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://www.pondokharibaik.com/">
+    <link rel="canonical" href="https://www.pondokharibaik.id/">
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -72,7 +72,7 @@
                         'montserrat': ['Montserrat', 'sans-serif']
                     },
                     backgroundImage: {
-                        'hero-pattern': "linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1582610116397-edb318620f90?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
+                        'hero-pattern': "linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/assets/bg-hero.JPG')",
                         'about-pattern': "url('https://images.unsplash.com/photo-1540541338287-41700207dee6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
                         'family-bungalow': "url('https://images.unsplash.com/photo-1590490360182-c33d57733427?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
                         'family-garden': "url('https://images.unsplash.com/photo-1578683010236-d716f9a3f461?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
@@ -814,9 +814,9 @@
                 <div class="lg:w-1/2 animate-hidden">
                     <div class="overflow-hidden shadow-md h-96 border border-elegant-orange/30 subtle-shadow">
                         <iframe
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3945.2170366854!2d114.97!3d-8.55!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zOMKwMzMnMDAuMCJTIDExNMKwNTgnMTIuMCJF!5e0!3m2!1sen!2sid!4v1617000000000!5m2!1sen!2sid"
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3946.016208733885!2d114.9764275!3d-8.4978042!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd22d0001d1a4fb%3A0x834ddac063985b18!2sPondok%20Hari%20Baik!5e0!3m2!1sid!2sid!4v1747820804099!5m2!1sid!2sid"
                             width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"
-                            title="Pondok Hari Baik Location Map"></iframe>
+                            referrerpolicy="no-referrer-when-downgrade"></iframe>
                     </div>
                 </div>
 
@@ -965,7 +965,7 @@
                         </li>
                         <li class="flex items-start">
                             <i class="fas fa-envelope text-elegant-orange mt-1 mr-3"></i>
-                            <span class="text-elegant-white">info@pondokharibaik.com</span>
+                            <span class="text-elegant-white">info@pondokharibaik.id</span>
                         </li>
                     </ul>
                 </div>

@@ -181,18 +181,31 @@ const bookingData = {
 
     // IN picker
     inPicker = flatpickr(inEl, {
-      dateFormat: 'Y-m-d',
-      minDate: 'today',
-      disable: fpDisabled,
-      onChange: (selectedDates, dateStr) => {
+    dateFormat: 'Y-m-d',
+    minDate: 'today',
+    disable: fpDisabled,
+    onChange: (selectedDates, dateStr) => {
         bookingData.checkIn = dateStr;
         errIn.classList.add('hidden');
         errRange.classList.add('hidden');
+
         // update outPicker minDate to day after checkIn
         const nextDay = new Date(selectedDates[0].getTime() + 86400000);
         outPicker.set('minDate', nextDay);
+
+        // hitung jumlah malam
         calcNights();
-      }
+
+        // ─── real-time price calculation ───
+        // jika checkOut sudah diisi dan valid, langsung hitung biaya
+        if (bookingData.checkIn && bookingData.checkOut) {
+        const inDate  = new Date(bookingData.checkIn);
+        const outDate = new Date(bookingData.checkOut);
+        if (outDate > inDate) {
+            calculateCost();
+        }
+        }
+    }
     });
 
     // OUT picker

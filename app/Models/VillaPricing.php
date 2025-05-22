@@ -19,7 +19,7 @@ class VillaPricing extends Model
 
     public function villa()
     {
-        return $this->hasOne(Villa::class, 'villa_pricing_id', 'id_villa_pricing');
+        return $this->hasOne(Villa::class, 'id_villa', 'villa_id');
     }
 
 

@@ -12,9 +12,8 @@ class SeasonController extends Controller
      */
     public function index()
     {
-        $seasons = Season::orderBy('tgl_mulai_season', 'desc')
-            ->paginate(10);
-
+        // Urutkan dulu berdasarkan priority (desc), lalu tanggal mulai (desc)
+        $seasons = Season::orderByDesc('priority')->get();
         return view('season.index', compact('seasons'));
     }
 
@@ -23,7 +22,18 @@ class SeasonController extends Controller
      */
     public function create()
     {
-        return view('season.create');
+        // Untuk pilihan hari, kita butuh array 0..6
+        $daysOfWeek = [
+            0 => 'Minggu',
+            1 => 'Senin',
+            2 => 'Selasa',
+            3 => 'Rabu',
+            4 => 'Kamis',
+            5 => 'Jumat',
+            6 => 'Sabtu',
+        ];
+
+        return view('season.create', compact('daysOfWeek'));
     }
 
     /**
@@ -33,9 +43,18 @@ class SeasonController extends Controller
     {
         $validated = $request->validate([
             'nama_season'      => 'required|string|max:255',
-            'tgl_mulai_season' => 'required|date',
-            'tgl_akhir_season' => 'required|date|after_or_equal:tgl_mulai_season',
+            'repeat_weekly'    => 'required|boolean',
+            'days_of_week'     => 'nullable|array',
+            'days_of_week.*'   => 'integer|in:0,1,2,3,4,5,6',
+            'tgl_mulai_season' => 'required_if:repeat_weekly,false|date',
+            'tgl_akhir_season' => 'required_if:repeat_weekly,false|date|after_or_equal:tgl_mulai_season',
+            'priority'         => 'required|integer|min:0',
         ]);
+
+        // Jika bukan weekly thì kosongkan days_of_week
+        if (! (bool) $validated['repeat_weekly']) {
+            $validated['days_of_week'] = null;
+        }
 
         Season::create($validated);
 
@@ -57,7 +76,17 @@ class SeasonController extends Controller
      */
     public function edit(Season $season)
     {
-        return view('season.edit', compact('season'));
+        $daysOfWeek = [
+            0 => 'Minggu',
+            1 => 'Senin',
+            2 => 'Selasa',
+            3 => 'Rabu',
+            4 => 'Kamis',
+            5 => 'Jumat',
+            6 => 'Sabtu',
+        ];
+
+        return view('season.edit', compact('season', 'daysOfWeek'));
     }
 
     /**
@@ -67,9 +96,17 @@ class SeasonController extends Controller
     {
         $validated = $request->validate([
             'nama_season'      => 'required|string|max:255',
-            'tgl_mulai_season' => 'required|date',
-            'tgl_akhir_season' => 'required|date|after_or_equal:tgl_mulai_season',
+            'repeat_weekly'    => 'required|boolean',
+            'days_of_week'     => 'nullable|array',
+            'days_of_week.*'   => 'integer|in:0,1,2,3,4,5,6',
+            'tgl_mulai_season' => 'required_if:repeat_weekly,false|date',
+            'tgl_akhir_season' => 'required_if:repeat_weekly,false|date|after_or_equal:tgl_mulai_season',
+            'priority'         => 'required|integer|min:0',
         ]);
+
+        if (! (bool) $validated['repeat_weekly']) {
+            $validated['days_of_week'] = null;
+        }
 
         $season->update($validated);
 

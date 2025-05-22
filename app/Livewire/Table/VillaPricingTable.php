@@ -20,9 +20,9 @@ class VillaPricingTable extends DataTableComponent
         return [
             Column::make("Id villa pricing", "id_villa_pricing")
                 ->sortable(),
-            Column::make("Villa id", "villa_id")
+            Column::make("Villa id", "villa.name")
                 ->sortable(),
-            Column::make("Season id", "season_id")
+            Column::make("Season id", "season.nama_season")
                 ->sortable(),
             Column::make("Sunday pricing", "sunday_pricing")
                 ->sortable(),

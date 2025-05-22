@@ -250,12 +250,6 @@
                     <i class="fas fa-chart-line w-5 text-center" aria-hidden="true"></i>
                     <span class="ml-3">Laporan</span>
                 </a>
-                <a href="{{ route('villa.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('villa.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200"
-                    aria-current="{{ request()->routeIs('villa.*') ? 'page' : 'false' }}">
-                    <i class="fas fa-hotel w-5 text-center" aria-hidden="true"></i>
-                    <span class="ml-3">Data Villa</span>
-                </a>
             </nav>
         @endif
 

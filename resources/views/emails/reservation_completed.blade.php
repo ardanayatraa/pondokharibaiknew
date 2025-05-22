@@ -262,7 +262,7 @@
             </p>
 
             <p style="font-size:13px; color:#555; margin-top:20px;">
-                Butuh bantuan? Hubungi <a href="mailto:info@pondokharibaik.com">info@pondokharibaik.com</a> atau +62 123
+                Butuh bantuan? Hubungi <a href="mailto:info@pondokharibaik.id">info@pondokharibaik.id</a> atau +62 123
                 4567 890.
             </p>
         </div>

@@ -222,7 +222,7 @@
                     <div class="company-info">
                         Jalan Raya Denpasar – Gilimanuk,<br>
                         Tabanan, Bali<br>
-                        info@pondokharibaik.com
+                        info@pondokharibaik.id
                     </div>
 
                 </td>
@@ -338,7 +338,7 @@
         <!-- FOOTER -->
         <div class="footer">
             <div class="thank-you">Terima Kasih Atas Kunjungan Anda!</div>
-            <p>Jika ada pertanyaan mengenai invoice ini, silakan hubungi kami di info@pondokharibaik.com</p>
+            <p>Jika ada pertanyaan mengenai invoice ini, silakan hubungi kami di info@pondokharibaik.id</p>
             <p>&copy; {{ date('Y') }} Pondok Hari Baik. Semua hak dilindungi.</p>
         </div>
 

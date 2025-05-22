@@ -83,25 +83,29 @@ class BookingController extends Controller
      */
     public function calculate(Request $request, $id): JsonResponse
     {
+        $request->validate([
+            'start' => 'required|date',
+            'end'   => 'required|date|after:start',
+        ]);
+
         $villa = Villa::findOrFail($id);
 
-        $start = Carbon::parse($request->query('start'));
-        $end   = Carbon::parse($request->query('end'));
+        $start = Carbon::parse($request->query('start'))->startOfDay();
+        $end   = Carbon::parse($request->query('end'))->startOfDay();
 
-        if ($end->lte($start)) {
-            return response()->json(['total' => 0]);
-        }
+        // hitung jumlah malam (tiap malam dari start sampai sebelum end)
+        $nights = $start->diffInDays($end);
 
         $total = 0;
-        for ($date = $start->copy(); $date->lt($end); $date->addDay()) {
-            // TODO: jika ada seasonal pricing, ambil di sini.
-            // Misal: $rate = $villa->rateForDate($date);
-            $rate = $villa->today_price;
+        for ($i = 0; $i < $nights; $i++) {
+            $day = $start->copy()->addDays($i);
+            $rate = $villa->priceForDate($day) ?? 0;
             $total += $rate;
         }
 
         return response()->json(['total' => $total]);
     }
+
 
     public function guestInfo($id)
 {

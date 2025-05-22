@@ -15,13 +15,14 @@ return new class extends Migration
             $table->id('id_villa_pricing');
             $table->foreignId('villa_id');
             $table->foreignId('season_id');
-            $table->decimal('sunday_pricing', 10, 2);
-            $table->decimal('monday_pricing', 10, 2);
-            $table->decimal('tuesday_pricing', 10, 2);
-            $table->decimal('wednesday_pricing', 10, 2);
-            $table->decimal('thursday_pricing', 10, 2);
-            $table->decimal('friday_pricing', 10, 2);
-            $table->decimal('saturday_pricing', 10, 2);
+    $table->decimal('sunday_pricing',   10, 2)->nullable();
+       $table->decimal('sunday_pricing',    10, 2)->default(0);
+    $table->decimal('monday_pricing',    10, 2)->default(0);
+    $table->decimal('tuesday_pricing',   10, 2)->default(0);
+    $table->decimal('wednesday_pricing', 10, 2)->default(0);
+    $table->decimal('thursday_pricing',  10, 2)->default(0);
+    $table->decimal('friday_pricing',    10, 2)->default(0);
+    $table->decimal('saturday_pricing',  10, 2)->default(0);
             $table->timestamps();
         });
     }
