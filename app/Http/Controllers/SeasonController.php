@@ -12,8 +12,11 @@ class SeasonController extends Controller
      */
     public function index()
     {
-        // Urutkan dulu berdasarkan priority (desc), lalu tanggal mulai (desc)
-        $seasons = Season::orderByDesc('priority')->get();
+        // Urutkan berdasarkan priority (desc), lalu tgl_mulai (desc)
+        $seasons = Season::orderByDesc('priority')
+                         ->orderByDesc('tgl_mulai_season')
+                         ->get();
+
         return view('season.index', compact('seasons'));
     }
 
@@ -22,7 +25,6 @@ class SeasonController extends Controller
      */
     public function create()
     {
-        // Untuk pilihan hari, kita butuh array 0..6
         $daysOfWeek = [
             0 => 'Minggu',
             1 => 'Senin',
@@ -37,26 +39,24 @@ class SeasonController extends Controller
     }
 
     /**
-     * Simpan season baru ke database.
+     * Simpan season baru ke database (tanpa validasi otomatis).
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nama_season'      => 'required|string|max:255',
-            'repeat_weekly'    => 'required|boolean',
-            'days_of_week'     => 'nullable|array',
-            'days_of_week.*'   => 'integer|in:0,1,2,3,4,5,6',
-            'tgl_mulai_season' => 'required_if:repeat_weekly,false|date',
-            'tgl_akhir_season' => 'required_if:repeat_weekly,false|date|after_or_equal:tgl_mulai_season',
-            'priority'         => 'required|integer|min:0',
-        ]);
+        // Ambil semua field sesuai fillable
+        $data = [
+            'nama_season'      => $request->nama_season,
+            'repeat_weekly'    => (bool) $request->repeat_weekly,
+            // hanya set days_of_week jika weekly
+            'days_of_week'     => $request->repeat_weekly
+                                   ? $request->input('days_of_week', [])
+                                   : null,
+            'tgl_mulai_season' => $request->tgl_mulai_season,
+            'tgl_akhir_season' => $request->tgl_akhir_season,
+            'priority'         => $request->priority,
+        ];
 
-        // Jika bukan weekly thì kosongkan days_of_week
-        if (! (bool) $validated['repeat_weekly']) {
-            $validated['days_of_week'] = null;
-        }
-
-        Season::create($validated);
+        Season::create($data);
 
         return redirect()
             ->route('season.index')
@@ -90,25 +90,22 @@ class SeasonController extends Controller
     }
 
     /**
-     * Update data season.
+     * Update data season (tanpa validasi otomatis).
      */
     public function update(Request $request, Season $season)
     {
-        $validated = $request->validate([
-            'nama_season'      => 'required|string|max:255',
-            'repeat_weekly'    => 'required|boolean',
-            'days_of_week'     => 'nullable|array',
-            'days_of_week.*'   => 'integer|in:0,1,2,3,4,5,6',
-            'tgl_mulai_season' => 'required_if:repeat_weekly,false|date',
-            'tgl_akhir_season' => 'required_if:repeat_weekly,false|date|after_or_equal:tgl_mulai_season',
-            'priority'         => 'required|integer|min:0',
-        ]);
+        $data = [
+            'nama_season'      => $request->nama_season,
+            'repeat_weekly'    => (bool) $request->repeat_weekly,
+            'days_of_week'     => $request->repeat_weekly
+                                   ? $request->input('days_of_week', [])
+                                   : null,
+            'tgl_mulai_season' => $request->tgl_mulai_season,
+            'tgl_akhir_season' => $request->tgl_akhir_season,
+            'priority'         => $request->priority,
+        ];
 
-        if (! (bool) $validated['repeat_weekly']) {
-            $validated['days_of_week'] = null;
-        }
-
-        $season->update($validated);
+        $season->update($data);
 
         return redirect()
             ->route('season.index')
