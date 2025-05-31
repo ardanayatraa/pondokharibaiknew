@@ -354,6 +354,28 @@
         </script>
     @endauth
 
+    @php
+        $currentGuestId = Auth::guard('guest')->check() ? Auth::guard('guest')->user()->id_guest : null;
+    @endphp
+
+    <script>
+        window.guestId = {{ $currentGuestId ?? 'null' }};
+
+        // Pastikan ini relative, bukan route() yang menghasilkan URL absolut:
+        @if ($currentGuestId)
+            window.guestUpdateUrl = "/guest/{{ $currentGuestId }}";
+        @else
+            window.guestUpdateUrl = null;
+        @endif
+
+        // Jika Anda menggunakan axios (bukan fetch), inisialisasi CSRF header:
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = document
+            .querySelector('meta[name="csrf-token"]')
+            .getAttribute('content');
+    </script>
+
+
+
     <script src="/dist/general.js" defer></script>
     <script src="/dist/stepper.js" defer></script>
 </head>
@@ -1292,79 +1314,184 @@
                                     class="w-10 h-10 rounded-full bg-elegant-redorange/10 flex items-center justify-center mr-4">
                                     <i class="fas fa-user-circle text-elegant-redorange"></i>
                                 </div>
-                                <h4 class="font-cormorant text-2xl font-bold text-elegant-green">Guest Information
-                                </h4>
+                                <h4 class="font-cormorant text-2xl font-bold text-elegant-green">Guest Information</h4>
                             </div>
 
                             <div class="bg-elegant-white p-6 rounded-lg shadow-md border border-elegant-green/20 mb-8">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <!-- Username -->
+                                    <div>
+                                        <label for="guest-username"
+                                            class="block text-sm font-medium text-elegant-charcoal mb-2">
+                                            Username <span class="text-red-500">*</span>
+                                        </label>
+                                        <div class="relative">
+                                            <input type="text" id="guest-username"
+                                                placeholder="Enter your username"
+                                                class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50
+                            text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green
+                            rounded-md pl-10">
+                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green">
+                                                <i class="fas fa-user-tag"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Full Name -->
                                     <div>
                                         <label for="guest-name"
-                                            class="block text-sm font-medium text-elegant-charcoal mb-2">Full
-                                            Name <span class="text-red-500">*</span></label>
+                                            class="block text-sm font-medium text-elegant-charcoal mb-2">
+                                            Full Name <span class="text-red-500">*</span>
+                                        </label>
                                         <div class="relative">
                                             <input type="text" id="guest-name" placeholder="Enter your full name"
-                                                class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green rounded-md pl-10">
+                                                class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50
+                            text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green
+                            rounded-md pl-10">
                                             <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green">
                                                 <i class="fas fa-user"></i>
                                             </div>
                                         </div>
-                                        <div id="guest-name-error" class="error-message hidden">Please enter your full
-                                            name</div>
-                                    </div>
-                                    <div>
-                                        <label for="guest-email"
-                                            class="block text-sm font-medium text-elegant-charcoal mb-2">Email
-                                            Address <span class="text-red-500">*</span></label>
-                                        <div class="relative">
-                                            <input type="email" id="guest-email"
-                                                placeholder="Enter your email address"
-                                                class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green rounded-md pl-10">
-                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green">
-                                                <i class="fas fa-envelope"></i>
-                                            </div>
-                                        </div>
-                                        <div id="guest-email-error" class="error-message hidden">Please enter a valid
-                                            email address</div>
                                     </div>
                                 </div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <!-- Email -->
+                                    <div>
+                                        <label for="guest-email"
+                                            class="block text-sm font-medium text-elegant-charcoal mb-2">
+                                            Email Address <span class="text-red-500">*</span>
+                                        </label>
+                                        <div class="relative">
+                                            <input type="email" id="guest-email"
+                                                placeholder="Enter your email address"
+                                                class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50
+                            text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green
+                            rounded-md pl-10">
+                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green">
+                                                <i class="fas fa-envelope"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Phone Number -->
                                     <div>
                                         <label for="guest-phone"
-                                            class="block text-sm font-medium text-elegant-charcoal mb-2">Phone
-                                            Number <span class="text-red-500">*</span></label>
+                                            class="block text-sm font-medium text-elegant-charcoal mb-2">
+                                            Phone Number <span class="text-red-500">*</span>
+                                        </label>
                                         <div class="relative">
                                             <input type="tel" id="guest-phone"
                                                 placeholder="Enter your phone number"
-                                                class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green rounded-md pl-10">
+                                                class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50
+                            text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green
+                            rounded-md pl-10">
                                             <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green">
                                                 <i class="fas fa-phone"></i>
                                             </div>
                                         </div>
-                                        <div id="guest-phone-error" class="error-message hidden">Please enter your
-                                            phone number</div>
                                     </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <!-- Address -->
                                     <div>
                                         <label for="guest-address"
-                                            class="block text-sm font-medium text-elegant-charcoal mb-2">Address
-                                            <span class="text-red-500">*</span></label>
+                                            class="block text-sm font-medium text-elegant-charcoal mb-2">
+                                            Address <span class="text-red-500">*</span>
+                                        </label>
                                         <div class="relative">
                                             <textarea id="guest-address" rows="3" placeholder="Enter your address"
-                                                class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50 text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green rounded-md pl-10 resize-none"></textarea>
+                                                class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50
+                            text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green
+                            rounded-md pl-10 resize-none"></textarea>
                                             <div class="absolute left-3 top-4 text-elegant-green">
                                                 <i class="fas fa-map-marker-alt"></i>
                                             </div>
                                         </div>
-                                        <div id="guest-address-error" class="error-message hidden">Please enter your
-                                            address</div>
                                     </div>
 
+                                    <!-- ID Card Number -->
+                                    <div>
+                                        <label for="guest-id-card"
+                                            class="block text-sm font-medium text-elegant-charcoal mb-2">
+                                            ID Card Number
+                                        </label>
+                                        <div class="relative">
+                                            <input type="text" id="guest-id-card"
+                                                placeholder="Enter your ID card number"
+                                                class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50
+                            text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green
+                            rounded-md pl-10">
+                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green">
+                                                <i class="fas fa-id-card"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- Passport Number -->
+                                    <div>
+                                        <label for="guest-passport"
+                                            class="block text-sm font-medium text-elegant-charcoal mb-2">
+                                            Passport Number
+                                        </label>
+                                        <div class="relative">
+                                            <input type="text" id="guest-passport"
+                                                placeholder="Enter your passport number"
+                                                class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50
+                            text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green
+                            rounded-md pl-10">
+                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green">
+                                                <i class="fas fa-passport"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Birthdate -->
+                                    <div>
+                                        <label for="guest-birthdate"
+                                            class="block text-sm font-medium text-elegant-charcoal mb-2">
+                                            Birthdate
+                                        </label>
+                                        <div class="relative">
+                                            <input type="date" id="guest-birthdate"
+                                                class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50
+                            text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green
+                            rounded-md pl-10">
+                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Gender -->
+                                <div class="mt-6">
+                                    <label for="guest-gender"
+                                        class="block text-sm font-medium text-elegant-charcoal mb-2">
+                                        Gender
+                                    </label>
+                                    <div class="relative">
+                                        <select id="guest-gender"
+                                            class="w-full px-4 py-3 border border-elegant-green/30 bg-elegant-lightgray/50
+                        text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green
+                        rounded-md pl-10 appearance-none">
+                                            <option value="">Select Gender</option>
+                                            <option value="male">Male</option>
+                                            <option value="female">Female</option>
+                                        </select>
+                                        <div
+                                            class="absolute left-3 top-1/2 -translate-y-1/2 text-elegant-green pointer-events-none">
+                                            <i class="fas fa-venus-mars"></i>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
+
 
                     <!-- Step 4: Payment -->
                     <div class="step-content hidden" id="step-4">
@@ -1679,6 +1806,7 @@
                 </div>
             </div>
         </div>
+
 
         <!-- FontAwesome -->
         <script src="https://kit.fontawesome.com/your-kit-code.js" crossorigin="anonymous"></script>

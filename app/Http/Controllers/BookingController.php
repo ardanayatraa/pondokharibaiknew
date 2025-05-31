@@ -107,23 +107,29 @@ class BookingController extends Controller
     }
 
 
-    public function guestInfo($id)
+public function guestInfo($id)
 {
     // pastikan yang sedang login sama dengan $id
     if (Auth::id() != $id) {
-        return response()->json(['message'=>'Unauthorized'], 403);
+        return response()->json(['message' => 'Unauthorized'], 403);
     }
 
     $guest = Guest::findOrFail($id);
-    return response()->json([
-        'id'           => $guest->id_guest,
-        'full_name'    => $guest->full_name,
-        'email'        => $guest->email,
-        'address'        => $guest->address,
-        'phone_number' => $guest->phone_number,
 
+    return response()->json([
+        'id'               => $guest->id_guest,
+        'username'         => $guest->username,
+        'full_name'        => $guest->full_name,
+        'email'            => $guest->email,
+        'address'          => $guest->address,
+        'phone_number'     => $guest->phone_number,
+        'id_card_number'   => $guest->id_card_number,
+        'passport_number'  => $guest->passport_number,
+        'birthdate'        => $guest->birthdate,
+        'gender'           => $guest->gender,
     ]);
 }
+
 
 
 public function paymentToken(Request $request): JsonResponse

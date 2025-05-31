@@ -9,11 +9,17 @@ const bookingData = {
     checkIn: '',
     checkOut: '',
     nights: 0,
-    guestName: '',
+    totalAmount: '',
+    guestUsername: '',
+    guestFullName: '',
     guestEmail: '',
     guestAddress: '',
-    totalAmount: '',
     guestPhone: '',
+    guestIdCard: '',
+    guestPassport: '',
+    guestBirthdate: '',
+    guestGender: '',
+    totalAmount: '',
     paymentMethod: 'midtrans',
   };
 
@@ -57,27 +63,113 @@ const bookingData = {
    * Memuat informasi tamu dari server berdasarkan ID tamu
    * dan mengisi form dengan data tersebut
    */
-  async function loadGuestInfo() {
-    if (!window.guestId) return;
-    try {
-      const res = await fetch(`/guestbyID/${window.guestId}`);
-      if (!res.ok) throw new Error(res.status);
-      const g = await res.json();
-      // simpan ke state
-      bookingData.guestName = g.full_name;
-      bookingData.guestEmail = g.email;
-      bookingData.guestAddress = g.address;
-      bookingData.guestPhone = g.phone_number;
-      // isi input
-      document.getElementById('guest-name').value = g.full_name;
-      document.getElementById('guest-email').value = g.email;
-      document.getElementById('guest-address').value = g.address;
-      document.getElementById('guest-phone').value = g.phone_number;
-      // kalau ada country field, isi juga
-    } catch (e) {
-      // Error handling tanpa console.warn
-    }
+async function loadGuestInfo() {
+  if (!window.guestId) return;
+  try {
+    const res = await fetch(`/guestbyID/${window.guestId}`);
+    if (!res.ok) throw new Error(res.status);
+    const g = await res.json();
+
+    // Simpan ke state
+    bookingData.guestUsername = g.username;
+    bookingData.guestFullName = g.full_name;
+    bookingData.guestEmail = g.email;
+    bookingData.guestAddress = g.address;
+    bookingData.guestPhone = g.phone_number;
+    bookingData.guestIdCard = g.id_card_number;
+    bookingData.guestPassport = g.passport_number;
+    bookingData.guestBirthdate = g.birthdate;
+    bookingData.guestGender = g.gender;
+
+    // Isi input form (pastikan elemen dengan id ini ada di HTML)
+    document.getElementById('guest-username').value = g.username ?? '';
+    document.getElementById('guest-name').value = g.full_name ?? '';
+    document.getElementById('guest-email').value = g.email ?? '';
+    document.getElementById('guest-address').value = g.address ?? '';
+    document.getElementById('guest-phone').value = g.phone_number ?? '';
+    document.getElementById('guest-id-card').value = g.id_card_number ?? '';
+    document.getElementById('guest-passport').value = g.passport_number ?? '';
+    document.getElementById('guest-birthdate').value = g.birthdate ?? '';
+    document.getElementById('guest-gender').value = g.gender ?? '';
+  } catch (e) {
+    // Optional: Tampilkan error user-friendly, jangan console.log di production
   }
+}
+
+
+async function saveGuestProfileViaAPI() {
+  if (!window.guestId) {
+    alert('Anda belum login sebagai guest.');
+    return;
+  }
+
+  // Ambil semua value dari form input (misalnya input‐input dengan ID di modal stepper)
+  const payload = {
+    username:        document.getElementById('guest-username').value.trim(),
+    full_name:       document.getElementById('guest-name').value.trim(),
+    email:           document.getElementById('guest-email').value.trim(),
+    phone_number:    document.getElementById('guest-phone').value.trim(),
+    address:         document.getElementById('guest-address').value.trim(),
+    id_card_number:  document.getElementById('guest-id-card').value.trim(),
+    passport_number: document.getElementById('guest-passport').value.trim(),
+    birthdate:       document.getElementById('guest-birthdate').value,       // YYYY-MM-DD atau kosong
+    gender:          document.getElementById('guest-gender').value,          // "male" | "female" | ""
+    // Jika Anda ingin memungkinkan change password dari modal:
+    // password: document.getElementById('guest-password').value,
+    // password_confirmation: document.getElementById('guest-password_confirmation').value
+  };
+
+  try {
+    const res = await fetch('/api/guest/profile', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        // Laravel Sanctum / CSRF: jika Anda memakai session‐cookie (bukan token statis),
+        // cukup pastikan CSRF‐token ter‐include di header. Biasanya:
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.status === 422) {
+      // Validasi gagal → ambil detail error
+      const data = await res.json();
+      // data.errors.field akan berisi array pesan error misalnya: { "email":[ "Email sudah dipakai." ] }
+      console.error('Validation errors:', data.errors);
+      alert('Validasi gagal. Cek console untuk detail.');
+      return;
+    }
+
+    if (!res.ok) {
+      // Misalnya 401 atau 500
+      const txt = await res.text();
+      throw new Error(`Error: HTTP ${res.status} → ${txt}`);
+    }
+
+    const json = await res.json();
+    // json.guest berisi data profil terbaru
+    // Simpan juga ke state JS (misalnya bookingData)
+    bookingData.guestUsername = json.guest.username;
+    bookingData.guestFullName = json.guest.full_name;
+    bookingData.guestEmail    = json.guest.email;
+    bookingData.guestPhone    = json.guest.phone_number;
+    bookingData.guestAddress  = json.guest.address;
+    bookingData.guestIdCard   = json.guest.id_card_number;
+    bookingData.guestPassport = json.guest.passport_number;
+    bookingData.guestBirthdate= json.guest.birthdate;
+    bookingData.guestGender   = json.guest.gender;
+
+    return true;
+  } catch (err) {
+    console.error('[saveGuestProfileViaAPI] Error:', err);
+    alert('Gagal menghubungi server: ' + err.message);
+    return false;
+  }
+}
+
+
+
 
   // ----------------------------------
   // STEP NAVIGATION
@@ -380,7 +472,7 @@ async function renderStep2() {
     Object.assign(bookingData, {
       roomId: null, room: null,
       checkIn: '', checkOut: '', nights: 0,
-      guestName: '', guestEmail: '', guestPhone: '',
+      guestFullName: '', guestEmail: '', guestPhone: '',
       guestCountry: '', specialRequests: '',
       paymentMethod: 'credit',
       cardName: '', cardNumber: '', cardMonth: '', cardYear: '', cardCVV: ''
@@ -482,17 +574,37 @@ async function renderStep2() {
     };
 
     // Stepper nav
-    document.getElementById('next-step').onclick = () => {
-      if (currentStep < totalSteps) {
+    document.getElementById('next-step').onclick = async () => {
+    if (currentStep < totalSteps) {
+        // Step 3: submit/update Guest Information dulu
+            if (currentStep === 3) {
+            if (!validateStep(3)) return;    // validasi minimal (kalau mau)
+            try {
+                const ok = await saveGuestProfileViaAPI();
+                if (!ok) return;               // jangan lanjut kalau gagal
+            } catch (e) {
+                alert(e.message);
+                return;
+            }
+            goToStep(4);
+            return;
+            }
+
+        // Step 4: langsung panggil Midtrans
         if (currentStep === 4) {
-          payWithMidtrans();
-        } else {
-          if (validateStep(currentStep)) goToStep(currentStep + 1);
+        payWithMidtrans();
+        return;
         }
-      } else {
+
+        // Step 1 & 2: normal navigation
+        if (validateStep(currentStep)) {
+        goToStep(currentStep + 1);
+        }
+    } else {
         closeModal();
-      }
+    }
     };
+
     document.getElementById('prev-step').onclick = () => {
       if (currentStep > 1) goToStep(currentStep - 1);
     };
@@ -506,7 +618,7 @@ async function renderStep2() {
         check_in: bookingData.checkIn,
         check_out: bookingData.checkOut,
         total_amount: bookingData.totalAmount,
-        guest_name: bookingData.guestName,
+        guest_name: bookingData.guestFullName,
         guest_email: bookingData.guestEmail,
         guest_phone: bookingData.guestPhone
       };

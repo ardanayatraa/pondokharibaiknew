@@ -148,6 +148,21 @@
                                 </div>
                             </div>
 
+                            <!-- Phone Number Field -->
+                            <div>
+                                <label for="phone_number"
+                                    class="block text-sm font-medium text-elegant-charcoal mb-2">Phone Number <span
+                                        class="text-elegant-orange">*</span></label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-phone text-elegant-gray"></i>
+                                    </div>
+                                    <input type="tel" id="phone_number" name="phone_number"
+                                        class="w-full pl-10 pr-4 py-3 border border-elegant-gray/20 bg-elegant-white text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green/50 rounded-md"
+                                        placeholder="Your phone number" required>
+                                </div>
+                            </div>
+
                             <!-- Password Field -->
                             <div>
                                 <label for="password"
@@ -180,130 +195,6 @@
                         </div>
                     </div>
 
-                    <div class="mb-8">
-                        <h2 class="font-cormorant text-2xl font-semibold text-elegant-green mb-4">Personal Information
-                        </h2>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Full Name Field -->
-                            <div>
-                                <label for="full_name" class="block text-sm font-medium text-elegant-charcoal mb-2">Full
-                                    Name <span class="text-elegant-orange">*</span></label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-user-circle text-elegant-gray"></i>
-                                    </div>
-                                    <input type="text" id="full_name" name="full_name"
-                                        class="w-full pl-10 pr-4 py-3 border border-elegant-gray/20 bg-elegant-white text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green/50 rounded-md"
-                                        placeholder="Your full name" required>
-                                </div>
-                            </div>
-
-                            <!-- Gender Field -->
-                            <div>
-                                <label for="gender"
-                                    class="block text-sm font-medium text-elegant-charcoal mb-2">Gender <span
-                                        class="text-elegant-orange">*</span></label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-venus-mars text-elegant-gray"></i>
-                                    </div>
-                                    <select id="gender" name="gender"
-                                        class="w-full pl-10 pr-4 py-3 border border-elegant-gray/20 bg-elegant-white text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green/50 rounded-md appearance-none"
-                                        required>
-                                        <option value="" disabled selected>Select your gender</option>
-                                        <option value="male">Male</option>
-                                        <option value="female">Female</option>
-                                        <option value="other">Other</option>
-                                        <option value="prefer_not_to_say">Prefer not to say</option>
-                                    </select>
-                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-chevron-down text-elegant-gray text-sm"></i>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Birthdate Field -->
-                            <div>
-                                <label for="birthdate"
-                                    class="block text-sm font-medium text-elegant-charcoal mb-2">Birthdate <span
-                                        class="text-elegant-orange">*</span></label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-calendar-alt text-elegant-gray"></i>
-                                    </div>
-                                    <input type="date" id="birthdate" name="birthdate"
-                                        class="w-full pl-10 pr-4 py-3 border border-elegant-gray/20 bg-elegant-white text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green/50 rounded-md"
-                                        required>
-                                </div>
-                            </div>
-
-                            <!-- Phone Number Field -->
-                            <div>
-                                <label for="phone_number"
-                                    class="block text-sm font-medium text-elegant-charcoal mb-2">Phone Number <span
-                                        class="text-elegant-orange">*</span></label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-phone text-elegant-gray"></i>
-                                    </div>
-                                    <input type="tel" id="phone_number" name="phone_number"
-                                        class="w-full pl-10 pr-4 py-3 border border-elegant-gray/20 bg-elegant-white text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green/50 rounded-md"
-                                        placeholder="Your phone number" required>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-8">
-                        <h2 class="font-cormorant text-2xl font-semibold text-elegant-green mb-4">Address &
-                            Identification</h2>
-
-                        <!-- Address Field -->
-                        <div class="mb-6">
-                            <label for="address" class="block text-sm font-medium text-elegant-charcoal mb-2">Address
-                                <span class="text-elegant-orange">*</span></label>
-                            <div class="relative">
-                                <div class="absolute top-3 left-3 flex items-start pointer-events-none">
-                                    <i class="fas fa-home text-elegant-gray"></i>
-                                </div>
-                                <textarea id="address" name="address" rows="3"
-                                    class="w-full pl-10 pr-4 py-3 border border-elegant-gray/20 bg-elegant-white text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green/50 rounded-md"
-                                    placeholder="Your full address" required></textarea>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- ID Card Number Field -->
-                            <div>
-                                <label for="id_card_number"
-                                    class="block text-sm font-medium text-elegant-charcoal mb-2">ID Card Number</label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-id-card text-elegant-gray"></i>
-                                    </div>
-                                    <input type="text" id="id_card_number" name="id_card_number"
-                                        class="w-full pl-10 pr-4 py-3 border border-elegant-gray/20 bg-elegant-white text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green/50 rounded-md"
-                                        placeholder="Your ID card number">
-                                </div>
-                            </div>
-
-                            <!-- Passport Number Field -->
-                            <div>
-                                <label for="passport_number"
-                                    class="block text-sm font-medium text-elegant-charcoal mb-2">Passport
-                                    Number</label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-passport text-elegant-gray"></i>
-                                    </div>
-                                    <input type="text" id="passport_number" name="passport_number"
-                                        class="w-full pl-10 pr-4 py-3 border border-elegant-gray/20 bg-elegant-white text-elegant-charcoal focus:outline-none focus:ring-2 focus:ring-elegant-green/50 rounded-md"
-                                        placeholder="Your passport number">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Terms and Conditions -->
                     <div class="mb-8">
