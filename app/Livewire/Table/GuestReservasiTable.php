@@ -4,6 +4,7 @@ namespace App\Livewire\Table;
 
 use App\Jobs\SendEmailStatus;
 use App\Models\Reservasi;
+use Illuminate\Database\Eloquent\Builder;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 
@@ -16,11 +17,19 @@ class GuestReservasiTable extends DataTableComponent
         $this->setPrimaryKey('id_reservation');
     }
 
+    /**
+     * Override builder() agar selalu mengurutkan dari yang terbaru berdasarkan created_at.
+     */
+    public function builder(): Builder
+    {
+        return Reservasi::query()
+            ->with(['guest', 'villa'])
+            ->orderBy('created_at', 'desc');
+    }
+
     public function columns(): array
     {
         return [
-
-
             Column::make("Id Reservation", "id_reservation")
                 ->sortable()
                 ->format(function($value, $row, Column $column) {
@@ -32,8 +41,9 @@ class GuestReservasiTable extends DataTableComponent
                 })
                 ->html(),
 
-                  Column::make("Status", "status")
+            Column::make("Status", "status")
                 ->sortable(),
+
             Column::make("Guest", "guest.full_name")
                 ->sortable(),
 
@@ -53,7 +63,6 @@ class GuestReservasiTable extends DataTableComponent
 
     public function openModal($idReservation)
     {
-
-    $this->dispatch('openModal', $idReservation);
+        $this->dispatch('openModal', $idReservation);
     }
 }
