@@ -24,7 +24,7 @@ class GuestReservasiTable extends DataTableComponent
     {
         return Reservasi::query()
             ->with(['guest', 'villa'])
-            ->orderBy('reservasi.created_at', 'desc');
+            ->orderBy('tbl_reservasi.created_at', 'desc');
     }
 
     public function columns(): array
