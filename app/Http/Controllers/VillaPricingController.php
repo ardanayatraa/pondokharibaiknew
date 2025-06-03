@@ -2,137 +2,113 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\VillaPricing;
 use App\Models\Villa;
 use App\Models\Season;
-use App\Models\VillaPricing;
 use Illuminate\Http\Request;
 
 class VillaPricingController extends Controller
 {
+    /**
+     * Tampilkan daftar semua VillaPricing.
+     */
     public function index()
     {
-        // Tampilkan daftar (bisa diubah sesuai kebutuhan Livewire/Table Anda)
-        $items = VillaPricing::with(['villa','season'])->get();
-        return view('harga-villa.index', compact('items'));
+        $pricings = VillaPricing::with(['villa', 'season'])
+                                ->orderBy('villa_id')
+                                ->orderBy('season_id')
+                                ->get();
+        return view('harga-villa.index', compact('pricings'));
     }
 
+    /**
+     * Tampilkan form untuk membuat VillaPricing baru.
+     */
     public function create()
     {
-        $villas  = Villa::all();
-        $seasons = Season::orderByDesc('tgl_mulai_season')->get();
-        return view('harga-villa.create', compact('villas','seasons'));
+        $villas   = Villa::all();
+        $seasons  = Season::orderBy('tgl_mulai_season', 'desc')->get();
+        return view('harga-villa.create', compact('villas', 'seasons'));
     }
 
+    /**
+     * Simpan VillaPricing baru ke database.
+     */
     public function store(Request $request)
     {
-        // ambil semua input tanpa validasi
-        $data     = $request->all();
-        $seasonId = $data['season_id'];
-        $season   = Season::findOrFail($seasonId);
+        $validated = $request->validate([
+            'villa_id'         => 'nullable|exists:tbl_villa,id_villa',
+            'season_id'        => 'nullable|exists:tbl_season,id_season',
+            'sunday_pricing'   => 'nullable|integer|min:0',
+            'monday_pricing'   => 'nullable|integer|min:0',
+            'tuesday_pricing'  => 'nullable|integer|min:0',
+            'wednesday_pricing'=> 'nullable|integer|min:0',
+            'thursday_pricing' => 'nullable|integer|min:0',
+            'friday_pricing'   => 'nullable|integer|min:0',
+            'saturday_pricing' => 'nullable|integer|min:0',
+        ]);
 
-        // map index hari → kolom db
-        $mapHari = [
-            0 => 'sunday_pricing',
-            1 => 'monday_pricing',
-            2 => 'tuesday_pricing',
-            3 => 'wednesday_pricing',
-            4 => 'thursday_pricing',
-            5 => 'friday_pricing',
-            6 => 'saturday_pricing',
-        ];
+        VillaPricing::create($validated);
 
-        $fields = [];
-
-        // jika user klik "all same" untuk season tertentu
-        if (! empty($data['all_same'][$seasonId])) {
-            $gp = $data['group_pricing'][$seasonId] ?? 0;
-            foreach ($season->days_of_week as $dow) {
-                $fields[$mapHari[$dow]] = $gp;
-            }
-        }
-        // weekly individual
-        elseif ($season->repeat_weekly) {
-            foreach ($season->days_of_week as $dow) {
-                $key = $mapHari[$dow];
-                $fields[$key] = $data['pricing'][$seasonId][$key] ?? 0;
-            }
-        }
-        // non-weekly (rentang)
-        else {
-            foreach ($mapHari as $col) {
-                $fields[$col] = $data['pricing'][$seasonId][$col] ?? 0;
-            }
-        }
-
-        VillaPricing::updateOrCreate(
-            ['villa_id' => $data['villa_id'], 'season_id' => $seasonId],
-            $fields
-        );
-
-        return redirect()
-            ->route('harga-villa.index')
-            ->with('success','Data berhasil disimpan.');
+        return redirect()->route('harga-villa.index')
+                         ->with('success', 'VillaPricing berhasil dibuat.');
     }
 
-    public function edit(VillaPricing $harga_villa)
+    /**
+     * Tampilkan detail satu VillaPricing.
+     */
+    public function show($id_villa_pricing)
     {
-        $villas        = Villa::all();
-        $seasons       = Season::orderByDesc('tgl_mulai_season')->get();
-        $villa_pricing = $harga_villa;
-        return view('harga-villa.edit', compact('villas','seasons','villa_pricing'));
+        $pricing = VillaPricing::with(['villa', 'season'])
+                               ->findOrFail($id_villa_pricing);
+        return view('harga-villa.show', compact('pricing'));
     }
 
-    public function update(Request $request, VillaPricing $villa_pricing)
+    /**
+     * Tampilkan form edit untuk VillaPricing tertentu.
+     */
+    public function edit($id_villa_pricing)
     {
-        $data     = $request->all();
-        $seasonId = $data['season_id'];
-        $season   = Season::findOrFail($seasonId);
-
-        $mapHari = [
-            0 => 'sunday_pricing',
-            1 => 'monday_pricing',
-            2 => 'tuesday_pricing',
-            3 => 'wednesday_pricing',
-            4 => 'thursday_pricing',
-            5 => 'friday_pricing',
-            6 => 'saturday_pricing',
-        ];
-
-        $fields = [];
-
-        if (! empty($data['all_same'][$seasonId])) {
-            $gp = $data['group_pricing'][$seasonId] ?? 0;
-            foreach ($season->days_of_week as $dow) {
-                $fields[$mapHari[$dow]] = $gp;
-            }
-        }
-        elseif ($season->repeat_weekly) {
-            foreach ($season->days_of_week as $dow) {
-                $key = $mapHari[$dow];
-                $fields[$key] = $data['pricing'][$seasonId][$key] ?? 0;
-            }
-        }
-        else {
-            foreach ($mapHari as $col) {
-                $fields[$col] = $data['pricing'][$seasonId][$col] ?? 0;
-            }
-        }
-
-        $villa_pricing->update(array_merge([
-            'villa_id'   => $data['villa_id'],
-            'season_id'  => $seasonId,
-        ], $fields));
-
-        return redirect()
-            ->route('harga-villa.index')
-            ->with('success','Data berhasil diperbarui.');
+        $pricing = VillaPricing::findOrFail($id_villa_pricing);
+        $villas  = Villa::all();
+        $seasons = Season::orderBy('tgl_mulai_season', 'desc')->get();
+        return view('harga-villa.edit', compact('pricing', 'villas', 'seasons'));
     }
 
-    public function destroy(VillaPricing $villa_pricing)
+    /**
+     * Update data VillaPricing yang sudah ada.
+     */
+    public function update(Request $request, $id_villa_pricing)
     {
-        $villa_pricing->delete();
-        return redirect()
-            ->route('harga-villa.index')
-            ->with('success','Data berhasil dihapus.');
+        $pricing = VillaPricing::findOrFail($id_villa_pricing);
+
+        $validated = $request->validate([
+            'villa_id'         => 'nullable|exists:tbl_villa,id_villa',
+            'season_id'        => 'nullable|exists:tbl_season,id_season',
+            'sunday_pricing'   => 'nullable|integer|min:0',
+            'monday_pricing'   => 'nullable|integer|min:0',
+            'tuesday_pricing'  => 'nullable|integer|min:0',
+            'wednesday_pricing'=> 'nullable|integer|min:0',
+            'thursday_pricing' => 'nullable|integer|min:0',
+            'friday_pricing'   => 'nullable|integer|min:0',
+            'saturday_pricing' => 'nullable|integer|min:0',
+        ]);
+
+        $pricing->update($validated);
+
+        return redirect()->route('harga-villa.index')
+                         ->with('success', 'VillaPricing berhasil diperbarui.');
+    }
+
+    /**
+     * Hapus satu VillaPricing.
+     */
+    public function destroy($id_villa_pricing)
+    {
+        $pricing = VillaPricing::findOrFail($id_villa_pricing);
+        $pricing->delete();
+
+        return redirect()->route('harga-villa.index')
+                         ->with('success', 'VillaPricing berhasil dihapus.');
     }
 }

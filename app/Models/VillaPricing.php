@@ -9,19 +9,27 @@ class VillaPricing extends Model
 {
     use HasFactory;
 
-    protected $table = 'tbl_villa_pricing';
     protected $primaryKey = 'id_villa_pricing';
+        protected $table = 'tbl_villa_pricing';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     protected $fillable = [
-        'villa_id', 'season_id', 'sunday_pricing', 'monday_pricing',
-        'tuesday_pricing', 'wednesday_pricing', 'thursday_pricing',
-        'friday_pricing', 'saturday_pricing'
+        'villa_id',
+        'season_id',
+        'sunday_pricing',
+        'monday_pricing',
+        'tuesday_pricing',
+        'wednesday_pricing',
+        'thursday_pricing',
+        'friday_pricing',
+        'saturday_pricing',
     ];
 
     public function villa()
     {
-        return $this->hasOne(Villa::class, 'id_villa', 'villa_id');
+        return $this->belongsTo(Villa::class, 'villa_id');
     }
-
 
     public function season()
     {

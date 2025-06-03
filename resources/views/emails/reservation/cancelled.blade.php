@@ -82,9 +82,8 @@
             </p>
 
             <p>
-                Silakan <strong>tunjukkan email ini kepada petugas</strong> di loket refund sebagai bukti.
-                Anda dapat melakukan proses refund di tempat dengan membawa identitas yang sama seperti pada saat
-                pemesanan.
+                Silakan Hubungi Whatsapp +62123456789 untuk melakukan refund, tunjukan pesan konfirmasi ini.
+                Beserta identitas yang sesuai (nama & email) seperti pada saat pemesanan.
             </p>
 
             <p>

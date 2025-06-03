@@ -99,7 +99,7 @@
             <ol>
                 <li>
                     <strong>Refund</strong>:
-                    Tunjukkan email ini kepada petugas refund di loket.
+                    Silakan Hubungi Whatsapp +62123456789 untuk melakukan refund, tunjukan pesan konfirmasi ini.
                     Beserta identitas yang sesuai (nama & email) seperti pada saat pemesanan.
                 </li>
                 <li>

@@ -73,7 +73,7 @@
                     },
                     backgroundImage: {
                         'hero-pattern': "linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/assets/bg-hero.JPG')",
-                        'about-pattern': "url('https://images.unsplash.com/photo-1540541338287-41700207dee6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
+                        'about-pattern': "url('/assets/bg-section.JPG')",
                         'family-bungalow': "url('https://images.unsplash.com/photo-1590490360182-c33d57733427?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
                         'family-garden': "url('https://images.unsplash.com/photo-1578683010236-d716f9a3f461?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
                         'twins-garden': "url('https://images.unsplash.com/photo-1595576508898-0ad5c879a061?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')",
@@ -904,7 +904,7 @@
 
     <!-- CTA Section -->
     <section
-        class="py-24 bg-elegant-redorange text-elegant-white bg-[url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')] bg-cover bg-center relative">
+        class="py-24 bg-elegant-redorange text-elegant-white bg-[url('/assets/bg-section.JPG')] bg-cover bg-center relative">
         <div class="absolute inset-0 bg-black/50"></div>
         <div class="container mx-auto px-4 text-center relative z-10">
             <div class="w-full mx-auto animate-hidden">
@@ -1638,11 +1638,11 @@
             </button>
         </div>
 
-
+        @livewire('villa.action-reservation')
 
         <!-- Modal -->
         <div id="guest-modal"
-            class="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 hidden">
+            class="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-10 hidden">
             <div id="guest-modal-content"
                 class="bg-white w-full max-w-7xl mx-8 rounded-lg shadow-lg relative opacity-0 scale-95 transition-all duration-300 overflow-y-auto max-h-screen">
 
@@ -1802,6 +1802,7 @@
                     </div>
                     <div id="tab-riwayat" class="hidden">
                         @livewire('table.guest-reservasi-table', ['guestId' => $user->id_guest])
+
                     </div>
                 </div>
             </div>

@@ -1,213 +1,268 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-sm text-gray-800">Edit Villa Pricing</h2>
+        <h2 class="font-semibold text-sm text-gray-800">Edit Harga Villa</h2>
     </x-slot>
 
-    <div class="py-6">
+    <div class="py-2">
         <div class="w-full mx-auto sm:px-6 lg:px-8">
+            <div class="w-full mb-4 bg-white dark:bg-gray-900 py-4 px-6">
+                <h2 class="text-sm font-bold">
+                    Edit Harga Villa
+                </h2>
+            </div>
+
             <div class="bg-white shadow-lg rounded-lg p-6">
-                <form action="{{ route('harga-villa.update', $villa_pricing->id_villa_pricing) }}" method="POST"
-                    id="pricing-form">
+                <form action="{{ route('harga-villa.update', $pricing->id_villa_pricing) }}" method="POST"
+                    id="form-edit-pricing">
                     @csrf
                     @method('PUT')
 
-                    {{-- PILIH --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        {{-- Villa --}}
+                    <div class="space-y-6">
+                        {{-- 1) Pilih Villa --}}
                         <div>
-                            <label for="villa_id" class="block text-sm font-medium text-gray-700">Villa</label>
-                            <select id="villa_id" name="villa_id" required
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-                                <option value="">-- Pilih Villa --</option>
-                                @foreach ($villas as $v)
-                                    <option value="{{ $v->id_villa }}" @selected(old('villa_id', $villa_pricing->villa_id) == $v->id_villa)>
-                                        {{ $v->name }}
+                            <x-label for="villa_id" value="Villa" />
+                            <select id="villa_id" name="villa_id"
+                                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                <option value="" disabled
+                                    {{ old('villa_id') ?? $pricing->villa_id ? '' : 'selected' }}>
+                                    -- Pilih Villa --
+                                </option>
+                                @foreach ($villas as $villa)
+                                    <option value="{{ $villa->id_villa }}"
+                                        {{ (old('villa_id') ?? $pricing->villa_id) == $villa->id_villa ? 'selected' : '' }}>
+                                        {{ $villa->name }}
                                     </option>
                                 @endforeach
                             </select>
                             @error('villa_id')
-                                <p class="text-red-600 text-sm">{{ $message }}</p>
+                                <span class="text-sm text-red-600">{{ $message }}</span>
                             @enderror
                         </div>
-                        {{-- Season --}}
+
+                        {{-- 2) Pilih Season --}}
                         <div>
-                            <label for="season_id" class="block text-sm font-medium text-gray-700">Season</label>
-                            <select id="season_id" name="season_id" required
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-                                <option value="">-- Pilih Season --</option>
-                                @foreach ($seasons as $s)
-                                    <option value="{{ $s->id_season }}" @selected(old('season_id', $villa_pricing->season_id) == $s->id_season)>
-                                        {{ $s->nama_season }}
+                            <x-label for="season_id" value="Season" />
+                            <select id="season_id" name="season_id"
+                                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                <option value="" disabled
+                                    {{ old('season_id') ?? $pricing->season_id ? '' : 'selected' }}>
+                                    -- Pilih Season --
+                                </option>
+                                @foreach ($seasons as $season)
+                                    <option value="{{ $season->id_season }}"
+                                        {{ (old('season_id') ?? $pricing->season_id) == $season->id_season ? 'selected' : '' }}>
+                                        {{ $season->nama_season }} ({{ $season->periode_label }})
                                     </option>
                                 @endforeach
                             </select>
                             @error('season_id')
-                                <p class="text-red-600 text-sm">{{ $message }}</p>
+                                <span class="text-sm text-red-600">{{ $message }}</span>
                             @enderror
+                        </div>
+
+                        {{-- 3) Checkbox: Samakan Semua Hari --}}
+                        <div id="container-samakan-semua" class="flex items-center space-x-2" style="display: none;">
+                            <input type="checkbox" id="samakan_semua"
+                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded" />
+                            <label for="samakan_semua" class="font-medium text-gray-700">
+                                Samakan Harga ke Semua Hari
+                            </label>
+                        </div>
+
+                        {{-- 4) Input harga tunggal (muncul jika "samakan semua" dicentang) --}}
+                        <div id="container-harga-semua" class="mt-2" style="display: none;">
+                            <x-label for="harga_semua" value="Harga Semua Hari" />
+                            <x-input id="harga_semua" name="harga_semua" type="number" min="0"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                placeholder="Masukkan harga yang sama untuk semua hari" />
+                            <span class="text-sm text-gray-500">
+                                Nilai ini akan diterapkan ke semua hari sesuai season.
+                            </span>
+                        </div>
+
+                        {{-- 5) Container tempat input harga per-hari --}}
+                        <div id="container-pricing-fields"
+                            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+                            {{-- Render awal berdasarkan $pricing->season->days_of_week --}}
+                            @php
+                                $mappingNamaHari = [
+                                    0 => 'sunday',
+                                    1 => 'monday',
+                                    2 => 'tuesday',
+                                    3 => 'wednesday',
+                                    4 => 'thursday',
+                                    5 => 'friday',
+                                    6 => 'saturday',
+                                ];
+                                $initialDays = $pricing->season->days_of_week ?? [];
+                            @endphp
+
+                            @foreach ($initialDays as $dayIndex)
+                                @php
+                                    $dayName = $mappingNamaHari[$dayIndex];
+                                    $fieldValue = old($dayName . '_pricing', $pricing->{$dayName . '_pricing'});
+                                @endphp
+                                <div class="pricing-field" data-day="{{ $dayName }}">
+                                    <x-label for="{{ $dayName }}_pricing" :value="ucfirst($dayName) . ' Pricing'" />
+                                    <x-input id="{{ $dayName }}_pricing" name="{{ $dayName }}_pricing"
+                                        type="number" min="0"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        :value="$fieldValue" placeholder="Kosongkan jika tidak ada" />
+                                    @error($dayName . '_pricing')
+                                        <span class="text-sm text-red-600">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            @endforeach
                         </div>
                     </div>
 
-                    {{-- FIELDS (identik dengan create) --}}
-                    @foreach ($seasons as $s)
-                        <div id="fields-{{ $s->id_season }}" class="season-fields hidden mb-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                @php
-                                    $exists = $villa_pricing->season_id == $s->id_season ? $villa_pricing : null;
-                                @endphp
-                                @if ($s->repeat_weekly)
-                                    {{-- ALL SAME --}}
-                                    <div class="col-span-full">
-                                        <label class="inline-flex items-center">
-                                            <input type="checkbox" name="all_same" id="all_same_{{ $s->id_season }}"
-                                                class="form-checkbox all-same-checkbox"
-                                                {{ old(
-                                                    'all_same',
-                                                    collect($s->days_of_week)->every(
-                                                        fn($d) => $exists?->{[
-                                                            'sunday_pricing',
-                                                            'monday_pricing',
-                                                            'tuesday_pricing',
-                                                            'wednesday_pricing',
-                                                            'thursday_pricing',
-                                                            'friday_pricing',
-                                                            'saturday_pricing',
-                                                        ][$d]} ==
-                                                            $exists?->{[
-                                                                'sunday_pricing',
-                                                                'monday_pricing',
-                                                                'tuesday_pricing',
-                                                                'wednesday_pricing',
-                                                                'thursday_pricing',
-                                                                'friday_pricing',
-                                                                'saturday_pricing',
-                                                            ][$d]},
-                                                    )
-                                                        ? 'checked'
-                                                        : '',
-                                                ) }}>
-                                            <span class="ml-2">
-                                                Harga sama untuk
-                                                {{ collect($s->days_of_week)->map(fn($d) => ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][$d])->join(', ') }}
-                                            </span>
-                                        </label>
-                                    </div>
-                                    {{-- GROUP --}}
-                                    <div class="col-span-full group-field" style="display:none">
-                                        <label for="group_pricing" class="block text-sm font-medium text-gray-700">
-                                            Harga (Rp)
-                                        </label>
-                                        <input type="number" name="group_pricing"
-                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                                            min="0" step="1"
-                                            value="{{ old('group_pricing', $exists?->sunday_pricing) }}">
-                                        @error('group_pricing')
-                                            <p class="text-red-600 text-sm">{{ $message }}</p>
-                                        @enderror
-                                    </div>
-                                    {{-- INDIVIDUAL --}}
-                                    @foreach ($s->days_of_week as $dow)
-                                        @php
-                                            $fields = [
-                                                'sunday_pricing',
-                                                'monday_pricing',
-                                                'tuesday_pricing',
-                                                'wednesday_pricing',
-                                                'thursday_pricing',
-                                                'friday_pricing',
-                                                'saturday_pricing',
-                                            ];
-                                            $map = $fields[$dow];
-                                            $label = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][
-                                                $dow
-                                            ];
-                                        @endphp
-                                        <div class="individual-field">
-                                            <label for="pricing_{{ $s->id_season }}_{{ $map }}"
-                                                class="block text-sm font-medium text-gray-700">{{ $label }}
-                                                (Rp)
-                                            </label>
-                                            <input type="number"
-                                                name="pricing[{{ $s->id_season }}][{{ $map }}]"
-                                                id="pricing_{{ $s->id_season }}_{{ $map }}"
-                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                                                min="0" step="1"
-                                                value="{{ old("pricing.{$s->id_season}.{$map}", $exists?->{$map}) }}">
-                                            @error("pricing.{$s->id_season}.{$map}")
-                                                <p class="text-red-600 text-sm">{{ $message }}</p>
-                                            @enderror
-                                        </div>
-                                    @endforeach
-                                @else
-                                    {{-- NON-WEEKLY --}}
-                                    @foreach (['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as $day)
-                                        @php $map = "{$day}_pricing"; @endphp
-                                        <div>
-                                            <label for="pricing_{{ $s->id_season }}_{{ $map }}"
-                                                class="block text-sm font-medium text-gray-700">
-                                                {{ ucfirst($day) }} (Rp)
-                                            </label>
-                                            <input type="number"
-                                                name="pricing[{{ $s->id_season }}][{{ $map }}]"
-                                                id="pricing_{{ $s->id_season }}_{{ $map }}"
-                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                                                min="0" step="1"
-                                                value="{{ old("pricing.{$s->id_season}.{$map}", $exists?->{$map}) }}">
-                                            @error("pricing.{$s->id_season}.{$map}")
-                                                <p class="text-red-600 text-sm">{{ $message }}</p>
-                                            @enderror
-                                        </div>
-                                    @endforeach
-                                @endif
-                            </div>
-                        </div>
-                    @endforeach
-
-                    {{-- SUBMIT --}}
-                    <div class="mt-8 flex justify-end space-x-4">
+                    {{-- Tombol Simpan / Batal --}}
+                    <div class="mt-6 flex justify-end space-x-4">
                         <a href="{{ route('harga-villa.index') }}"
-                            class="px-4 py-2 border rounded text-gray-700 hover:bg-gray-100">Batal</a>
-                        <x-button>Update</x-button>
+                            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100">
+                            Batal
+                        </a>
+                        <x-button>
+                            Perbarui
+                        </x-button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-</x-app-layout>
 
-{{-- Script sama dengan create --}}
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const seasonSelect = document.getElementById('season_id');
-        const containers = document.querySelectorAll('.season-fields');
+    {{-- ---------------------------------------------
+         SCRIPT: Generate/Render Input Harga Berdasarkan season_id + Prefill dari $pricing
+        --------------------------------------------- --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dayMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
-        function showFields() {
-            containers.forEach(c => c.classList.add('hidden'));
-            const sel = seasonSelect.value;
-            if (!sel) return;
-            const div = document.getElementById(`fields-${sel}`);
-            if (!div) return;
-            div.classList.remove('hidden');
+            // Kirim array { id: season_id, days: days_of_week } ke JS
+            const seasons = @json(
+                $seasons->map(fn($s) => [
+                        'id' => $s->id_season,
+                        'days' => $s->days_of_week,
+                    ]));
 
-            const checkbox = div.querySelector('.all-same-checkbox');
-            const groupField = div.querySelector('.group-field');
-            const indivs = div.querySelectorAll('.individual-field');
+            const selectSeason = document.getElementById('season_id');
+            const containerFields = document.getElementById('container-pricing-fields');
+            const checkboxSemua = document.getElementById('samakan_semua');
+            const containerSamakan = document.getElementById('container-samakan-semua');
+            const containerHargaAll = document.getElementById('container-harga-semua');
+            const inputHargaAll = document.getElementById('harga_semua');
 
-            function update() {
-                if (checkbox && checkbox.checked) {
-                    groupField && (groupField.style.display = '');
-                    indivs.forEach(i => i.style.display = 'none');
-                } else {
-                    groupField && (groupField.style.display = 'none');
-                    indivs.forEach(i => i.style.display = '');
+            // Hapus semua elemen child di container-pricing-fields
+            function clearPricingFields() {
+                while (containerFields.firstChild) {
+                    containerFields.removeChild(containerFields.firstChild);
                 }
             }
-            if (checkbox) {
-                checkbox.addEventListener('change', update);
-                update();
-            }
-        }
 
-        seasonSelect.addEventListener('change', showFields);
-        showFields();
-    });
-</script>
+            // Cari days_of_week berdasarkan season_id
+            function getDaysBySeasonId(seasonId) {
+                const found = seasons.find(s => s.id === parseInt(seasonId));
+                return found ? found.days : [];
+            }
+
+            // Render input harga per hari berdasarkan array daysArray
+            function renderPricingFields(daysArray) {
+                clearPricingFields();
+
+                daysArray.forEach(dayIndex => {
+                    const dayName = dayMap[dayIndex];
+                    const labelText = dayName.charAt(0).toUpperCase() + dayName.slice(1) + ' Pricing';
+
+                    const wrapper = document.createElement('div');
+                    wrapper.classList.add('pricing-field');
+                    wrapper.dataset.day = dayName;
+
+                    // Label
+                    const label = document.createElement('label');
+                    label.setAttribute('for', `${dayName}_pricing`);
+                    label.classList.add('block', 'text-sm', 'font-medium', 'text-gray-700');
+                    label.textContent = labelText;
+
+                    // Input
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.min = '0';
+                    input.id = `${dayName}_pricing`;
+                    input.name = `${dayName}_pricing`;
+                    input.placeholder = 'Kosongkan jika tidak ada';
+                    input.classList.add(
+                        'mt-1', 'block', 'w-full', 'border-gray-300',
+                        'rounded-md', 'shadow-sm', 'focus:ring-indigo-500', 'focus:border-indigo-500'
+                    );
+
+                    // Prefill: jika old() ada (validasi gagal), else value awal sudah di-embed di blade
+                    @foreach ($initialDays as $dayIndexLoop)
+                        @php $dName = $mappingNamaHari[$dayIndexLoop]; @endphp
+                        if (dayName === '{{ $dName }}') {
+                            const oldVal = '{{ old("$dName" . '_pricing') }}';
+                            if (oldVal !== '') {
+                                input.value = oldVal;
+                            } else {
+                                input.value = '{{ $pricing->{$dName . '_pricing'} }}';
+                            }
+                        }
+                    @endforeach
+
+                    wrapper.appendChild(label);
+                    wrapper.appendChild(input);
+                    containerFields.appendChild(wrapper);
+                });
+            }
+
+            // Event: season_id berubah
+            selectSeason.addEventListener('change', function() {
+                const selectedId = this.value;
+                const daysArray = getDaysBySeasonId(selectedId);
+
+                if (daysArray.length > 0) {
+                    containerSamakan.style.display = 'flex';
+                    checkboxSemua.checked = false;
+                    containerHargaAll.style.display = 'none';
+                    inputHargaAll.value = '';
+                    renderPricingFields(daysArray);
+                } else {
+                    containerSamakan.style.display = 'none';
+                    containerHargaAll.style.display = 'none';
+                    clearPricingFields();
+                }
+            });
+
+            // Event: checkbox “Samakan Semua Hari”
+            checkboxSemua.addEventListener('change', function() {
+                if (checkboxSemua.checked) {
+                    containerHargaAll.style.display = 'block';
+                    inputHargaAll.addEventListener('input', function() {
+                        const valAll = inputHargaAll.value || '';
+                        containerFields.querySelectorAll('input[type="number"]').forEach(el => {
+                            el.value = valAll;
+                        });
+                    });
+                } else {
+                    containerHargaAll.style.display = 'none';
+                    inputHargaAll.value = '';
+                }
+            });
+
+            // Inisialisasi awal: langsung render fields sesuai $pricing->season
+            (function initialRender() {
+                const initialId = '{{ $pricing->season_id }}';
+                const initialDays = getDaysBySeasonId(initialId);
+                if (initialDays.length > 0) {
+                    containerSamakan.style.display = 'flex';
+                    renderPricingFields(initialDays);
+                }
+            })();
+
+            // Jika validasi gagal (ada old('season_id')), ulangi render
+            @if (old('season_id'))
+                selectSeason.value = '{{ old('season_id') }}';
+                selectSeason.dispatchEvent(new Event('change'));
+            @endif
+        });
+    </script>
+</x-app-layout>

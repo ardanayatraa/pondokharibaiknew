@@ -19,16 +19,21 @@ class GuestReservasiTable extends DataTableComponent
     public function columns(): array
     {
         return [
+
+
             Column::make("Id Reservation", "id_reservation")
-                ->sortable(),
-
-            Column::make("Status")
+                ->sortable()
                 ->format(function($value, $row, Column $column) {
-                    return view('components.status-dropdown', [
-                        'reservasi' => $row,
-                    ]);
-                }),
+                    return view('components.action-reservation', [
+                        'text'       => "#{$value}",
+                        'clickEvent' => 'openModal',
+                        'param'      => $value,
+                    ])->render();
+                })
+                ->html(),
 
+                  Column::make("Status", "status")
+                ->sortable(),
             Column::make("Guest", "guest.full_name")
                 ->sortable(),
 
@@ -46,36 +51,9 @@ class GuestReservasiTable extends DataTableComponent
         ];
     }
 
-    /**
-     * Method ini dipanggil lewat wire:change di dropdown untuk update status.
-     * Hanya mengizinkan perubahan jika old status benar-benar 'confirmed'.
-     */
-    public function updateStatus($idReservation, $newStatus)
+    public function openModal($idReservation)
     {
-        $reservasi = Reservasi::find($idReservation);
-        if (! $reservasi) {
-            return;
-        }
 
-        $oldStatus = $reservasi->status;
-        $allowedStatuses = ['cancelled', 'reschedule'];
-
-        // Jika old status bukan 'confirmed', batalkan perubahan:
-        if ($oldStatus !== 'confirmed') {
-            return;
-        }
-
-        // Pastikan newStatus termasuk yang diizinkan
-        if (! in_array($newStatus, $allowedStatuses)) {
-            return;
-        }
-
-        // Simpan status baru
-        $reservasi->status = $newStatus;
-        $reservasi->save();
-
-        // Karena oldStatus pasti 'confirmed' di sini,
-        // kita dispatch job untuk email jika newStatus == cancelled atau reschedule
-        SendEmailStatus::dispatch($reservasi, $newStatus);
+    $this->dispatch('openModal', $idReservation);
     }
 }
