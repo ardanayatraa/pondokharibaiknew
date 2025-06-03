@@ -107,9 +107,16 @@
             <div class="decorative-line w-32 mx-auto mt-4"></div>
         </div>
 
+
         <!-- Login Form -->
         <div class="bg-elegant-white rounded-lg shadow-lg overflow-hidden subtle-shadow">
+
             <div class="p-8">
+                @if ($errors->any())
+                    <div class="mb-4 text-red-600 text-sm">
+                        {{ $errors->first() }}
+                    </div>
+                @endif
                 <form action="{{ route('login') }}" method="POST">
                     @csrf
                     <!-- Username Field -->
