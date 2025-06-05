@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
     <meta charset="UTF-8">
-    <title>Instruksi Refund & Reschedule - Reservasi #{{ $reservasi->id_reservation }}</title>
+    <title>Perihal: Konfirmasi Reschedule Reservasi #{{ $reservasi->id_reservation }}</title>
     <style>
-        /* ---------- Contoh style sederhana ---------- */
         body {
             font-family: Arial, sans-serif;
             background-color: #f9fafb;
@@ -26,7 +25,6 @@
 
         .header {
             background-color: #1f2937;
-            /* abu tua */
             color: #fff;
             padding: 16px 24px;
             text-align: center;
@@ -44,38 +42,15 @@
             font-size: 12px;
             text-align: center;
         }
-
-        .btn-refund {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #dc2626;
-            /* merah gelap */
-            color: #fff;
-            border-radius: 4px;
-            text-decoration: none;
-            font-weight: bold;
-            margin-top: 16px;
-        }
-
-        .btn-book {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #2563eb;
-            /* biru */
-            color: #fff;
-            border-radius: 4px;
-            text-decoration: none;
-            font-weight: bold;
-            margin-top: 16px;
-        }
     </style>
 </head>
 
 <body>
     <div class="container">
+
         <!-- Header -->
         <div class="header">
-            <h2>Reservasi Dijadwal Ulang</h2>
+            <h2>Perihal: Konfirmasi Reschedule Reservasi #{{ $reservasi->id_reservation }}</h2>
         </div>
 
         <!-- Body -->
@@ -83,46 +58,61 @@
             <p>Halo <strong>{{ $reservasi->guest->full_name }}</strong>,</p>
 
             <p>
-                Reservasi Anda dengan ID <strong>#{{ $reservasi->id_reservation }}</strong>
-                untuk villa <strong>{{ $reservasi->villa->name }}</strong> pada:
+                Kami mengkonfirmasi bahwa reservasi Anda dengan nomor
+                <strong>#{{ $reservasi->id_reservation }}</strong>,
+                yang sebelumnya dijadwalkan untuk:
             </p>
-            <ul>
-                <li>Check-in : {{ \Carbon\Carbon::parse($reservasi->start_date)->format('d M Y') }}</li>
-                <li>Check-out: {{ \Carbon\Carbon::parse($reservasi->end_date)->format('d M Y') }}</li>
-                <li>Total pembayaran: Rp{{ number_format($reservasi->total_amount, 0, ',', '.') }}</li>
-            </ul>
 
             <p>
-                Karena beberapa kendala, reservasi di atas <strong>harus dijadwal ulang</strong>.
-                Berikut langkah-langkah yang harus Anda lakukan:
+                • Villa: <strong>{{ $reservasi->villa->name }}</strong><br>
+                • Check-in: {{ \Carbon\Carbon::parse($reservasi->start_date)->format('d M Y') }}<br>
+                • Check-out: {{ \Carbon\Carbon::parse($reservasi->end_date)->format('d M Y') }}<br>
+                • Total Pembayaran: Rp{{ number_format($reservasi->total_amount, 0, ',', '.') }}
             </p>
+
+            <p>
+                Saat ini reservasi Anda <strong>akan dijadwalkan ulang (reschedule)</strong> karena adanya kendala.
+            </p>
+
+            <p>
+                Sesuai dengan ketentuan pembatalan, proses pengembalian dana akan dilakukan terlebih dahulu. Setelah
+                proses refund selesai, Anda dapat melakukan pemesanan ulang (booking ulang) sesuai tanggal baru yang
+                Anda inginkan.
+            </p>
+
+            <p>
+                <strong>Langkah-langkah yang perlu dilakukan:</strong>
+            </p>
+
             <ol>
                 <li>
-                    <strong>Refund</strong>:
-                    Silakan Hubungi Whatsapp +62123456789 untuk melakukan refund, tunjukan pesan konfirmasi ini.
-                    Beserta identitas yang sesuai (nama & email) seperti pada saat pemesanan.
+                    <strong>Proses Refund:</strong>
+                    Silakan hubungi WhatsApp <strong>+62 812-3456-7890</strong> untuk pengajuan refund.
+                    Mohon sertakan pesan konfirmasi ini serta identitas sesuai data pemesanan (nama & email).
                 </li>
                 <li>
-                    <strong>Reschedule / Pemesanan Ulang</strong>:
-                    Setelah proses refund selesai, silakan lakukan pemesanan baru.
-                    Proses pemesanan ulang sama persis seperti biasanya:
-                    <ul>
-                        <li>Pilih tanggal baru</li>
-                        <li>Ketersediaan villa akan diperiksa otomatis</li>
-                        <li>Bayar dan terima konfirmasi</li>
-                    </ul>
+                    <strong>Booking Ulang:</strong>
+                    Setelah refund selesai, Anda dapat melakukan pemesanan ulang melalui website kami seperti biasa:
+                    pilih tanggal baru → periksa ketersediaan villa → lakukan pembayaran → dapatkan konfirmasi baru.
                 </li>
             </ol>
 
             <p>
-                Jika Anda memerlukan bantuan lebih lanjut, silakan hubungi customer service kami.
+                Jika Anda memiliki pertanyaan lebih lanjut, silakan hubungi customer service kami.
             </p>
 
-            <p>Terima kasih,</p>
+            <p>Terima kasih atas pengertian Anda.</p>
+
+            <p>Hormat kami,</p>
             <p><em>{{ config('app.name') }}</em></p>
 
+            <p>
+                Kontak: +62 812-3456-7890<br>
+                Email: info@pondokharibaik.com
+            </p>
+
             <p style="margin-top: 32px; font-size: 12px; color: #6b7280;">
-                Jika Anda tidak merasa melakukan pemesanan ini, abaikan email ini atau hubungi kami.
+                Jika Anda tidak merasa melakukan pemesanan ini, abaikan email ini atau segera hubungi kami.
             </p>
         </div>
 

@@ -117,6 +117,12 @@
                         {{ $errors->first() }}
                     </div>
                 @endif
+
+                @if (session('success'))
+                    <div class="mb-6 p-4 bg-green-100 text-green-700 rounded-md text-center font-medium">
+                        {{ session('success') }}
+                    </div>
+                @endif
                 <form action="{{ route('login') }}" method="POST">
                     @csrf
                     <!-- Username Field -->

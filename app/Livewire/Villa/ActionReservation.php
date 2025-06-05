@@ -77,9 +77,6 @@ class ActionReservation extends Component
         // Dispatch job kirim email
         SendEmailStatus::dispatch($this->reservation, 'reschedule');
 
-        // Emit event agar komponen lain bisa refresh
-        $this->emit('reservationStatusUpdated');
-
         // Tutup modal
         $this->showModal = false;
     }

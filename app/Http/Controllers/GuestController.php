@@ -44,9 +44,17 @@ class GuestController extends Controller
 
         Guest::create($validated);
 
+        // Cek apakah user sudah login sebagai guest
+    if (Auth::guard('guest')->check()) {
         return redirect()
             ->route('guest.index')
             ->with('success', 'Guest berhasil dibuat.');
+    }
+
+    // Kalau belum login
+    return redirect()
+        ->route('login')
+        ->with('success', 'Akun berhasil dibuat! Silakan login.');
     }
 
     /**

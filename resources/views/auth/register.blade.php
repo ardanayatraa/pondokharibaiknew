@@ -111,6 +111,22 @@
         <!-- Signup Form -->
         <div class="bg-elegant-white rounded-lg shadow-lg overflow-hidden subtle-shadow">
             <div class="p-8">
+                @if (session('success'))
+                    <div class="mb-6 p-4 bg-green-100 text-green-700 rounded-md text-center font-medium">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                @if ($errors->any())
+                    <div class="mb-6 p-4 bg-red-100 text-red-700 rounded-md">
+                        <ul class="list-disc pl-5 space-y-1">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <form action="{{ route('guests.store') }}" method="POST">
                     @csrf
                     <!-- Form sections -->

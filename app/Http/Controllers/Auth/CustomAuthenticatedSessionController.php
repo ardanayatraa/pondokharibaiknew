@@ -46,9 +46,9 @@ class CustomAuthenticatedSessionController extends FortifyController
 
             return redirect()
                 ->back()
-                ->withInput($request->only('email'))
+                ->withInput($request->only('username'))
                 ->withErrors([
-                    'email' => 'Login gagal. Periksa kembali email dan password.',
+                    'username' => 'Login gagal. Periksa kembali username dan password.',
                 ]);
         }
     }
