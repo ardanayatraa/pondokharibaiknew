@@ -4,71 +4,43 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Konfirmasi Reservasi & Invoice</title>
+    <title>Perihal: Konfirmasi Reservasi & Invoice #{{ $reservasi->id_reservation }}</title>
     <style>
-        /* Reset & Base */
-        body,
-        h1,
-        h2,
-        h3,
-        p,
-        ul {
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9fafb;
+            color: #333;
             margin: 0;
             padding: 0;
         }
 
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #f5f5f5;
-            color: #333;
-            line-height: 1.5;
-        }
-
-        ul {
-            list-style: none;
-        }
-
-        /* Container */
         .container {
             max-width: 600px;
-            margin: 20px auto;
-            background: #fff;
-            border-radius: 8px;
+            margin: 24px auto;
+            background-color: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
             overflow: hidden;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
         }
 
-        /* Header */
         .header {
-            background: #2c3e50;
+            background-color: #1f2937;
             color: #fff;
             text-align: center;
-            padding: 20px;
+            padding: 16px 24px;
         }
 
         .header h1 {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: normal;
         }
 
-        /* Body */
         .body {
-            padding: 20px;
+            padding: 24px;
+            line-height: 1.6;
         }
 
-        .body h2 {
-            font-size: 18px;
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-
-        .body p {
-            font-size: 14px;
-            color: #555;
-            margin-bottom: 20px;
-        }
-
-        /* Section */
         .section {
             border: 1px solid #eaeaea;
             border-radius: 6px;
@@ -76,17 +48,24 @@
         }
 
         .section-header {
-            background: #f8f9fa;
-            padding: 10px 15px;
+            background-color: #f8f9fa;
+            padding: 12px 16px;
         }
 
         .section-header h3 {
             font-size: 16px;
             color: #2c3e50;
+            margin: 0;
         }
 
         .section-content {
-            padding: 15px;
+            padding: 16px;
+        }
+
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
 
         .info-list li {
@@ -94,59 +73,49 @@
             justify-content: space-between;
             padding: 8px 0;
             border-bottom: 1px dashed #eee;
+            font-size: 14px;
         }
 
         .info-list li:last-child {
             border-bottom: none;
         }
 
-        /* Highlight */
         .highlight {
-            background: #f8f9fa;
+            background-color: #f8f9fa;
             border-left: 4px solid #3490dc;
             padding: 15px;
-            margin: 15px 0;
+            margin: 20px 0;
             font-size: 14px;
         }
 
-        /* Button */
         .btn {
             display: inline-block;
-            background: #3490dc;
+            background-color: #3490dc;
             color: #fff !important;
             text-decoration: none;
             padding: 12px 24px;
             border-radius: 4px;
             font-size: 14px;
             text-align: center;
+            margin-top: 16px;
         }
 
         .btn:hover {
-            background: #2779bd;
+            background-color: #2779bd;
         }
 
-        /* Footer */
         .footer {
-            background: #f8f9fa;
-            padding: 15px;
+            background-color: #f3f4f6;
+            padding: 16px 24px;
             text-align: center;
             font-size: 12px;
-            color: #666;
-        }
-
-        .footer a {
-            color: #3490dc;
-            text-decoration: none;
-            margin: 0 5px;
+            color: #6b7280;
         }
 
         @media (max-width: 480px) {
             .info-list li {
                 flex-direction: column;
-            }
-
-            .info-list li div {
-                width: 100%;
+                align-items: flex-start;
             }
         }
     </style>
@@ -154,15 +123,22 @@
 
 <body>
     <div class="container">
+
+        <!-- Header -->
         <div class="header">
-            <h1>Pondok Hari Baik – Konfirmasi Reservasi</h1>
+            <h1>Perihal: Konfirmasi Reservasi & Invoice #{{ $reservasi->id_reservation }}</h1>
         </div>
 
+        <!-- Body -->
         <div class="body">
-            <h2>Halo {{ $reservasi->guest->full_name }},</h2>
-            <p>Terima kasih telah memilih <strong>Pondok Hari Baik</strong>. Berikut detail reservasi dan pembayaran
-                Anda:</p>
+            <p>Halo <strong>{{ $reservasi->guest->full_name }}</strong>,</p>
 
+            <p>
+                Terima kasih telah memilih <strong>Pondok Hari Baik</strong>. Berikut adalah detail reservasi dan
+                pembayaran Anda:
+            </p>
+
+            <!-- Section: Detail Reservasi -->
             <div class="section">
                 <div class="section-header">
                     <h3>Detail Reservasi</h3>
@@ -197,6 +173,7 @@
                 </div>
             </div>
 
+            <!-- Section: Data Tamu -->
             <div class="section">
                 <div class="section-header">
                     <h3>Data Tamu</h3>
@@ -223,6 +200,7 @@
                 </div>
             </div>
 
+            <!-- Section: Informasi Pembayaran -->
             <div class="section">
                 <div class="section-header">
                     <h3>Informasi Pembayaran</h3>
@@ -253,29 +231,24 @@
                 </div>
             </div>
 
+            <!-- Highlight Note -->
             <div class="highlight">
-                Invoice lengkap terlampir dalam PDF. Simpan email ini sebagai bukti reservasi Anda.
+                Invoice lengkap terlampir dalam PDF ini.
+                Mohon simpan email ini sebagai bukti sah reservasi Anda.
             </div>
-
-            <p style="text-align:center;">
-                <a href="{{ url('/') }}" class="btn">Kunjungi Website Kami</a>
-            </p>
 
             <p style="font-size:13px; color:#555; margin-top:20px;">
-                Butuh bantuan? Hubungi <a href="mailto:info@pondokharibaik.id">info@pondokharibaik.id</a> atau +62 123
-                4567 890.
+                Jika ada pertanyaan atau bantuan lebih lanjut, silakan hubungi:
+                <a href="mailto:info@pondokharibaik.id">info@pondokharibaik.id</a> atau WhatsApp <strong>+62
+                    812-3456-7890</strong>.
             </p>
         </div>
 
+        <!-- Footer -->
         <div class="footer">
-            <div>
-                <a href="#">Facebook</a>|
-                <a href="#">Instagram</a>|
-                <a href="#">Twitter</a>
-            </div>
-            <p>Pondok Hari Baik • Jl. Kebahagiaan No. 123, Bali</p>
-            <p>&copy; {{ date('Y') }} Pondok Hari Baik. All rights reserved.</p>
+            &copy; {{ date('Y') }} {{ config('app.name') }}. Seluruh hak cipta dilindungi.
         </div>
+
     </div>
 </body>
 
