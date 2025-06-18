@@ -75,9 +75,11 @@
             </p>
 
             <p>
-                Anda akan menerima pengembalian dana dalam waktu <strong>7 hari kerja</strong>. Jika Anda memiliki
-                pertanyaan lebih lanjut tentang pengembalian dana, silakan hubungi kami.
+                Pengembalian dana akan diproses dalam waktu <strong>7 hari kerja</strong>.
+                Mohon kirimkan nomor rekening bank atau nomor e-wallet, serta nama pemiliknya.
+                Jika Anda memiliki pertanyaan lebih lanjut mengenai pengembalian dana, silakan hubungi kami.
             </p>
+
 
             <p>Terima kasih atas pengertian Anda.</p>
 
