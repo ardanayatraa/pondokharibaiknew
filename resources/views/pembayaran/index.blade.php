@@ -5,9 +5,7 @@
             <div class="bg-white shadow-lg rounded-lg p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h1 class="text-sm font-semibold text-gray-800">Pembayaran</h1>
-                    <a href="{{ route('pembayaran.create') }}">
-                        <x-button>Tambah Pembayaran</x-button>
-                    </a>
+
                 </div>
                 @livewire('table.pembayaran-table')
             </div>

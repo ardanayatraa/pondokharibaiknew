@@ -5,6 +5,7 @@ namespace App\Livewire\Table;
 use App\Models\Villa;
 use App\Models\VillaPricing;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 
@@ -33,10 +34,17 @@ class VillaTable extends DataTableComponent
     public function columns(): array
     {
         return [
-            Column::make("ID Villa", "id_villa")->sortable(),
+            Column::make("Id", "id_villa")->sortable(),
+            Column::make('Picture', 'picture')
+                ->format(fn($value) => view('components.image-thumbnail', [
+                    'src' => $value
+                        ? asset('storage/' . $value)
+                        : null
+                ]))
+                ->html(),
+
             Column::make("Nama", "name")->sortable(),
-            Column::make("Deskripsi", "description")->sortable(),
-                        Column::make("Fasilitas", "facility_id")
+            Column::make("Fasilitas", "facility_id")
                 ->label(function ($row) {
                     return '<button wire:click="showFacility(' . $row->id_villa . ')" class="text-blue-600 underline text-sm hover:text-blue-800">Lihat Fasilitas</button>';
                 })

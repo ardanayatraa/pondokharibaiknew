@@ -18,19 +18,18 @@ class PembayaranTable extends DataTableComponent
     public function columns(): array
     {
         return [
-            Column::make("Id pembayaran", "id_pembayaran")
+            Column::make("Id", "id_pembayaran")
                 ->sortable(),
-            Column::make("Guest id", "guest_id")
+            Column::make("Guest", "guest.full_name")
                 ->sortable(),
-            Column::make("Reservation id", "reservation_id")
+            Column::make("Reservation", "reservation_id")
                 ->sortable(),
             Column::make("Amount", "amount")
                 ->sortable(),
             Column::make("Payment date", "payment_date")
                 ->sortable(),
 
-            Column::make("Notifikasi", "notifikasi")
-                ->sortable(),
+
             Column::make("Status", "status")
                 ->sortable(),
                 Column::make("Aksi")

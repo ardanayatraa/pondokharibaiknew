@@ -18,25 +18,25 @@ class VillaPricingTable extends DataTableComponent
     public function columns(): array
     {
         return [
-            Column::make("Id villa pricing", "id_villa_pricing")
+            Column::make("Id", "id_villa_pricing")
                 ->sortable(),
-            Column::make("Villa id", "villa.name")
+            Column::make("Villa", "villa.name")
                 ->sortable(),
-            Column::make("Season id", "season.nama_season")
+            Column::make("Season", "season.nama_season")
                 ->sortable(),
-            Column::make("Sunday pricing", "sunday_pricing")
+            Column::make("Sunday", "sunday_pricing")
                 ->sortable(),
-            Column::make("Monday pricing", "monday_pricing")
+            Column::make("Monday", "monday_pricing")
                 ->sortable(),
-            Column::make("Tuesday pricing", "tuesday_pricing")
+            Column::make("Tuesday", "tuesday_pricing")
                 ->sortable(),
-            Column::make("Wednesday pricing", "wednesday_pricing")
+            Column::make("Wednesday", "wednesday_pricing")
                 ->sortable(),
-            Column::make("Thursday pricing", "thursday_pricing")
+            Column::make("Thursday", "thursday_pricing")
                 ->sortable(),
-            Column::make("Friday pricing", "friday_pricing")
+            Column::make("Friday", "friday_pricing")
                 ->sortable(),
-            Column::make("Saturday pricing", "saturday_pricing")
+            Column::make("Saturday", "saturday_pricing")
                 ->sortable(),
 
                 Column::make("Aksi")

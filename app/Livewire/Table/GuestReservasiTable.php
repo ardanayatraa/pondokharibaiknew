@@ -30,7 +30,7 @@ class GuestReservasiTable extends DataTableComponent
     public function columns(): array
     {
         return [
-            Column::make("Id Reservation", "id_reservation")
+            Column::make("Id", "id_reservation")
                 ->sortable()
                 ->format(function($value, $row, Column $column) {
                     return view('components.action-reservation', [
@@ -50,13 +50,13 @@ class GuestReservasiTable extends DataTableComponent
             Column::make("Villa", "villa.name")
                 ->sortable(),
 
-            Column::make("Start Date", "start_date")
+            Column::make("Start", "start_date")
                 ->sortable(),
 
-            Column::make("End Date", "end_date")
+            Column::make("End", "end_date")
                 ->sortable(),
 
-            Column::make("Total Amount", "total_amount")
+            Column::make("Total", "total_amount")
                 ->sortable(),
         ];
     }

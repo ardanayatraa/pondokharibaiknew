@@ -18,13 +18,13 @@ class FacilityTable extends DataTableComponent
     public function columns(): array
     {
         return [
-            Column::make("Id facility", "id_facility")
+            Column::make("Id", "id_facility")
                 ->sortable(),
-            Column::make("Name facility", "name_facility")
+            Column::make("Name", "name_facility")
                 ->sortable(),
             Column::make("Description", "description")
                 ->sortable(),
-            Column::make("Facility type", "facility_type")
+            Column::make("Type", "facility_type")
                 ->sortable(),
                 Column::make("Aksi")
                 ->label(fn ($row) => view('components.link-action', [

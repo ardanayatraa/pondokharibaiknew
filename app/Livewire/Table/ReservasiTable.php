@@ -18,23 +18,20 @@ class ReservasiTable extends DataTableComponent
     public function columns(): array
     {
         return [
-            Column::make("Id reservation", "id_reservation")
+            Column::make("Id", "id_reservation")
                 ->sortable(),
-            Column::make("Guest id", "guest_id")
+            Column::make("Guest", "guest.full_name")
                 ->sortable(),
-            Column::make("Villa id", "villa_id")
+            Column::make("Villa", "villa.name")
                 ->sortable(),
-            Column::make("Cek ketersediaan id", "cek_ketersediaan_id")
+
+            Column::make("Start", "start_date")
                 ->sortable(),
-            Column::make("Villa pricing id", "villa_pricing_id")
-                ->sortable(),
-            Column::make("Start date", "start_date")
-                ->sortable(),
-            Column::make("End date", "end_date")
+            Column::make("End", "end_date")
                 ->sortable(),
             Column::make("Status", "status")
                 ->sortable(),
-            Column::make("Total amount", "total_amount")
+            Column::make("Total", "total_amount")
                 ->sortable(),
                 Column::make("Aksi")
                 ->label(fn ($row) => view('components.link-action', [

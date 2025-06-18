@@ -296,6 +296,35 @@
                 transform: rotate(360deg);
             }
         }
+
+        /* Avatar styles - TAMBAHAN BARU */
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #3F7D58;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #3F7D58;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(63, 125, 88, 0.3);
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
     </style>
     <link rel="shortcut icon" href="{{ asset('assets/logo.png') }}" type="image/png">
     <link rel="icon" href="{{ asset('assets/logo.png') }}" type="image/png">
@@ -374,8 +403,6 @@
             .getAttribute('content');
     </script>
 
-
-
     <script src="/dist/general.js" defer></script>
     <script src="/dist/stepper.js" defer></script>
 </head>
@@ -419,13 +446,14 @@
 
                     <div class="relative inline-block">
                         @if ($isGuest)
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit"
-                                    class="bg-elegant-green hover:bg-elegant-green/80 text-elegant-white px-6 py-2 rounded transition">
-                                    Logout
-                                </button>
-                            </form>
+                            <!-- User Avatar Button - PERUBAHAN UTAMA -->
+                            <div class="user-avatar" onclick="toggleGuestModal()" title="Click to view profile">
+                                @if ($user->full_name)
+                                    {{ strtoupper(substr($user->full_name, 0, 1)) }}
+                                @else
+                                    {{ strtoupper(substr($user->username, 0, 1)) }}
+                                @endif
+                            </div>
                         @elseif($isOwner)
                             <a href="{{ route('dashboard') }}"
                                 class="bg-elegant-green hover:bg-elegant-green/80 text-elegant-white px-6 py-2 rounded transition">
@@ -470,13 +498,17 @@
 
                 <div class="relative inline-block">
                     @if ($isGuest)
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit"
-                                class="bg-elegant-green hover:bg-elegant-green/80 text-elegant-white px-6 py-2 rounded transition">
-                                Logout
-                            </button>
-                        </form>
+                        <!-- Mobile User Avatar Button - PERUBAHAN UTAMA -->
+                        <div class="flex items-center space-x-3">
+                            <div class="user-avatar" onclick="toggleGuestModal()" title="Click to view profile">
+                                @if ($user->full_name)
+                                    {{ strtoupper(substr($user->full_name, 0, 1)) }}
+                                @else
+                                    {{ strtoupper(substr($user->username, 0, 1)) }}
+                                @endif
+                            </div>
+                            <span class="text-elegant-green font-medium">{{ $user->username ?? 'Guest' }}</span>
+                        </div>
                     @elseif($isOwner)
                         <a href="{{ route('dashboard') }}"
                             class="bg-elegant-green hover:bg-elegant-green/80 text-elegant-white px-6 py-2 rounded transition">
@@ -999,7 +1031,7 @@
         </div>
     </footer>
 
-    <!-- Booking Stepper Modal -->
+    <!-- Booking Stepper Modal - TIDAK DIUBAH, TETAP SAMA -->
     <div id="booking-stepper-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen p-4">
             <!-- Overlay with blur effect -->
@@ -1630,32 +1662,53 @@
 
 
     @if (Auth::guard('guest')->check())
-        <!-- Floating Button -->
-        <div class="fixed bottom-6 right-6 z-50">
-            <button onclick="toggleGuestModal()"
-                class="bg-elegant-green text-white p-4 rounded-full shadow-lg hover:bg-elegant-green/90 transition">
-                <i class="fas fa-user"></i>
-            </button>
-        </div>
-
         @livewire('villa.action-reservation')
 
-        <!-- Modal -->
+        <!-- Guest Modal - TAMBAHAN BARU -->
         <div id="guest-modal"
-            class="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-10 hidden">
+            class="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-40 hidden">
             <div id="guest-modal-content"
                 class="bg-white w-full max-w-7xl mx-8 rounded-lg shadow-lg relative opacity-0 scale-95 transition-all duration-300 overflow-y-auto max-h-screen">
 
                 <!-- Close Button -->
                 <button onclick="toggleGuestModal()"
-                    class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold">
+                    class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold z-10">
                     &times;
                 </button>
 
+                <!-- Modal Header -->
+                <div class="bg-elegant-green p-6 text-white">
+                    <div class="flex items-center justify-between w-full">
+                        <!-- left side: avatar + nama/email -->
+                        <div class="flex items-center space-x-4">
+                            <div class="user-avatar bg-elegant-orange">
+                                @if ($user->full_name)
+                                    {{ strtoupper(substr($user->full_name, 0, 1)) }}
+                                @else
+                                    {{ strtoupper(substr($user->username, 0, 1)) }}
+                                @endif
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold">{{ $user->full_name ?? $user->username }}</h2>
+                                <p class="text-elegant-orange">{{ $user->email }}</p>
+                            </div>
+                        </div>
+
+                        <!-- right side: logout button -->
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit"
+                                class="bg-elegant-redorange hover:bg-elegant-redorange/80 text-white px-4 py-2 rounded transition flex items-center space-x-2">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Logout</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+
                 <!-- Modal Content -->
                 <div class="p-6">
-                    <h2 class="text-lg font-bold text-elegant-green mb-4">Akun Anda</h2>
-
                     <!-- Tabs -->
                     <div class="border-b mb-4">
                         <nav class="-mb-px flex space-x-6" id="guest-tabs">
@@ -1808,11 +1861,7 @@
             </div>
         </div>
 
-
-        <!-- FontAwesome -->
-        <script src="https://kit.fontawesome.com/your-kit-code.js" crossorigin="anonymous"></script>
-
-        <!-- Script -->
+        <!-- Script untuk Guest Modal - TAMBAHAN BARU -->
         <script>
             function toggleGuestModal() {
                 const modal = document.getElementById('guest-modal');

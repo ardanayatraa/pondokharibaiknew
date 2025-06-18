@@ -18,7 +18,7 @@ class AdminTable extends DataTableComponent
     public function columns(): array
     {
         return [
-            Column::make("Id admin", "id_admin")
+            Column::make("Id", "id_admin")
                 ->sortable(),
             Column::make("Username", "username")
                 ->sortable(),

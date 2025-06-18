@@ -6,11 +6,7 @@
 
     <div class="py-2">
         <div class="w-full mx-auto sm:px-6 lg:px-8">
-            <div class="w-full mb-4 bg-white dark:bg-gray-900 py-4  px-6">
-                <h2 class="text-sm font-bold">
-                    Tambah Reservasi
-                </h2>
-            </div>
+
             <div class="bg-white shadow-lg rounded-lg p-6">
                 <form action="{{ route('reservasi.store') }}" method="POST">
                     @csrf

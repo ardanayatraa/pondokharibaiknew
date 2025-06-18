@@ -18,13 +18,13 @@ class SeasonTable extends DataTableComponent
     public function columns(): array
     {
         return [
-            Column::make("Id season", "id_season")
+            Column::make("Id", "id_season")
                 ->sortable(),
-            Column::make("Nama season", "nama_season")
+            Column::make("Nama", "nama_season")
                 ->sortable(),
-            Column::make("Tgl mulai season", "tgl_mulai_season")
+            Column::make("Tgl mulai", "tgl_mulai_season")
                 ->sortable(),
-            Column::make("Tgl akhir season", "tgl_akhir_season")
+            Column::make("Tgl akhir", "tgl_akhir_season")
                 ->sortable(),
             Column::make("Repeat weekly", "repeat_weekly")
             ->format(function ($value) {
@@ -53,8 +53,6 @@ class SeasonTable extends DataTableComponent
                     return collect($data)->map(fn($day) => $days[$day] ?? 'Unknown')->join(', ');
                 })
             ,
-            Column::make("Priority", "priority")
-                ->sortable(),
           Column::make("Aksi")
                 ->label(fn ($row) => view('components.link-action', [
                     'id' => $row->id_season,

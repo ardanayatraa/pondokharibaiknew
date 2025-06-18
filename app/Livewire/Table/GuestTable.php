@@ -18,7 +18,7 @@ class GuestTable extends DataTableComponent
     public function columns(): array
     {
         return [
-            Column::make("Id guest", "id_guest")
+            Column::make("Id", "id_guest")
                 ->sortable(),
             Column::make("Username", "username")
                 ->sortable(),
