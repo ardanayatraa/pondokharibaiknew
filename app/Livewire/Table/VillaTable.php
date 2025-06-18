@@ -19,6 +19,10 @@ class VillaTable extends DataTableComponent
     public function configure(): void
     {
         $this->setPrimaryKey('id_villa');
+        $this->setTableAttributes([
+        'default' => false,
+        'class'   => 'min-w-full table-fixed', // ⭐️ 这里加上 table-fixed
+    ]);
     }
 
     public function builder(): Builder
@@ -44,6 +48,18 @@ class VillaTable extends DataTableComponent
                 ->html(),
 
             Column::make("Nama", "name")->sortable(),
+Column::make("Description", "description")
+    ->sortable()
+    ->format(fn($value) => '
+        <div
+            class="truncate"
+            style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
+            title="'.e($value).'"
+        >'
+            .e($value).
+        '</div>
+    ')
+    ->html(),
             Column::make("Fasilitas", "facility_id")
                 ->label(function ($row) {
                     return '<button wire:click="showFacility(' . $row->id_villa . ')" class="text-blue-600 underline text-sm hover:text-blue-800">Lihat Fasilitas</button>';

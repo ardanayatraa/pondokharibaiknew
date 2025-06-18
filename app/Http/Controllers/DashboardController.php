@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Villa;
 use App\Models\Guest;
+use App\Models\Reservasi;
 use App\Models\Pembayaran;
 use Illuminate\Http\Request;
 
@@ -12,15 +14,33 @@ class DashboardController extends Controller
     {
         $role = session('role');
 
-        // Tambahan statistik
-        $totalTransaksi = Pembayaran::sum('amount');
-        $jumlahGuest = Guest::count();
+        // statistik
+        $totalRoom         = Villa::count();
+        $jumlahGuest       = Guest::count();
+        $jumlahReservasi   = Reservasi::count();
+        $jumlahCancel      = Reservasi::where('status', 'cancelled')->count();
+        $jumlahReschedule  = Reservasi::where('status', 'reschedule')->count();
+        $totalTransaksi    = Pembayaran::sum('amount');
 
         return match ($role) {
-            'admin' => view('dashboard', compact('totalTransaksi', 'jumlahGuest')),
-            'owner' => view('owner.dashboard', compact('totalTransaksi', 'jumlahGuest')),
-            'guest' => view('guest.dashboard'),
-            default => abort(403),
+            'admin'  => view('dashboard', compact(
+                            'totalRoom',
+                            'jumlahGuest',
+                            'jumlahReservasi',
+                            'jumlahCancel',
+                            'jumlahReschedule',
+                            'totalTransaksi'
+                        )),
+            'owner'  => view('owner.dashboard', compact(
+                            'totalRoom',
+                            'jumlahGuest',
+                            'jumlahReservasi',
+                            'jumlahCancel',
+                            'jumlahReschedule',
+                            'totalTransaksi'
+                        )),
+            'guest'  => view('guest.dashboard'),
+            default  => abort(403),
         };
     }
 }

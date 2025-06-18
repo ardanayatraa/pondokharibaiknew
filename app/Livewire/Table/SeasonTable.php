@@ -5,6 +5,7 @@ namespace App\Livewire\Table;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 use App\Models\Season;
+use Carbon\Carbon;
 
 class SeasonTable extends DataTableComponent
 {
@@ -22,10 +23,13 @@ class SeasonTable extends DataTableComponent
                 ->sortable(),
             Column::make("Nama", "nama_season")
                 ->sortable(),
-            Column::make("Tgl mulai", "tgl_mulai_season")
-                ->sortable(),
-            Column::make("Tgl akhir", "tgl_akhir_season")
-                ->sortable(),
+     Column::make("Tgl mulai", "tgl_mulai_season")
+    ->sortable()
+    ->format(fn($value) => Carbon::parse($value)->format('d-m-Y')),
+
+        Column::make("Tgl akhir", "tgl_akhir_season")
+    ->sortable()
+    ->format(fn($value) => Carbon::parse($value)->format('d-m-Y')),
             Column::make("Repeat weekly", "repeat_weekly")
             ->format(function ($value) {
                 return $value
