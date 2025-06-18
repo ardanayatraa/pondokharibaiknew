@@ -409,7 +409,7 @@
 
 <body class="font-montserrat text-elegant-charcoal bg-white bg-pattern-bg">
     <!-- Header -->
-    <header class="fixed w-full z-50 bg-white/95 backdrop-blur-md shadow-md transition-all duration-300" id="header">
+    <header class="fixed w-full z-30 bg-white/95 backdrop-blur-md shadow-md transition-all duration-300" id="header">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
             <a href="#" class="flex items-center">
                 <div class="w-12 h-12  rounded-full flex items-center justify-center mr-3 overflow-hidden">
