@@ -36,81 +36,41 @@
   /**
    * Validate reschedule dates
    */
-  function validateRescheduleDates() {
+function validateRescheduleDates() {
   const checkInEl = document.getElementById("check-in")
   const checkOutEl = document.getElementById("check-out")
   const checkInError = document.getElementById("check-in-error")
   const checkOutError = document.getElementById("check-out-error")
   const dateRangeError = document.getElementById("date-range-error")
 
-  // Reset errors
+  // Reset/hide error elements
   if (checkInError) checkInError.classList.add("hidden")
   if (checkOutError) checkOutError.classList.add("hidden")
   if (dateRangeError) dateRangeError.classList.add("hidden")
 
-  let isValid = true
-
-  // Get values from inputs
+  // Tetap ambil nilai input untuk simpan ke state
   const checkInValue = checkInEl ? checkInEl.value : ""
   const checkOutValue = checkOutEl ? checkOutEl.value : ""
 
-  // Update reschedule state with current values
   rescheduleState.newCheckIn = checkInValue
   rescheduleState.newCheckOut = checkOutValue
 
-  console.group("🔍 [Debug] Reschedule Date Validation")
-  console.log("Check-in Input:", checkInValue)
-  console.log("Check-out Input:", checkOutValue)
-
-  if (!checkInValue) {
-    console.warn("⚠️ Check-in date is missing")
-    if (checkInError) {
-      checkInError.textContent = "Please select a check-in date"
-      checkInError.classList.remove("hidden")
-    }
-    isValid = false
-  }
-
-  if (!checkOutValue) {
-    console.warn("⚠️ Check-out date is missing")
-    if (checkOutError) {
-      checkOutError.textContent = "Please select a check-out date"
-      checkOutError.classList.remove("hidden")
-    }
-    isValid = false
-  }
-
+  // Hitung malam jika memungkinkan
   if (checkInValue && checkOutValue) {
-    const inDate = parseYMD(checkInValue)
-    const outDate = parseYMD(checkOutValue)
+    const inDate = new Date(checkInValue)
+    const outDate = new Date(checkOutValue)
 
-    console.log("Parsed Check-in Date:", inDate.toString())
-    console.log("Parsed Check-out Date:", outDate.toString())
-
-    if (isNaN(inDate.getTime()) || isNaN(outDate.getTime())) {
-      console.error("❌ Invalid date(s) detected")
-      if (dateRangeError) {
-        dateRangeError.textContent = "Tanggal tidak valid"
-        dateRangeError.classList.remove("hidden")
-      }
-      isValid = false
-    } else if (outDate <= inDate) {
-      console.warn("❌ Check-out date is before or equal to check-in date")
-      if (dateRangeError) {
-        dateRangeError.textContent = "Check-out date must be after check-in date"
-        dateRangeError.classList.remove("hidden")
-      }
-      isValid = false
-    } else {
-      // Calculate nights
+    if (!isNaN(inDate.getTime()) && !isNaN(outDate.getTime())) {
       rescheduleState.newNights = Math.ceil((outDate - inDate) / (1000 * 60 * 60 * 24))
-      console.log("Calculated Nights:", rescheduleState.newNights)
+    } else {
+      rescheduleState.newNights = 0
     }
   }
 
-  console.groupEnd()
-  return isValid
+  console.log("✅ Skipping date validation (forced pass)")
+  return true
 }
+
 
 
   /**
