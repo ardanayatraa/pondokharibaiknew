@@ -1,4 +1,4 @@
-// Reschedule functionality - Fixed version
+// Reschedule functionality - Fixed version for production
 ;(() => {
   // Reschedule-specific state
   const rescheduleState = {
@@ -34,6 +34,68 @@
   }
 
   /**
+   * Validate reschedule dates
+   */
+  function validateRescheduleDates() {
+    const checkInEl = document.getElementById("check-in")
+    const checkOutEl = document.getElementById("check-out")
+    const checkInError = document.getElementById("check-in-error")
+    const checkOutError = document.getElementById("check-out-error")
+    const dateRangeError = document.getElementById("date-range-error")
+
+    // Reset errors
+    if (checkInError) checkInError.classList.add("hidden")
+    if (checkOutError) checkOutError.classList.add("hidden")
+    if (dateRangeError) dateRangeError.classList.add("hidden")
+
+    let isValid = true
+
+    // Get values from inputs
+    const checkInValue = checkInEl ? checkInEl.value : ""
+    const checkOutValue = checkOutEl ? checkOutEl.value : ""
+
+    // Update reschedule state with current values
+    rescheduleState.newCheckIn = checkInValue
+    rescheduleState.newCheckOut = checkOutValue
+
+    console.log("Validating dates:", { checkInValue, checkOutValue })
+
+    if (!checkInValue) {
+      if (checkInError) {
+        checkInError.textContent = "Please select a check-in date"
+        checkInError.classList.remove("hidden")
+      }
+      isValid = false
+    }
+
+    if (!checkOutValue) {
+      if (checkOutError) {
+        checkOutError.textContent = "Please select a check-out date"
+        checkOutError.classList.remove("hidden")
+      }
+      isValid = false
+    }
+
+    if (checkInValue && checkOutValue) {
+      const inDate = new Date(checkInValue)
+      const outDate = new Date(checkOutValue)
+
+      if (outDate <= inDate) {
+        if (dateRangeError) {
+          dateRangeError.textContent = "Check-out date must be after check-in date"
+          dateRangeError.classList.remove("hidden")
+        }
+        isValid = false
+      } else {
+        // Calculate nights
+        rescheduleState.newNights = Math.ceil((outDate - inDate) / (1000 * 60 * 60 * 24))
+      }
+    }
+
+    return isValid
+  }
+
+  /**
    * Open reschedule modal and load reservation data
    */
   async function openRescheduleModal(reservationId) {
@@ -65,7 +127,7 @@
       // Initialize reschedule pickers after modal is shown
       setTimeout(() => {
         initReschedulePickers()
-      }, 100)
+      }, 500) // Increased timeout for production
     } catch (error) {
       alert("Gagal memuat data reservasi: " + error.message)
     }
@@ -114,7 +176,10 @@
     const inEl = document.getElementById("check-in")
     const outEl = document.getElementById("check-out")
 
-    if (!inEl || !outEl) return
+    if (!inEl || !outEl) {
+      console.error("Date input elements not found")
+      return
+    }
 
     // Destroy existing pickers
     if (rescheduleInPicker) {
@@ -126,20 +191,50 @@
       rescheduleOutPicker = null
     }
 
+    // Clear existing values
+    inEl.value = ""
+    outEl.value = ""
+
     // Get disabled ranges from global scope or create empty array
     const fpDisabled = (window.disabledRanges || []).map((r) => ({
       from: r.from,
       to: r.to,
     }))
 
+    // Check if flatpickr is available
+    if (typeof window.flatpickr === "undefined") {
+      console.error("Flatpickr not loaded")
+      // Fallback to regular date inputs
+      inEl.type = "date"
+      outEl.type = "date"
+
+      inEl.addEventListener("change", function () {
+        rescheduleState.newCheckIn = this.value
+        if (rescheduleState.newCheckIn && rescheduleState.newCheckOut) {
+          calculateReschedulePrice()
+        }
+      })
+
+      outEl.addEventListener("change", function () {
+        rescheduleState.newCheckOut = this.value
+        if (rescheduleState.newCheckIn && rescheduleState.newCheckOut) {
+          calculateReschedulePrice()
+        }
+      })
+
+      return
+    }
+
     // Check-in picker
-    if (flatpickr) {
-      rescheduleInPicker = flatpickr(inEl, {
+    try {
+      rescheduleInPicker = window.flatpickr(inEl, {
         dateFormat: "Y-m-d",
         minDate: "today",
         disable: fpDisabled,
         onChange: (selectedDates, dateStr) => {
           rescheduleState.newCheckIn = dateStr
+          console.log("Check-in changed:", dateStr)
+
           const errorEl = document.getElementById("check-in-error")
           if (errorEl) errorEl.classList.add("hidden")
 
@@ -157,16 +252,20 @@
           }
         },
       })
+    } catch (error) {
+      console.error("Error initializing check-in picker:", error)
     }
 
     // Check-out picker
-    if (flatpickr) {
-      rescheduleOutPicker = flatpickr(outEl, {
+    try {
+      rescheduleOutPicker = window.flatpickr(outEl, {
         dateFormat: "Y-m-d",
         minDate: "today",
         disable: fpDisabled,
         onChange: (selectedDates, dateStr) => {
           rescheduleState.newCheckOut = dateStr
+          console.log("Check-out changed:", dateStr)
+
           const errorEl = document.getElementById("check-out-error")
           if (errorEl) errorEl.classList.add("hidden")
 
@@ -183,6 +282,8 @@
           }
         },
       })
+    } catch (error) {
+      console.error("Error initializing check-out picker:", error)
     }
   }
 
@@ -215,15 +316,15 @@
       if (rescheduleState.paymentNeeded > 0) {
         amtEl.innerHTML = `
                   <div class="space-y-2">
-                      <div>New Total: ${formatCurrency(data.new_total)}</div>
-                      <div>Already Paid: ${formatCurrency(data.paid_amount)}</div>
+                      <div class="text-elegant-green">New Total: ${formatCurrency(data.new_total)}</div>
+                      <div class="text-elegant-green">Already Paid: ${formatCurrency(data.paid_amount)}</div>
                       <div class="font-bold text-red-600">Additional Payment: ${formatCurrency(data.payment_needed)}</div>
                   </div>
               `
       } else {
         amtEl.innerHTML = `
                   <div class="space-y-2">
-                      <div>New Total: ${formatCurrency(data.new_total)}</div>
+                      <div class="text-elegant-green">New Total: ${formatCurrency(data.new_total)}</div>
                       <div class="font-bold text-green-600">No additional payment needed</div>
                   </div>
               `
@@ -233,6 +334,7 @@
       wrapEl.classList.remove("hidden")
     } catch (error) {
       statusEl.textContent = "Failed to calculate reschedule price."
+      console.error("Calculate reschedule price error:", error)
     }
   }
 
@@ -240,6 +342,12 @@
    * Process reschedule payment
    */
   async function processReschedulePayment() {
+    // Validate dates first
+    if (!validateRescheduleDates()) {
+      console.log("Date validation failed")
+      return
+    }
+
     if (rescheduleState.paymentNeeded <= 0) {
       // No payment needed, directly update reservation
       console.log("No additional payment needed, updating reservation directly...")
@@ -419,16 +527,11 @@
         // Check if we're in reschedule mode
         if (rescheduleState.isRescheduleMode && rescheduleState.reservationId) {
           if (window.currentStep === 1) {
-            // Validate dates
-            if (!rescheduleState.newCheckIn || !rescheduleState.newCheckOut) {
-              alert("Please select both check-in and check-out dates")
-              return
-            }
+            console.log("Processing reschedule from step 1")
 
-            const inDate = new Date(rescheduleState.newCheckIn)
-            const outDate = new Date(rescheduleState.newCheckOut)
-            if (outDate <= inDate) {
-              alert("Check-out date must be after check-in date")
+            // Validate dates
+            if (!validateRescheduleDates()) {
+              console.log("Date validation failed in next button")
               return
             }
 
@@ -449,4 +552,5 @@
   // Expose functions to global scope if needed
   window.openRescheduleModal = openRescheduleModal
   window.rescheduleState = rescheduleState
+  window.validateRescheduleDates = validateRescheduleDates
 })()
