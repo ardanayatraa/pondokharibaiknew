@@ -28,7 +28,10 @@ class BookingController extends Controller
 
         if (Auth::guard('guest')->check()) {
             $user = Auth::guard('guest')->user();
-            $reservation = Reservasi::where('guest_id', $user->id_guest)->get();
+           $reservation = Reservasi::where('guest_id', $user->id_guest)
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+
         }
 
         return view('landing-page', compact('villa', 'user', 'reservation'));
