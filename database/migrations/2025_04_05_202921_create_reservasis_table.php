@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('villa_pricing_id')->nullable();
             $table->date('end_date');
             $table->date('start_date');
-            $table->enum('status', ['pending', 'confirmed', 'cancelled', 'reschedule'])->default('pending');
+            $table->enum('status', ['pending', 'confirmed', 'cancelled', 'rescheduled'])->default('pending');
             $table->decimal('total_amount', 10, 2);
             $table->timestamps();
         });

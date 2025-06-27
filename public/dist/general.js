@@ -1,618 +1,601 @@
-// public/js/general.js
+// General functionality
+document.addEventListener("DOMContentLoaded", () => {
+  // Global variables
+  window.disabledRanges = []
+  window.flatpickr = window.flatpickr || {} // Declare flatpickr variable
 
-// ----------------------------------
-// STATE
-// ----------------------------------
-const bookingData = {
+  // Booking data
+  const bookingData = {
     roomId: null,
     room: null,
-    checkIn: '',
-    checkOut: '',
+    checkIn: "",
+    checkOut: "",
     nights: 0,
-    totalAmount: '',
-    guestUsername: '',
-    guestFullName: '',
-    guestEmail: '',
-    guestAddress: '',
-    guestPhone: '',
-    guestIdCard: '',
-    guestPassport: '',
-    guestBirthdate: '',
-    guestGender: '',
-    totalAmount: '',
-    paymentMethod: 'midtrans',
-  };
-
-  let currentStep = 1;
-  const totalSteps = 5;
-  let inPicker = null, outPicker = null, disabledRanges = [];
-
-  // ----------------------------------
-  // HELPERS
-  // ----------------------------------
-  /**
-   * Memformat tanggal ke format ISO (YYYY-MM-DD)
-   * @param {Date} d - Objek Date yang akan diformat
-   * @returns {string} Tanggal dalam format ISO
-   */
-  function formatDateISO(d) {
-    return d.toISOString().slice(0, 10);
+    totalAmount: 0,
+    guestUsername: "",
+    guestFullName: "",
+    guestEmail: "",
+    guestAddress: "",
+    guestPhone: "",
+    guestIdCard: "",
+    guestPassport: "",
+    guestBirthdate: "",
+    guestGender: "",
+    paymentMethod: "midtrans",
   }
 
-  /**
-   * Menghitung jumlah malam dari tanggal check-in dan check-out
-   * dan menyimpannya ke state bookingData
-   */
+  let inPicker = null
+  let outPicker = null
+
+  // Helper functions
+  function formatCurrency(amount) {
+    return new Intl.NumberFormat("id-ID").format(amount)
+  }
+
   function calcNights() {
-    const a = new Date(bookingData.checkIn);
-    const b = new Date(bookingData.checkOut);
-    const diff = (b - a) / (1000 * 60 * 60 * 24);
-    bookingData.nights = diff > 0 ? diff : 1;
+    if (bookingData.checkIn && bookingData.checkOut) {
+      const inDate = new Date(bookingData.checkIn)
+      const outDate = new Date(bookingData.checkOut)
+      const diff = (outDate - inDate) / (1000 * 60 * 60 * 24)
+      bookingData.nights = diff > 0 ? diff : 1
+    }
   }
 
-  /**
-   * Memformat angka menjadi format mata uang Indonesia
-   * @param {number} v - Nilai yang akan diformat
-   * @returns {string} Nilai yang sudah diformat
-   */
-  function formatCurrency(v) {
-    return new Intl.NumberFormat('id-ID').format(v);
+  // Load guest info
+  async function loadGuestInfo() {
+    if (!window.guestId) return
+
+    try {
+      const res = await fetch(`/guestbyID/${window.guestId}`)
+      if (!res.ok) throw new Error(res.status)
+
+      const guest = await res.json()
+
+      // Update booking data
+      bookingData.guestUsername = guest.username || ""
+      bookingData.guestFullName = guest.full_name || ""
+      bookingData.guestEmail = guest.email || ""
+      bookingData.guestAddress = guest.address || ""
+      bookingData.guestPhone = guest.phone_number || ""
+      bookingData.guestIdCard = guest.id_card_number || ""
+      bookingData.guestPassport = guest.passport_number || ""
+      bookingData.guestBirthdate = guest.birthdate || ""
+      bookingData.guestGender = guest.gender || ""
+
+      // Update form fields in booking modal
+      const fields = {
+        "guest-username": guest.username,
+        "guest-name": guest.full_name,
+        "guest-email": guest.email,
+        "guest-address": guest.address,
+        "guest-phone": guest.phone_number,
+        "guest-id-card": guest.id_card_number,
+        "guest-passport": guest.passport_number,
+        "guest-birthdate": guest.birthdate,
+        "guest-gender": guest.gender,
+      }
+
+      Object.entries(fields).forEach(([id, value]) => {
+        const el = document.getElementById(id)
+        if (el) el.value = value || ""
+      })
+    } catch (error) {
+      console.warn("Failed to load guest info:", error)
+    }
   }
 
-  /**
-   * Memuat informasi tamu dari server berdasarkan ID tamu
-   * dan mengisi form dengan data tersebut
-   */
-async function loadGuestInfo() {
-  if (!window.guestId) return;
-  try {
-    const res = await fetch(`/guestbyID/${window.guestId}`);
-    if (!res.ok) throw new Error(res.status);
-    const g = await res.json();
-
-    // Simpan ke state
-    bookingData.guestUsername = g.username;
-    bookingData.guestFullName = g.full_name;
-    bookingData.guestEmail = g.email;
-    bookingData.guestAddress = g.address;
-    bookingData.guestPhone = g.phone_number;
-    bookingData.guestIdCard = g.id_card_number;
-    bookingData.guestPassport = g.passport_number;
-    bookingData.guestBirthdate = g.birthdate;
-    bookingData.guestGender = g.gender;
-
-    // Isi input form (pastikan elemen dengan id ini ada di HTML)
-    document.getElementById('guest-username').value = g.username ?? '';
-    document.getElementById('guest-name').value = g.full_name ?? '';
-    document.getElementById('guest-email').value = g.email ?? '';
-    document.getElementById('guest-address').value = g.address ?? '';
-    document.getElementById('guest-phone').value = g.phone_number ?? '';
-    document.getElementById('guest-id-card').value = g.id_card_number ?? '';
-    document.getElementById('guest-passport').value = g.passport_number ?? '';
-    document.getElementById('guest-birthdate').value = g.birthdate ?? '';
-    document.getElementById('guest-gender').value = g.gender ?? '';
-  } catch (e) {
-    // Optional: Tampilkan error user-friendly, jangan console.log di production
-  }
-}
-
-
-async function saveGuestProfileViaAPI() {
-  if (!window.guestId) {
-    alert('Anda belum login sebagai guest.');
-    return;
-  }
-
-  // Ambil semua value dari form input (misalnya input‐input dengan ID di modal stepper)
-  const payload = {
-    username:        document.getElementById('guest-username').value.trim(),
-    full_name:       document.getElementById('guest-name').value.trim(),
-    email:           document.getElementById('guest-email').value.trim(),
-    phone_number:    document.getElementById('guest-phone').value.trim(),
-    address:         document.getElementById('guest-address').value.trim(),
-    id_card_number:  document.getElementById('guest-id-card').value.trim(),
-    passport_number: document.getElementById('guest-passport').value.trim(),
-    birthdate:       document.getElementById('guest-birthdate').value,       // YYYY-MM-DD atau kosong
-    gender:          document.getElementById('guest-gender').value,          // "male" | "female" | ""
-    // Jika Anda ingin memungkinkan change password dari modal:
-    // password: document.getElementById('guest-password').value,
-    // password_confirmation: document.getElementById('guest-password_confirmation').value
-  };
-
-  try {
-    const res = await fetch('/api/guest/profile', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        // Laravel Sanctum / CSRF: jika Anda memakai session‐cookie (bukan token statis),
-        // cukup pastikan CSRF‐token ter‐include di header. Biasanya:
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (res.status === 422) {
-      // Validasi gagal → ambil detail error
-      const data = await res.json();
-      // data.errors.field akan berisi array pesan error misalnya: { "email":[ "Email sudah dipakai." ] }
-      console.error('Validation errors:', data.errors);
-      alert('Validasi gagal. Cek console untuk detail.');
-      return;
+  // Save guest profile
+  async function saveGuestProfileViaAPI() {
+    if (!window.guestId) {
+      alert("Anda belum login sebagai guest.")
+      return false
     }
 
-    if (!res.ok) {
-      // Misalnya 401 atau 500
-      const txt = await res.text();
-      throw new Error(`Error: HTTP ${res.status} → ${txt}`);
+    const payload = {
+      username: document.getElementById("guest-username").value.trim(),
+      full_name: document.getElementById("guest-name").value.trim(),
+      email: document.getElementById("guest-email").value.trim(),
+      phone_number: document.getElementById("guest-phone").value.trim(),
+      address: document.getElementById("guest-address").value.trim(),
+      id_card_number: document.getElementById("guest-id-card").value.trim(),
+      passport_number: document.getElementById("guest-passport").value.trim(),
+      birthdate: document.getElementById("guest-birthdate").value,
+      gender: document.getElementById("guest-gender").value,
     }
 
-    const json = await res.json();
-    // json.guest berisi data profil terbaru
-    // Simpan juga ke state JS (misalnya bookingData)
-    bookingData.guestUsername = json.guest.username;
-    bookingData.guestFullName = json.guest.full_name;
-    bookingData.guestEmail    = json.guest.email;
-    bookingData.guestPhone    = json.guest.phone_number;
-    bookingData.guestAddress  = json.guest.address;
-    bookingData.guestIdCard   = json.guest.id_card_number;
-    bookingData.guestPassport = json.guest.passport_number;
-    bookingData.guestBirthdate= json.guest.birthdate;
-    bookingData.guestGender   = json.guest.gender;
+    try {
+      const res = await fetch("/api/guest/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+          Accept: "application/json",
+        },
+        body: JSON.stringify(payload),
+      })
 
-    return true;
-  } catch (err) {
-    console.error('[saveGuestProfileViaAPI] Error:', err);
-    alert('Gagal menghubungi server: ' + err.message);
-    return false;
-  }
-}
+      if (res.status === 422) {
+        const data = await res.json()
+        console.error("Validation errors:", data.errors)
+        alert("Validasi gagal. Cek console untuk detail.")
+        return false
+      }
 
+      if (!res.ok) {
+        const txt = await res.text()
+        throw new Error(`Error: HTTP ${res.status} → ${txt}`)
+      }
 
+      const json = await res.json()
 
+      // Update bookingData with new values
+      Object.assign(bookingData, {
+        guestUsername: json.guest.username,
+        guestFullName: json.guest.full_name,
+        guestEmail: json.guest.email,
+        guestPhone: json.guest.phone_number,
+        guestAddress: json.guest.address,
+        guestIdCard: json.guest.id_card_number,
+        guestPassport: json.guest.passport_number,
+        guestBirthdate: json.guest.birthdate,
+        guestGender: json.guest.gender,
+      })
 
-  // ----------------------------------
-  // STEP NAVIGATION
-  // ----------------------------------
-  /**
-   * Berpindah ke langkah tertentu dalam proses booking
-   * @param {number} step - Nomor langkah yang dituju
-   */
-  function goToStep(step) {
-    document.getElementById(`step-${currentStep}`).classList.add('hidden');
-    document.getElementById(`step-${step}`).classList.remove('hidden');
-    const pct = ((step - 1) / (totalSteps - 1)) * 100;
-    document.getElementById('progress-bar').style.width = pct + '%';
-    currentStep = step;
-    document.getElementById('prev-step').classList.toggle('hidden', step === 1 || step === 5);
-    const nxt = document.getElementById('next-step');
-    nxt.innerHTML = step === totalSteps
-      ? `<div class="flex items-center"><span>Finish</span><i class="fas fa-check ml-2"></i></div>`
-      : `<div class="flex items-center"><span>Next</span><i class="fas fa-arrow-right ml-2"></i></div>`;
-
-    // ← Tambahan: render Step 2 saat pindah ke step 2
-    if (step === 2) renderStep2();
-    if (step === 3) {
-      renderStep3();
+      return true
+    } catch (err) {
+      console.error("[saveGuestProfileViaAPI] Error:", err)
+      alert("Gagal menghubungi server: " + err.message)
+      return false
     }
-    if (step === 4) renderStep4();
   }
 
-  /**
-   * Mengatur ulang stepper ke langkah pertama
-   */
-  function resetStepper() {
-    goToStep(1);
+  // Modal control functions
+  window.openModal = () => {
+    const modal = document.getElementById("booking-stepper-modal")
+    const content = document.getElementById("modal-content")
+
+    if (modal && content) {
+      modal.classList.remove("hidden")
+      document.body.style.overflow = "hidden"
+      setTimeout(() => {
+        content.classList.remove("opacity-0", "scale-95")
+        content.classList.add("opacity-100", "scale-100")
+      }, 10)
+      window.resetStepper()
+    }
   }
 
-  // ----------------------------------
-  // MODAL CONTROL
-  // ----------------------------------
-  /**
-   * Membuka modal booking dengan animasi
-   */
-  function openModal() {
-    document.getElementById('booking-stepper-modal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    setTimeout(() =>
-      document.getElementById('modal-content').classList.replace('opacity-0', 'opacity-100'),
-    10);
-    resetStepper();
+  window.closeModal = () => {
+    const modal = document.getElementById("booking-stepper-modal")
+    const content = document.getElementById("modal-content")
+
+    if (modal && content) {
+      content.classList.remove("opacity-100", "scale-100")
+      content.classList.add("opacity-0", "scale-95")
+      setTimeout(() => {
+        modal.classList.add("hidden")
+        document.body.style.overflow = ""
+        resetModalState()
+      }, 300)
+    }
   }
 
-  /**
-   * Menutup modal booking dengan animasi
-   */
-  function closeModal() {
-    document.getElementById('modal-content').classList.replace('opacity-100', 'opacity-0');
-    setTimeout(() => {
-      document.getElementById('booking-stepper-modal').classList.add('hidden');
-      document.body.style.overflow = '';
-      // reset everything setelah modal benar‑benar tersembunyi
-      resetModalState();
-    }, 300);
+  // Load room details
+  window.loadRoomDetails = async (id) => {
+    try {
+      const res = await fetch(`/villa/${id}`)
+      if (!res.ok) throw new Error("Failed to load room details")
+
+      bookingData.room = await res.json()
+      bookingData.roomId = id
+
+      const nameEl = document.getElementById("selected-room-name")
+      if (nameEl) nameEl.textContent = bookingData.room.name
+    } catch (error) {
+      console.error("Error loading room details:", error)
+    }
   }
 
-  // ----------------------------------
-  // ROOM DATA & UI
-  // ----------------------------------
-  /**
-   * Memuat detail kamar/villa dari server dan menampilkannya di UI
-   * @param {string|number} id - ID kamar/villa yang akan dimuat
-   */
-  async function loadRoomDetails(id) {
-    const res = await fetch(`/villa/${id}`);
-    bookingData.room = await res.json();
-    document.getElementById('selected-room-name').textContent = bookingData.room.name;
+  // Load reserved dates
+  window.loadReservedDates = async (villaId) => {
+    try {
+      const res = await fetch(`/villa/${villaId}/reserved-dates`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
+      const data = await res.json()
+      window.disabledRanges = Array.isArray(data) ? data.map((r) => ({ from: r.from, to: r.to })) : []
+    } catch (e) {
+      console.warn("Failed to load reserved dates:", e)
+      window.disabledRanges = []
+    }
   }
 
-  // ----------------------------------
-  // FLATPICKR SETUP
-  // ----------------------------------
-  /**
-   * Menginisialisasi date picker untuk check-in dan check-out
-   * dengan tanggal yang tidak tersedia (sudah dipesan)
-   */
+  // Initialize date pickers
   function initPickers() {
-    const inEl = document.getElementById('check-in');
-    const outEl = document.getElementById('check-out');
-    const errIn = document.getElementById('check-in-error');
-    const errOut = document.getElementById('check-out-error');
-    const errRange = document.getElementById('date-range-error');
+    const inEl = document.getElementById("check-in")
+    const outEl = document.getElementById("check-out")
 
-    // destroy existing
-    if (inPicker) inPicker.destroy();
-    if (outPicker) outPicker.destroy();
+    if (!inEl || !outEl) return
 
-    // convert disabledRanges to Flatpickr format: [{ from, to }, ...]
-    const fpDisabled = disabledRanges.map(r => ({
+    // Destroy existing pickers
+    if (inPicker) inPicker.destroy()
+    if (outPicker) outPicker.destroy()
+
+    // Convert disabled ranges
+    const fpDisabled = window.disabledRanges.map((r) => ({
       from: r.from,
-      to: r.to
-    }));
+      to: r.to,
+    }))
 
-    // IN picker
-    inPicker = flatpickr(inEl, {
-    dateFormat: 'Y-m-d',
-    minDate: 'today',
-    disable: fpDisabled,
-    onChange: (selectedDates, dateStr) => {
-        bookingData.checkIn = dateStr;
-        errIn.classList.add('hidden');
-        errRange.classList.add('hidden');
-
-        // update outPicker minDate to day after checkIn
-        const nextDay = new Date(selectedDates[0].getTime() + 86400000);
-        outPicker.set('minDate', nextDay);
-
-        // hitung jumlah malam
-        calcNights();
-
-        // ─── real-time price calculation ───
-        // jika checkOut sudah diisi dan valid, langsung hitung biaya
-        if (bookingData.checkIn && bookingData.checkOut) {
-        const inDate  = new Date(bookingData.checkIn);
-        const outDate = new Date(bookingData.checkOut);
-        if (outDate > inDate) {
-            calculateCost();
-        }
-        }
-    }
-    });
-
-    // OUT picker
-    outPicker = flatpickr(outEl, {
-      dateFormat: 'Y-m-d',
-      minDate: bookingData.checkIn || 'today',
+    // Check-in picker
+    inPicker = window.flatpickr(inEl, {
+      dateFormat: "Y-m-d",
+      minDate: "today",
       disable: fpDisabled,
       onChange: (selectedDates, dateStr) => {
-        bookingData.checkOut = dateStr;
-        errOut.classList.add('hidden');
-        const inD = new Date(bookingData.checkIn),
-          outD = new Date(bookingData.checkOut);
-        if (outD <= inD) {
-          errRange.classList.remove('hidden');
+        bookingData.checkIn = dateStr
+        const errorEl = document.getElementById("check-in-error")
+        if (errorEl) errorEl.classList.add("hidden")
+
+        if (selectedDates[0]) {
+          const nextDay = new Date(selectedDates[0].getTime() + 86400000)
+          if (outPicker) outPicker.set("minDate", nextDay)
+        }
+
+        calcNights()
+
+        if (bookingData.checkIn && bookingData.checkOut) {
+          const inDate = new Date(bookingData.checkIn)
+          const outDate = new Date(bookingData.checkOut)
+          if (outDate > inDate) {
+            calculateCost()
+          }
+        }
+      },
+    })
+
+    // Check-out picker
+    outPicker = window.flatpickr(outEl, {
+      dateFormat: "Y-m-d",
+      minDate: bookingData.checkIn || "today",
+      disable: fpDisabled,
+      onChange: (selectedDates, dateStr) => {
+        bookingData.checkOut = dateStr
+        const errorEl = document.getElementById("check-out-error")
+        if (errorEl) errorEl.classList.add("hidden")
+
+        const inDate = new Date(bookingData.checkIn)
+        const outDate = new Date(bookingData.checkOut)
+
+        if (outDate <= inDate) {
+          const rangeError = document.getElementById("date-range-error")
+          if (rangeError) rangeError.classList.remove("hidden")
         } else {
-          errRange.classList.add('hidden');
+          const rangeError = document.getElementById("date-range-error")
+          if (rangeError) rangeError.classList.add("hidden")
         }
-        calcNights();
-        // ─── real‑time price calculation ───
-        if (bookingData.checkIn && bookingData.checkOut && outD > inD) {
-          calculateCost();
+
+        calcNights()
+
+        if (bookingData.checkIn && bookingData.checkOut && outDate > inDate) {
+          calculateCost()
         }
-      }
-    });
+      },
+    })
   }
 
-  // ----------------------------------
-  // LOAD RESERVED DATES
-  // ----------------------------------
-  /**
-   * Memuat tanggal-tanggal yang sudah dipesan untuk villa tertentu
-   * @param {string|number} villaId - ID villa yang akan dicek tanggal pesanannya
-   */
-  async function loadReservedDates(villaId) {
-    try {
-      const res = await fetch(`/villa/${villaId}/reserved-dates`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      disabledRanges = Array.isArray(data)
-        ? data.map(r => ({ from: r.from, to: r.to }))
-        : [];
-    } catch (e) {
-      // Error handling tanpa console.warn
-      disabledRanges = [];
-    }
-  }
-
-  // ----------------------------------
-  // REAL‑TIME PRICE CALCULATION
-  // ----------------------------------
-  /**
-   * Menghitung total biaya pemesanan berdasarkan tanggal check-in dan check-out
-   */
+  // Calculate cost
   async function calculateCost() {
-    const statusEl = document.getElementById('calc-status');
-    const wrapEl = document.getElementById('calc-total');
-    const amtEl = document.getElementById('calc-amount');
+    const statusEl = document.getElementById("calc-status")
+    const wrapEl = document.getElementById("calc-total")
+    const amtEl = document.getElementById("calc-amount")
 
-    statusEl.textContent = 'Calculating price…';
-    wrapEl.classList.add('hidden');
+    if (!statusEl || !wrapEl || !amtEl) return
+
+    statusEl.textContent = "Calculating price…"
+    wrapEl.classList.add("hidden")
 
     try {
       const res = await fetch(
-        `/villa/${bookingData.roomId}/calculate?start=${bookingData.checkIn}&end=${bookingData.checkOut}`
-      );
-      if (!res.ok) throw new Error(res.status);
-      const { total } = await res.json();
-      bookingData.totalAmount = total;
-      amtEl.textContent = 'Rp ' + formatCurrency(total);
-      statusEl.textContent = '';
-      wrapEl.classList.remove('hidden');
+        `/villa/${bookingData.roomId}/calculate?start=${bookingData.checkIn}&end=${bookingData.checkOut}`,
+      )
+      if (!res.ok) throw new Error(res.status)
+
+      const { total } = await res.json()
+      bookingData.totalAmount = total
+      amtEl.textContent = "Rp " + formatCurrency(total)
+      statusEl.textContent = ""
+      wrapEl.classList.remove("hidden")
     } catch (err) {
-      // Error handling tanpa console.error
-      statusEl.textContent = 'Failed to calculate price.';
+      statusEl.textContent = "Failed to calculate price."
     }
   }
 
-  // ----------------------------------
-  // VALIDATION
-  // ----------------------------------
-  /**
-   * Memvalidasi input pada langkah tertentu
-   * @param {number} step - Nomor langkah yang akan divalidasi
-   * @returns {boolean} Hasil validasi (true jika valid)
-   */
-  function validateStep(step) {
-    let ok = true;
-    if (step === 1) {
-      if (!bookingData.checkIn) {
-        document.getElementById('check-in-error').classList.remove('hidden');
-        ok = false;
-      }
-      if (!bookingData.checkOut) {
-        document.getElementById('check-out-error').classList.remove('hidden');
-        ok = false;
-      }
-      if (new Date(bookingData.checkOut) <= new Date(bookingData.checkIn)) {
-        document.getElementById('date-range-error').classList.remove('hidden');
-        ok = false;
-      }
+  // Render step functions
+  window.renderStep2 = async () => {
+    if (!bookingData.room) return
+
+    // Room Details
+    const elements = {
+      "room-detail-name": bookingData.room.name,
+      "room-description": bookingData.room.description,
+      "room-capacity": `Up to ${bookingData.room.capacity} people`,
     }
-    return ok;
+
+    Object.entries(elements).forEach(([id, value]) => {
+      const el = document.getElementById(id)
+      if (el) el.textContent = value
+    })
+
+    const imgEl = document.getElementById("room-image")
+    if (imgEl) imgEl.src = bookingData.room.picture
+
+    // Booking Summary
+    const summaryElements = {
+      "summary-checkin": bookingData.checkIn,
+      "summary-checkout": bookingData.checkOut,
+      "summary-nights": bookingData.nights,
+    }
+
+    Object.entries(summaryElements).forEach(([id, value]) => {
+      const el = document.getElementById(id)
+      if (el) el.textContent = value
+    })
+
+    if (!bookingData.totalAmount) {
+      await calculateCost()
+    }
+
+    const roomTotal = bookingData.totalAmount
+    const rateLabel = document.getElementById("room-rate-label")
+    const rateTotal = document.getElementById("room-rate-total")
+    const summaryTotal = document.getElementById("summary-total")
+
+    if (rateLabel) {
+      rateLabel.textContent = `Total Rate for ${bookingData.nights} night${bookingData.nights > 1 ? "s" : ""}:`
+    }
+    if (rateTotal) rateTotal.textContent = "Rp " + formatCurrency(roomTotal)
+    if (summaryTotal) summaryTotal.textContent = "Rp " + formatCurrency(roomTotal)
   }
 
-/**
- * Menampilkan detail kamar dan ringkasan pemesanan pada langkah 2
- * — sekarang sudah pakai totalAmount yang dihitung oleh calculateCost()
- */
-async function renderStep2() {
-  // Room Details
-  document.getElementById('room-detail-name').textContent = bookingData.room.name;
-  document.getElementById('room-description').textContent = bookingData.room.description;
-  document.getElementById('room-capacity').textContent = `Up to ${bookingData.room.capacity} people`;
-  document.getElementById('room-image').src = bookingData.room.picture;
-
-  // Booking Summary — Stay Details
-  document.getElementById('summary-checkin').textContent = bookingData.checkIn;
-  document.getElementById('summary-checkout').textContent = bookingData.checkOut;
-  document.getElementById('summary-nights').textContent = bookingData.nights;
-
-  // — jika totalAmount belum dihitung, panggil calculateCost()
-  if (!bookingData.totalAmount) {
-    await calculateCost();
+  window.renderStep3 = () => {
+    loadGuestInfo()
   }
 
-  // Booking Summary — Price Details
-  const roomTotal = bookingData.totalAmount;
-  // tampilkan label yang sesuai
-  document.getElementById('room-rate-label').textContent =
-    `Total Rate for ${bookingData.nights} night${bookingData.nights > 1 ? 's' : ''}:`;
-  document.getElementById('room-rate-total').textContent =
-    'Rp ' + formatCurrency(roomTotal);
+  window.renderStep4 = () => {
+    if (!bookingData.room) return
 
-  // jika kamu juga punya summary‐total terpisah
-  document.getElementById('summary-total').textContent =
-    'Rp ' + formatCurrency(roomTotal);
-}
+    const elements = {
+      "payment-villa-name": bookingData.room.name,
+      "payment-checkin": bookingData.checkIn,
+      "payment-checkout": bookingData.checkOut,
+      "payment-nights": bookingData.nights + " nights",
+      "payment-nights-label": `Room Rate (${bookingData.nights} nights):`,
+    }
 
-  /**
-   * Memuat informasi tamu saat masuk ke langkah 3
-   */
-  function renderStep3() {
-    // saat pindah ke step 3, loadGuestInfo dan simpan state
-    loadGuestInfo();
+    Object.entries(elements).forEach(([id, value]) => {
+      const el = document.getElementById(id)
+      if (el) el.textContent = value
+    })
+
+    const total = bookingData.totalAmount || bookingData.room.price * bookingData.nights
+    const rateEl = document.getElementById("payment-room-rate")
+    const totalEl = document.getElementById("payment-total")
+
+    if (rateEl) rateEl.textContent = "Rp " + formatCurrency(total)
+    if (totalEl) totalEl.textContent = "Rp " + formatCurrency(total)
   }
 
-  /**
-   * Menampilkan ringkasan pembayaran pada langkah 4
-   */
-  function renderStep4() {
-    // fill summary
-    document.getElementById('payment-villa-name').textContent = bookingData.room.name;
-    document.getElementById('payment-checkin').textContent = bookingData.checkIn;
-    document.getElementById('payment-checkout').textContent = bookingData.checkOut;
-    document.getElementById('payment-nights').textContent = bookingData.nights + ' nights';
-    document.getElementById('payment-nights-label').textContent = bookingData.nights + ' nights';
-
-    // total was calculated in calculateCost() and stored:
-    const total = bookingData.totalAmount || (bookingData.room.price * bookingData.nights);
-    document.getElementById('payment-room-rate').textContent = 'Rp ' + formatCurrency(total);
-    document.getElementById('payment-total').textContent = 'Rp ' + formatCurrency(total);
-  }
-
-  // ----------------------------------
-  // RESET MODAL STATE
-  // ----------------------------------
-  /**
-   * Mengatur ulang semua state dan UI modal ke kondisi awal
-   */
+  // Reset modal state
   function resetModalState() {
-    // 1) Reset bookingData
+    // Reset bookingData
     Object.assign(bookingData, {
-      roomId: null, room: null,
-      checkIn: '', checkOut: '', nights: 0,
-      guestFullName: '', guestEmail: '', guestPhone: '',
-      guestCountry: '', specialRequests: '',
-      paymentMethod: 'credit',
-      cardName: '', cardNumber: '', cardMonth: '', cardYear: '', cardCVV: ''
-    });
+      roomId: null,
+      room: null,
+      checkIn: "",
+      checkOut: "",
+      nights: 0,
+      totalAmount: 0,
+      guestFullName: "",
+      guestEmail: "",
+      guestPhone: "",
+      paymentMethod: "midtrans",
+    })
 
-    // 2) Clear all inputs in modal
+    // Clear inputs
     const fields = [
-      'check-in', 'check-out',
-      'guest-name', 'guest-email', 'guest-phone', 'guest-country', 'special-requests',
-      'card-name', 'card-number', 'card-expiry-month', 'card-expiry-year', 'card-cvv'
-    ];
-    fields.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) {
-        if (el.tagName === 'SELECT' || el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-          el.value = '';
-        }
+      "check-in",
+      "check-out",
+      "guest-name",
+      "guest-email",
+      "guest-phone",
+      "guest-address",
+      "guest-id-card",
+      "guest-passport",
+      "guest-birthdate",
+      "guest-gender",
+    ]
+
+    fields.forEach((id) => {
+      const el = document.getElementById(id)
+      if (el && (el.tagName === "SELECT" || el.tagName === "INPUT" || el.tagName === "TEXTAREA")) {
+        el.value = ""
       }
-    });
+    })
 
-    // 3) Destroy pickers and clear their input
-    if (inPicker) { inPicker.destroy(); inPicker = null; }
-    if (outPicker) { outPicker.destroy(); outPicker = null; }
+    // Destroy pickers
+    if (inPicker) {
+      inPicker.destroy()
+      inPicker = null
+    }
+    if (outPicker) {
+      outPicker.destroy()
+      outPicker = null
+    }
 
-    // 4) Reset stepper UI back to step 1
-    resetStepper();
+    // Hide errors
+    document
+      .querySelectorAll(".error-message, #check-in-error, #check-out-error, #date-range-error")
+      .forEach((e) => e.classList.add("hidden"))
 
-    // 5) Hide any validation errors and calculation UI
-    document.querySelectorAll('.error-message, #check-in-error, #check-out-error, #date-range-error')
-      .forEach(e => e.classList.add('hidden'));
-
-    const calcStatus = document.getElementById('calc-status');
-    const calcWrap = document.getElementById('calc-total');
-    if (calcStatus) calcStatus.textContent = '';
-    if (calcWrap) calcWrap.classList.add('hidden');
+    const calcStatus = document.getElementById("calc-status")
+    const calcWrap = document.getElementById("calc-total")
+    if (calcStatus) calcStatus.textContent = ""
+    if (calcWrap) calcWrap.classList.add("hidden")
   }
 
-  // ----------------------------------
-  // INITIALIZATION
-  // ----------------------------------
-  document.addEventListener('DOMContentLoaded', () => {
-    // STATIC TEST: disable 9–23 bulan ini
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    disabledRanges = [{ from: `${yyyy}-${mm}-09`, to: `${yyyy}-${mm}-23` }];
-
-    // init pickers now that disabledRanges is set
-    initPickers();
-
-    // Mobile menu
-    document.getElementById('mobile-menu-button').onclick = () => {
-      document.getElementById('mobile-menu').classList.toggle('hidden');
-    };
-    // Scroll animations
-    document.querySelectorAll('.animate-hidden').forEach(el => {
-      new IntersectionObserver(([e]) => {
-        if (e.isIntersecting) el.classList.add('animate-visible');
-      }, { threshold: 0.1 }).observe(el);
-    });
-    // Header shrink
-    window.addEventListener('scroll', () => {
-      const hdr = document.getElementById('header');
-      hdr.classList.toggle('py-2', window.scrollY > 50);
-      hdr.classList.toggle('py-4', window.scrollY <= 50);
-    });
-
-    // Book Now
-    document.querySelectorAll('.book-now-btn').forEach(btn => {
-      btn.addEventListener('click', async e => {
-        e.preventDefault();
-        if (!window.guestId) {
-          window.location.href = `/login`;
-          return;
-        }
-        bookingData.roomId = btn.dataset.roomId;
-        await loadRoomDetails(bookingData.roomId);
-        await loadReservedDates(bookingData.roomId);
-        initPickers();
-        openModal();
-      });
-    });
-
-    // Hero & CTA buttons open same modal
-    ['hero-book-btn', 'cta-book-btn'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.addEventListener('click', () =>
-        document.querySelector('.book-now-btn').click()
-      );
-    });
-
-    // Modal controls
-    document.getElementById('close-modal').onclick = closeModal;
-    document.getElementById('modal-backdrop').onclick = closeModal;
-    document.getElementById('change-room-btn').onclick = e => {
-      e.preventDefault();
-      closeModal();
-      document.getElementById('rooms').scrollIntoView({ behavior: 'smooth' });
-    };
-
-    // Stepper nav
-    document.getElementById('next-step').onclick = async () => {
-    if (currentStep < totalSteps) {
-        // Step 3: submit/update Guest Information dulu
-            if (currentStep === 3) {
-            if (!validateStep(3)) return;    // validasi minimal (kalau mau)
-            try {
-                const ok = await saveGuestProfileViaAPI();
-                if (!ok) return;               // jangan lanjut kalau gagal
-            } catch (e) {
-                alert(e.message);
-                return;
-            }
-            goToStep(4);
-            return;
-            }
-
-        // Step 4: langsung panggil Midtrans
-        if (currentStep === 4) {
-        payWithMidtrans();
-        return;
-        }
-
-        // Step 1 & 2: normal navigation
-        if (validateStep(currentStep)) {
-        goToStep(currentStep + 1);
-        }
-    } else {
-        closeModal();
+  // Push reservation to API
+  async function pushReservationToApi() {
+    const payload = {
+      villa_id: bookingData.roomId,
+      start_date: bookingData.checkIn,
+      end_date: bookingData.checkOut,
+      total_amount: bookingData.totalAmount,
+      guest_id: window.guestId,
     }
-    };
 
-    document.getElementById('prev-step').onclick = () => {
-      if (currentStep > 1) goToStep(currentStep - 1);
-    };
+    try {
+      const res = await fetch("/reservation/store", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-API-TOKEN": window.apiToken,
+          "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+        },
+        body: JSON.stringify(payload),
+      })
 
-    document.getElementById('btn-paynow').addEventListener('click', async function(e) {
-      e.preventDefault();
+      if (!res.ok) {
+        console.error("❌ Gagal push ke API:", await res.text())
+      } else {
+        console.log("✅ Reservasi berhasil dikirim ke API")
+      }
+    } catch (err) {
+      console.error("❌ Error saat push reservasi ke API:", err)
+    }
+  }
 
-      // siapkan payload
+  // Initialize everything
+  initPickers()
+
+  // Mobile menu
+  const mobileMenuBtn = document.getElementById("mobile-menu-button")
+  const mobileMenu = document.getElementById("mobile-menu")
+  if (mobileMenuBtn && mobileMenu) {
+    mobileMenuBtn.onclick = () => mobileMenu.classList.toggle("hidden")
+  }
+
+  // Scroll animations
+  document.querySelectorAll(".animate-hidden").forEach((el) => {
+    new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) el.classList.add("animate-visible")
+      },
+      { threshold: 0.1 },
+    ).observe(el)
+  })
+
+  // Header shrink
+  window.addEventListener("scroll", () => {
+    const hdr = document.getElementById("header")
+    if (hdr) {
+      hdr.classList.toggle("py-2", window.scrollY > 50)
+      hdr.classList.toggle("py-4", window.scrollY <= 50)
+    }
+  })
+
+  // Book Now buttons
+  document
+    .querySelectorAll(".book-now-btn")
+    .forEach((btn) => {
+      btn.addEventListener("click", async (e) => {
+        e.preventDefault()
+        if (!window.guestId) {
+          window.location.href = "/login"
+          return
+        }
+        bookingData.roomId = btn.dataset.roomId
+        await window.loadRoomDetails(bookingData.roomId)
+        await window.loadReservedDates(bookingData.roomId)
+        initPickers()
+        window.openModal()
+      })
+    })
+
+  // Hero & CTA buttons
+  ;["hero-book-btn", "cta-book-btn"].forEach((id) => {
+    const el = document.getElementById(id)
+    const firstBookBtn = document.querySelector(".book-now-btn")
+    if (el && firstBookBtn) {
+      el.addEventListener("click", () => firstBookBtn.click())
+    }
+  })
+
+  // Modal controls
+  const closeBtn = document.getElementById("close-modal")
+  const backdrop = document.getElementById("modal-backdrop")
+  const changeRoomBtn = document.getElementById("change-room-btn")
+
+  if (closeBtn) closeBtn.onclick = window.closeModal
+  if (backdrop) backdrop.onclick = window.closeModal
+  if (changeRoomBtn) {
+    changeRoomBtn.onclick = (e) => {
+      e.preventDefault()
+      window.closeModal()
+      const roomsSection = document.getElementById("rooms")
+      if (roomsSection) roomsSection.scrollIntoView({ behavior: "smooth" })
+    }
+  }
+
+  // Stepper navigation
+  const nextBtn = document.getElementById("next-step")
+  const prevBtn = document.getElementById("prev-step")
+
+  if (nextBtn) {
+    nextBtn.onclick = async () => {
+      if (window.currentStep < 5) {
+        if (window.currentStep === 3) {
+          if (!window.validateStep(3)) return
+          try {
+            const ok = await saveGuestProfileViaAPI()
+            if (!ok) return
+          } catch (e) {
+            alert(e.message)
+            return
+          }
+          window.goToStep(4)
+          return
+        }
+
+        if (window.currentStep === 4) {
+          // Trigger payment
+          const payBtn = document.getElementById("btn-paynow")
+          if (payBtn) payBtn.click()
+          return
+        }
+
+        if (window.validateStep(window.currentStep)) {
+          window.goToStep(window.currentStep + 1)
+        }
+      } else {
+        window.closeModal()
+      }
+    }
+  }
+
+  if (prevBtn) {
+    prevBtn.onclick = () => {
+      if (window.currentStep > 1) window.goToStep(window.currentStep - 1)
+    }
+  }
+
+  // Payment button
+  const btnPaynow = document.getElementById("btn-paynow")
+  if (btnPaynow) {
+    btnPaynow.addEventListener("click", async (e) => {
+      e.preventDefault()
+
       const payload = {
         villa_id: bookingData.roomId,
         check_in: bookingData.checkIn,
@@ -620,102 +603,62 @@ async function renderStep2() {
         total_amount: bookingData.totalAmount,
         guest_name: bookingData.guestFullName,
         guest_email: bookingData.guestEmail,
-        guest_phone: bookingData.guestPhone
-      };
+        guest_phone: bookingData.guestPhone,
+      }
 
       try {
-        const res = await fetch('/payment/token', {
-          method: 'POST',
+        const res = await fetch("/payment/token", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
           },
-          body: JSON.stringify(payload)
-        });
+          body: JSON.stringify(payload),
+        })
 
-        // kalau bukan 200–299, tangani error
         if (!res.ok) {
-          const contentType = res.headers.get('content-type') || '';
-          let errMsg;
-          if (contentType.includes('application/json')) {
-            const err = await res.json();
-            errMsg = JSON.stringify(err);
+          const contentType = res.headers.get("content-type") || ""
+          let errMsg
+          if (contentType.includes("application/json")) {
+            const err = await res.json()
+            errMsg = JSON.stringify(err)
           } else {
-            errMsg = await res.text();
+            errMsg = await res.text()
           }
-          alert('Error saat generate token. Cek console.');
-          return;
+          alert("Error saat generate token. Cek console.")
+          console.error("Payment token error:", errMsg)
+          return
         }
 
-        // parse JSON
-        const { snap_token } = await res.json();
+        const { snap_token } = await res.json()
 
-        // panggil Midtrans Snap
-        window.snap.pay(snap_token, {
-            onSuccess: async r => {
-              await pushReservationToApi();
-              goToStep(5);
+        if (window.snap) {
+          window.snap.pay(snap_token, {
+            onSuccess: async (r) => {
+              await pushReservationToApi()
+              window.goToStep(5)
             },
-            onPending: async r => {
-
-              goToStep(5);
+            onPending: async (r) => {
+              window.goToStep(5)
             },
-            onError: e => {
-              alert('Payment failed');
+            onError: (e) => {
+              alert("Payment failed")
             },
-            onClose: () => { /* ... */ }
-          });
-
+            onClose: () => {
+              // Payment modal closed
+            },
+          })
+        } else {
+          alert("Midtrans Snap not loaded")
+        }
       } catch (e) {
-        alert('Gagal menghubungi server. Cek koneksi atau console.');
+        alert("Gagal menghubungi server. Cek koneksi atau console.")
+        console.error("Payment error:", e)
       }
-    });
-  });
-
-  async function payWithMidtrans() {
-    document.getElementById('btn-paynow').click();
+    })
   }
 
-
-
-  /**
- * Mengirim data reservasi ke API internal setelah pembayaran sukses/pending
- *
- * @async
- * @function pushReservationToApi
- * @returns {Promise<void>} Tidak mengembalikan apa pun; hanya log status
- */
-async function pushReservationToApi() {
-    const payload = {
-      villa_id: bookingData.roomId,
-      start_date: bookingData.checkIn,
-      end_date: bookingData.checkOut,
-      total_amount: bookingData.totalAmount,
-      guest_id: window.guestId,
-      cek_ketersediaan_id: null,
-      villa_pricing_id: null
-    };
-
-    try {
-      const res = await fetch('/reservation/store', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-API-TOKEN': window.apiToken,
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) {
-        // console.error('❌ Gagal push ke API:', await res.text());
-      } else {
-        // console.log('✅ Reservasi berhasil dikirim ke API');
-      }
-
-    } catch (err) {
-    //   console.error('❌ Error saat push reservasi ke API:', err);
-    }
-  }
+  // Expose functions to global scope
+  window.bookingData = bookingData
+})

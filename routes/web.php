@@ -165,7 +165,9 @@ Route::get('/send', function () {
 Route::get('/villa/{id}', [BookingController::class, 'villabyId']);
 Route::get('/villa/{villa}/reserved-dates', [BookingController::class, 'reservedDates']);
 Route::get('/villa/{villa}/calculate', [BookingController::class, 'calculate']);
-
+  Route::get('/reservation/{id}/reschedule-data', [BookingController::class, 'getReservationForReschedule']);
+    Route::get('/reservation/{id}/calculate-reschedule', [BookingController::class, 'calculateReschedule']);
+    Route::post('/reservation/reschedule', [BookingController::class, 'processReschedule']);
 Route::middleware(['auth', 'role:guest'])->get('/guestbyID/{id}', [App\Http\Controllers\BookingController::class, 'guestInfo']);
 Route::post('/payment/token', [BookingController::class,'paymentToken']);
 Route::post('/reservation/store', [BookingController::class,'storeReservation']);

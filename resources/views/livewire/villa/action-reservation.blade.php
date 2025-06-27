@@ -16,6 +16,22 @@
                 {{-- Body Modal --}}
                 <div class="px-6 py-4 max-h-[70vh] overflow-y-auto">
                     @if ($reservation)
+                        {{-- Status Badge --}}
+                        <div class="mb-4">
+                            <span
+                                class="px-3 py-1 rounded-full text-sm font-medium
+                                @if ($reservation->status === 'confirmed') bg-green-100 text-green-800
+                                @elseif($reservation->status === 'rescheduled') bg-blue-100 text-blue-800
+                                @elseif($reservation->status === 'pending') bg-yellow-100 text-yellow-800
+                                @else bg-red-100 text-red-800 @endif">
+                                @if ($reservation->status === 'rescheduled')
+                                    Rescheduled
+                                @else
+                                    {{ ucfirst($reservation->status) }}
+                                @endif
+                            </span>
+                        </div>
+
                         {{-- Informasi Tamu --}}
                         <div class="mb-6">
                             <h3 class="text-lg font-medium text-gray-700 mb-2">Informasi Tamu</h3>
@@ -76,7 +92,6 @@
                                             @php
                                                 $dateObj = $start->copy()->addDays($i);
                                                 $formattedDate = $dateObj->format('d M Y');
-                                                // Asumsikan di model Villa ada method priceForDate($date)
                                                 $price = $reservation->villa->priceForDate($dateObj->toDateString());
                                             @endphp
                                             <tr class="{{ $i % 2 === 0 ? 'bg-gray-50' : '' }}">
@@ -91,7 +106,7 @@
                             </div>
                         </div>
 
-                        {{-- Totals PD --}}
+                        {{-- Totals --}}
                         <div class="mb-6">
                             <table class="w-full bg-white border border-gray-200 rounded-md">
                                 <tbody>
@@ -102,41 +117,47 @@
                                             Rp {{ number_format($reservation->total_amount, 0, ',', '.') }}
                                         </td>
                                     </tr>
-                                    @if (isset($reservation->pembayaran))
+                                    @php
+                                        // Hitung total pembayaran HANYA untuk reservasi ini
+                                        $totalPaid = \App\Models\Pembayaran::where(
+                                            'reservation_id',
+                                            $reservation->id_reservation,
+                                        )
+                                            ->where('status', 'paid')
+                                            ->sum('amount');
+                                        $sisa = $reservation->total_amount - $totalPaid;
+                                    @endphp
+
+                                    @if ($totalPaid > 0)
                                         <tr>
                                             <th class="text-left px-4 py-2 font-medium text-gray-600">Dibayar</th>
                                             <td class="text-right px-4 py-2 text-gray-800">
-                                                Rp {{ number_format($reservation->pembayaran->amount, 0, ',', '.') }}
-                                            </td>
-                                        </tr>
-                                        <tr class="bg-gray-100">
-                                            <th class="text-left px-4 py-2 font-semibold text-gray-600">Sisa</th>
-                                            @php
-                                                $sisa = $reservation->total_amount - $reservation->pembayaran->amount;
-                                            @endphp
-                                            <td class="text-right px-4 py-2 font-semibold text-gray-800">
-                                                Rp {{ number_format($sisa, 0, ',', '.') }}
-                                            </td>
-                                        </tr>
-                                    @else
-                                        <tr class="bg-gray-100">
-                                            <th class="text-left px-4 py-2 font-semibold text-gray-600">Sisa</th>
-                                            <td class="text-right px-4 py-2 font-semibold text-gray-800">
-                                                Rp {{ number_format($reservation->total_amount, 0, ',', '.') }}
+                                                Rp {{ number_format($totalPaid, 0, ',', '.') }}
                                             </td>
                                         </tr>
                                     @endif
+
+                                    <tr class="bg-gray-100">
+                                        <th class="text-left px-4 py-2 font-semibold text-gray-600">Sisa</th>
+                                        <td class="text-right px-4 py-2 font-semibold text-gray-800">
+                                            @if ($sisa <= 0)
+                                                <span class="text-green-600 font-bold">LUNAS</span>
+                                            @else
+                                                Rp {{ number_format($sisa, 0, ',', '.') }}
+                                            @endif
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
 
                         {{-- Aksi Reschedule / Cancel --}}
-                        @if ($reservation->status === 'confirmed')
+                        @if (in_array($reservation->status, ['confirmed', 'rescheduled']))
                             <div class="flex space-x-3">
                                 <button
-                                    onclick="if(confirm('Anda yakin ingin reschedule? Cek email setelah tekan Ok!')){ @this.rescheduleReservation() }"
+                                    onclick="if(confirm('Anda yakin ingin reschedule?')){ @this.rescheduleReservation() }"
                                     class="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm">
-                                    Reschedule
+                                    {{ $reservation->status === 'rescheduled' ? 'Reschedule Again' : 'Reschedule' }}
                                 </button>
                                 <button
                                     onclick="if(confirm('Anda yakin ingin membatalkan? Cek email setelah tekan Ok!')){ @this.cancelReservation() }"
