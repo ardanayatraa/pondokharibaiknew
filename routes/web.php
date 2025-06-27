@@ -172,9 +172,13 @@ Route::get('/villa/{villa}/calculate', [BookingController::class, 'calculate']);
     Route::post('/reservation/reschedule', [BookingController::class, 'processReschedule']);
 Route::middleware(['auth', 'role:guest'])->get('/guestbyID/{id}', [App\Http\Controllers\BookingController::class, 'guestInfo']);
 Route::post('/payment/token', [BookingController::class,'paymentToken']);
-Route::post('/reservation/store', [BookingController::class,'storeReservation']);
-  Route::get('/reservation/{id}/refund-info', [RefundController::class, 'getRefundInfo']);
-    Route::post('/reservation/refund', [RefundController::class, 'processRefund']);
+
+    Route::middleware(['auth:guest'])->group(function () {
+
+
+    // Change to updateUser route
+    Route::post('/updateUser', [GuestController::class, 'updateUser'])->name('guest.updateUser');
+});
 
 
 

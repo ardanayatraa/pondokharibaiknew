@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
-
+use Illuminate\Http\JsonResponse;
 class GuestController extends Controller
 {
     /**
@@ -224,5 +224,65 @@ class GuestController extends Controller
             'success' => true,
             'guest'   => $guest->fresh()  // fresh() untuk memastikan kita ambil data terkini
         ]);
+    }
+
+        public function updateUser(Request $request): JsonResponse
+    {
+        try {
+            $guestId = $request->input('id');
+
+            if (!$guestId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Guest ID is required'
+                ], 400);
+            }
+
+            $guest = Guest::findOrFail($guestId);
+
+            // Validate request
+            $validated = $request->validate([
+                'username' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('tbl_guest', 'username')->ignore($guest->id_guest, 'id_guest')
+                ],
+                'full_name' => 'required|string|max:255',
+                'email' => [
+                    'required',
+                    'email',
+                    'max:255',
+                    Rule::unique('tbl_guest', 'email')->ignore($guest->id_guest, 'id_guest')
+                ],
+                'phone_number' => 'required|string|max:20',
+                'address' => 'nullable|string|max:500',
+                'id_card_number' => 'nullable|string|max:20',
+                'passport_number' => 'nullable|string|max:20',
+                'birthdate' => 'nullable|date',
+                'gender' => 'nullable|in:male,female'
+            ]);
+
+            // Update guest
+            $guest->update($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile updated successfully',
+                'data' => $guest
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update profile: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

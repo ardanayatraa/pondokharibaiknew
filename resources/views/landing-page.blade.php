@@ -1695,6 +1695,7 @@
 
     <!-- Load reschedule script after other scripts -->
     <script src="/dist/reschedule.js" defer></script>
+    <script src="/dist/profile-update.js" defer></script>
 </body>
 
 </html>
