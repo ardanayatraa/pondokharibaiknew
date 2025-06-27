@@ -233,7 +233,9 @@
                             Tanggal: {{ \Carbon\Carbon::parse($reservasi->created_at)->format('d M Y') }}
                         </div>
                         <div class="invoice-status">
-                            Status: {{ ucfirst($pembayaran->status) }}
+                            Status Pembayaran: {{ ucfirst($pembayaran->status) }} | Status Reservasi: <strong>
+                                {{ ucfirst($reservasi->status) }}</strong>
+
                         </div>
                     </div>
                 </td>
@@ -328,9 +330,18 @@
                     <tr class="grand-total">
                         <th>Sisa</th>
                         <td class="text-right">
-                            Rp {{ number_format($reservasi->total_amount - $pembayaran->amount, 0, ',', '.') }}
+                            @php
+                                $sisa = $reservasi->total_amount - $pembayaran->amount;
+                            @endphp
+
+                            @if ($sisa <= 0)
+                                <span class="text-green-600 font-semibold">Lunas</span>
+                            @else
+                                Rp {{ number_format($sisa, 0, ',', '.') }}
+                            @endif
                         </td>
                     </tr>
+
                 </table>
             </div>
         </div>

@@ -14,7 +14,7 @@ class Reservasi extends Model
     protected $fillable = [
         'guest_id', 'villa_id', 'cek_ketersediaan_id',
         'villa_pricing_id', 'start_date', 'end_date',
-        'status', 'total_amount'
+        'status', 'total_amount','cancelation_date'
     ];
 
     public function guest()

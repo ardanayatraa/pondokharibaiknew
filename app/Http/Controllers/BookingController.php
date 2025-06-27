@@ -232,7 +232,7 @@ class BookingController extends Controller
         // Fix: Check if reservation_id exists before using it
         $orderPrefix = isset($payload['reservation_id']) && $payload['reservation_id'] ? 'RESCHEDULE' : 'ORDER';
         $orderId = $orderPrefix . '-' . time();
-
+        session(['midtrans_order_id' => $orderId]);
         $transaction = [
           'transaction_details' => [
             'order_id'     => $orderId,
@@ -295,6 +295,7 @@ class BookingController extends Controller
             'snap_token'     => $validated['snap_token'] ?? null,
             'notifikasi'     => $validated['notifikasi'] ?? "Pesanan #{$reservasi->id_reservation} berhasil dibuat",
             'status'         => 'paid',
+            'order_id'       => session('midtrans_order_id'),
         ]);
 
         Mail::to($reservasi->guest->email)->queue(new ReservationCompleted($reservasi, $pembayaran));

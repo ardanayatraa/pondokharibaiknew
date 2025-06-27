@@ -11,7 +11,7 @@ class Pembayaran extends Model
 
     protected $table = 'tbl_pembayaran';
     protected $primaryKey = 'id_pembayaran';
-    protected $fillable = ['guest_id', 'reservation_id', 'amount', 'payment_date', 'snap_token', 'notifikasi', 'status'];
+    protected $fillable = ['guest_id', 'reservation_id', 'amount', 'payment_date', 'snap_token', 'notifikasi', 'status','order_id'];
 
     public function guest()
     {

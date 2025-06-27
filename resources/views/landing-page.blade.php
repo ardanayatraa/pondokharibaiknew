@@ -1432,19 +1432,7 @@
                             <h4 class="text-2xl font-semibold text-elegant-charcoal mb-4">Booking Confirmed!</h4>
                             <p class="text-gray-600 mb-6">Thank you for your booking. You will receive a confirmation
                                 email shortly.</p>
-                            <div class="bg-gray-50 p-6 rounded-lg max-w-md mx-auto">
-                                <h5 class="font-semibold mb-3">Booking Details</h5>
-                                <div class="text-sm space-y-2 text-left">
-                                    <div class="flex justify-between">
-                                        <span>Booking ID:</span>
-                                        <span class="font-medium">#12345</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span>Status:</span>
-                                        <span class="font-medium text-green-600">Confirmed</span>
-                                    </div>
-                                </div>
-                            </div>
+
                         </div>
                     </div>
                 </div>

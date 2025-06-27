@@ -16,6 +16,7 @@ use App\Http\Controllers\ReservasiController;
 use App\Http\Controllers\SeasonController;
 use App\Http\Controllers\VillaPricingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\RefundController;
 
 /*
 |--------------------------------------------------------------------------
@@ -161,6 +162,7 @@ Route::get('/send', function () {
 
     return "Dummy email telah dikirim ke {$email} dengan nama “{$nama}”.";
 })->name('mail.test');
+Route::get('/refund/status/{orderId}', [RefundController::class, 'checkRefundStatus']);
 
 Route::get('/villa/{id}', [BookingController::class, 'villabyId']);
 Route::get('/villa/{villa}/reserved-dates', [BookingController::class, 'reservedDates']);
@@ -171,6 +173,8 @@ Route::get('/villa/{villa}/calculate', [BookingController::class, 'calculate']);
 Route::middleware(['auth', 'role:guest'])->get('/guestbyID/{id}', [App\Http\Controllers\BookingController::class, 'guestInfo']);
 Route::post('/payment/token', [BookingController::class,'paymentToken']);
 Route::post('/reservation/store', [BookingController::class,'storeReservation']);
+  Route::get('/reservation/{id}/refund-info', [RefundController::class, 'getRefundInfo']);
+    Route::post('/reservation/refund', [RefundController::class, 'processRefund']);
 
 
 
