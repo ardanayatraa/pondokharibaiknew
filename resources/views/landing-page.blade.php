@@ -1127,7 +1127,7 @@
 
                         <div class="grid md:grid-cols-2 gap-6 mb-6">
                             <div>
-                                <label class="form-label required">Check-in Date</label>
+                                <label class="form-label">Check-in Date</label>
                                 <div class="input-with-icon">
                                     <i class="input-icon fas fa-calendar"></i>
                                     <input type="text" id="check-in" class="form-input"
@@ -1137,7 +1137,7 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="form-label required">Check-out Date</label>
+                                <label class="form-label">Check-out Date</label>
                                 <div class="input-with-icon">
                                     <i class="input-icon fas fa-calendar"></i>
                                     <input type="text" id="check-out" class="form-input"
