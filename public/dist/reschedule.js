@@ -287,22 +287,37 @@
       rescheduleState.isAdditionalPayment = data.is_additional_payment
 
       // Update UI
-      if (rescheduleState.paymentNeeded > 0) {
-        amtEl.innerHTML = `
-                  <div class="space-y-2">
-                      <div class="text-elegant-green">New Total: ${formatCurrency(data.new_total)}</div>
-                      <div class="text-elegant-green">Already Paid: ${formatCurrency(data.paid_amount)}</div>
-                      <div class="font-bold text-red-600">Additional Payment: ${formatCurrency(data.payment_needed)}</div>
-                  </div>
-              `
-      } else {
-        amtEl.innerHTML = `
-                  <div class="space-y-2">
-                      <div class="text-elegant-green">New Total: ${formatCurrency(data.new_total)}</div>
-                      <div class="font-bold text-green-600">No additional payment needed</div>
-                  </div>
-              `
-      }
+if (rescheduleState.paymentNeeded > 0) {
+  amtEl.innerHTML = `
+    <div class="space-y-1 text-sm text-gray-700">
+      <div class="flex justify-between">
+        <span>New Total</span>
+        <span class="font-medium">${formatCurrency(data.new_total)}</span>
+      </div>
+      <div class="flex justify-between">
+        <span>Already Paid</span>
+        <span class="text-gray-500">${formatCurrency(data.paid_amount)}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="font-semibold text-red-500">Additional Payment</span>
+        <span class="font-semibold text-red-500">${formatCurrency(data.payment_needed)}</span>
+      </div>
+    </div>
+  `
+} else {
+  amtEl.innerHTML = `
+    <div class="space-y-1 text-sm text-gray-700">
+      <div class="flex justify-between">
+        <span>New Total</span>
+        <span class="font-medium">${formatCurrency(data.new_total)}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="font-semibold text-green-600">No additional payment needed</span>
+      </div>
+    </div>
+  `
+}
+
 
       statusEl.textContent = ""
       wrapEl.classList.remove("hidden")
