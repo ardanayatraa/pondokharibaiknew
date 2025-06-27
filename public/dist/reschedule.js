@@ -36,42 +36,40 @@
   /**
    * Validate reschedule dates
    */
-function validateRescheduleDates() {
-  const checkInEl = document.getElementById("check-in")
-  const checkOutEl = document.getElementById("check-out")
-  const checkInError = document.getElementById("check-in-error")
-  const checkOutError = document.getElementById("check-out-error")
-  const dateRangeError = document.getElementById("date-range-error")
+  function validateRescheduleDates() {
+    const checkInEl = document.getElementById("check-in")
+    const checkOutEl = document.getElementById("check-out")
+    const checkInError = document.getElementById("check-in-error")
+    const checkOutError = document.getElementById("check-out-error")
+    const dateRangeError = document.getElementById("date-range-error")
 
-  // Reset/hide error elements
-  if (checkInError) checkInError.classList.add("hidden")
-  if (checkOutError) checkOutError.classList.add("hidden")
-  if (dateRangeError) dateRangeError.classList.add("hidden")
+    // Reset/hide error elements
+    if (checkInError) checkInError.classList.add("hidden")
+    if (checkOutError) checkOutError.classList.add("hidden")
+    if (dateRangeError) dateRangeError.classList.add("hidden")
 
-  // Tetap ambil nilai input untuk simpan ke state
-  const checkInValue = checkInEl ? checkInEl.value : ""
-  const checkOutValue = checkOutEl ? checkOutEl.value : ""
+    // Tetap ambil nilai input untuk simpan ke state
+    const checkInValue = checkInEl ? checkInEl.value : ""
+    const checkOutValue = checkOutEl ? checkOutEl.value : ""
 
-  rescheduleState.newCheckIn = checkInValue
-  rescheduleState.newCheckOut = checkOutValue
+    rescheduleState.newCheckIn = checkInValue
+    rescheduleState.newCheckOut = checkOutValue
 
-  // Hitung malam jika memungkinkan
-  if (checkInValue && checkOutValue) {
-    const inDate = new Date(checkInValue)
-    const outDate = new Date(checkOutValue)
+    // Hitung malam jika memungkinkan
+    if (checkInValue && checkOutValue) {
+      const inDate = new Date(checkInValue)
+      const outDate = new Date(checkOutValue)
 
-    if (!isNaN(inDate.getTime()) && !isNaN(outDate.getTime())) {
-      rescheduleState.newNights = Math.ceil((outDate - inDate) / (1000 * 60 * 60 * 24))
-    } else {
-      rescheduleState.newNights = 0
+      if (!isNaN(inDate.getTime()) && !isNaN(outDate.getTime())) {
+        rescheduleState.newNights = Math.ceil((outDate - inDate) / (1000 * 60 * 60 * 24))
+      } else {
+        rescheduleState.newNights = 0
+      }
     }
+
+    // Skipping validation (forced pass)
+    return true
   }
-
-  console.log("✅ Skipping date validation (forced pass)")
-  return true
-}
-
-
 
   /**
    * Open reschedule modal and load reservation data
@@ -211,7 +209,6 @@ function validateRescheduleDates() {
         disable: fpDisabled,
         onChange: (selectedDates, dateStr) => {
           rescheduleState.newCheckIn = dateStr
-          console.log("Check-in changed:", dateStr)
 
           const errorEl = document.getElementById("check-in-error")
           if (errorEl) errorEl.classList.add("hidden")
@@ -242,7 +239,6 @@ function validateRescheduleDates() {
         disable: fpDisabled,
         onChange: (selectedDates, dateStr) => {
           rescheduleState.newCheckOut = dateStr
-          console.log("Check-out changed:", dateStr)
 
           const errorEl = document.getElementById("check-out-error")
           if (errorEl) errorEl.classList.add("hidden")
@@ -322,21 +318,17 @@ function validateRescheduleDates() {
   async function processReschedulePayment() {
     // Validate dates first
     if (!validateRescheduleDates()) {
-      console.log("Date validation failed")
       return
     }
 
     if (rescheduleState.paymentNeeded <= 0) {
       // No payment needed, directly update reservation
-      console.log("No additional payment needed, updating reservation directly...")
       const success = await updateReservationDates()
       if (success) {
         if (goToStep) goToStep(5)
       }
       return
     }
-
-    console.log("Additional payment needed:", rescheduleState.paymentNeeded)
 
     // Generate payment token for additional payment
     const payload = {
@@ -374,14 +366,12 @@ function validateRescheduleDates() {
       if (window.snap) {
         window.snap.pay(snap_token, {
           onSuccess: async (result) => {
-            console.log("Payment success:", result)
             const success = await updateReservationDates()
             if (success) {
               if (goToStep) goToStep(5)
             }
           },
           onPending: async (result) => {
-            console.log("Payment pending:", result)
             const success = await updateReservationDates()
             if (success) {
               if (goToStep) goToStep(5)
@@ -392,7 +382,7 @@ function validateRescheduleDates() {
             alert("Payment failed. Please try again.")
           },
           onClose: () => {
-            console.log("Payment modal closed")
+            // Payment modal closed
           },
         })
       } else {
@@ -433,8 +423,7 @@ function validateRescheduleDates() {
         throw new Error(`HTTP ${res.status}: ${errorText}`)
       }
 
-      const result = await res.json()
-      console.log("Reschedule success:", result)
+      await res.json()
       return true
     } catch (error) {
       console.error("Failed to update reservation:", error)
@@ -505,11 +494,8 @@ function validateRescheduleDates() {
         // Check if we're in reschedule mode
         if (rescheduleState.isRescheduleMode && rescheduleState.reservationId) {
           if (window.currentStep === 1) {
-            console.log("Processing reschedule from step 1")
-
             // Validate dates
             if (!validateRescheduleDates()) {
-              console.log("Date validation failed in next button")
               return
             }
 
