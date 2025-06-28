@@ -175,7 +175,9 @@ Route::post('/payment/token', [BookingController::class,'paymentToken']);
 
     Route::middleware(['auth:guest'])->group(function () {
 
-
+ Route::post('/reservation/store', [BookingController::class,'storeReservation']);
+    Route::get('/reservation/{id}/refund-info', [RefundController::class, 'getRefundInfo']);
+    Route::post('/reservation/refund', [RefundController::class, 'processRefund']);
     // Change to updateUser route
     Route::post('/updateUser', [GuestController::class, 'updateUser'])->name('guest.updateUser');
 });

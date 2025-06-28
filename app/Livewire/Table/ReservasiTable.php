@@ -5,6 +5,7 @@ namespace App\Livewire\Table;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 use App\Models\Reservasi;
+use Illuminate\Database\Eloquent\Builder;
 
 class ReservasiTable extends DataTableComponent
 {
@@ -13,6 +14,14 @@ class ReservasiTable extends DataTableComponent
     public function configure(): void
     {
         $this->setPrimaryKey('id');
+    }
+
+    public function builder() :Builder
+    {
+        return Reservasi::query()
+            ->with(['guest', 'villa'])
+            ->select('tbl_reservasi.*')
+            ->orderBy('start_date', 'desc');
     }
 
     public function columns(): array
@@ -34,7 +43,7 @@ class ReservasiTable extends DataTableComponent
             Column::make("Total", "total_amount")
                 ->sortable(),
                 Column::make("Aksi")
-                ->label(fn ($row) => view('components.link-action', [
+                ->label(fn ($row) => view('components.link-action-view', [
                     'id' => $row->id_reservation,
                     'routeName' => 'reservasi'
                 ]))

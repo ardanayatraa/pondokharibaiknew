@@ -252,6 +252,7 @@ class BookingController extends Controller
 
     public function storeReservation(Request $request)
     {
+        Log::info('Store reservation request: ', $request->all());
         $token = $request->header('X-API-TOKEN');
         $expectedToken = config('services.reservation_api.token');
 

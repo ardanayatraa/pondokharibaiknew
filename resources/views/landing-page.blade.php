@@ -1470,6 +1470,15 @@
                         class="absolute top-4 right-4 text-white hover:text-gray-200 text-2xl">
                         <i class="fas fa-times"></i>
                     </button>
+
+                    <form action="{{ route('logout') }}" method="POST">
+
+                        @csrf
+                        <button type="submit"
+                            class="absolute top-4 right-16 text-white hover:text-gray-200 text-2xl">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </form>
                 </div>
 
                 <!-- Tabs -->
