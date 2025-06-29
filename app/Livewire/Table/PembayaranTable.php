@@ -15,6 +15,14 @@ class PembayaranTable extends DataTableComponent
         $this->setPrimaryKey('id');
     }
 
+    public function builder(): \Illuminate\Database\Eloquent\Builder
+    {
+        return Pembayaran::query()
+            ->with(['guest'])
+            ->select('tbl_pembayaran.*')
+            ->orderBy('payment_date', 'desc');
+    }
+
     public function columns(): array
     {
         return [
@@ -33,7 +41,7 @@ class PembayaranTable extends DataTableComponent
             Column::make("Status", "status")
                 ->sortable(),
                 Column::make("Aksi")
-                ->label(fn ($row) => view('components.link-action', [
+                ->label(fn ($row) => view('components.link-action-view', [
                     'id' => $row->id_pembayaran,
                     'routeName' => 'pembayaran'
                 ]))
