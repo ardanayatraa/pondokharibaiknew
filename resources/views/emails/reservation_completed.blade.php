@@ -126,8 +126,12 @@
 
         <!-- Header -->
         <div class="header">
-            <h1>Perihal: Konfirmasi Reservasi & Invoice #{{ $reservasi->id_reservation }}</h1>
+            <h1>
+                Perihal: Konfirmasi {{ strtolower($reservasi->status) === 'reschedule' ? 'Reschedule' : 'Reservasi' }} &
+                Invoice #{{ $reservasi->id_reservation }}
+            </h1>
         </div>
+
 
         <!-- Body -->
         <div class="body">
@@ -141,8 +145,11 @@
             <!-- Section: Detail Reservasi -->
             <div class="section">
                 <div class="section-header">
-                    <h3>Detail Reservasi</h3>
+                    <h3>
+                        {{ strtolower($reservasi->status) === 'reschedule' ? 'Detail Reschedule' : 'Detail Reservasi' }}
+                    </h3>
                 </div>
+
                 <div class="section-content">
                     <ul class="info-list">
                         <li>

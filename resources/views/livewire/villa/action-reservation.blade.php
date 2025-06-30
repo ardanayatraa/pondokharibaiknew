@@ -36,6 +36,14 @@
                             </span>
                         </div>
 
+                        {{-- Show cancellation reason if cancelled --}}
+                        @if ($reservation->status === 'cancelled' && $reservation->cancelation_reason)
+                            <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                <h4 class="font-semibold text-red-800 mb-1">Alasan Pembatalan:</h4>
+                                <p class="text-red-700 text-sm">{{ $reservation->cancelation_reason }}</p>
+                            </div>
+                        @endif
+
                         {{-- Debug Payment Info (only show in development) --}}
                         @if (config('app.debug') && $debugPaymentInfo)
                             <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
@@ -159,13 +167,25 @@
                                                 ->pembayaran()
                                                 ->where('status', 'refunded')
                                                 ->sum('amount');
+                                            $refundFailed = $reservation
+                                                ->pembayaran()
+                                                ->where('status', 'refund_failed')
+                                                ->sum('amount');
                                         @endphp
                                         @if ($refundAmount < 0)
                                             <tr>
                                                 <th class="text-left px-4 py-2 font-medium text-green-600">Refund (50%)
-                                                </th>
+                                                    - Berhasil</th>
                                                 <td class="text-right px-4 py-2 text-green-600">
                                                     Rp {{ number_format(abs($refundAmount), 0, ',', '.') }}
+                                                </td>
+                                            </tr>
+                                        @elseif($refundFailed < 0)
+                                            <tr>
+                                                <th class="text-left px-4 py-2 font-medium text-orange-600">Refund (50%)
+                                                    - Proses Manual</th>
+                                                <td class="text-right px-4 py-2 text-orange-600">
+                                                    Rp {{ number_format(abs($refundFailed), 0, ',', '.') }}
                                                 </td>
                                             </tr>
                                         @endif
@@ -254,6 +274,37 @@
                                 </p>
                             </div>
 
+                            {{-- 7-day rule warning --}}
+                            @if (!$refundInfo['can_refund_by_time'])
+                                <div class="p-3 bg-red-50 border border-red-200 rounded-lg mb-4">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-clock text-red-600 mr-2"></i>
+                                        <div class="text-red-700 text-sm">
+                                            <p><strong>Batas Waktu Refund Terlewati</strong></p>
+                                            <p>Refund hanya dapat dilakukan dalam 7 hari setelah pembayaran</p>
+                                            <p><strong>Pembayaran:</strong> {{ $refundInfo['payment_date'] ?? 'N/A' }}
+                                            </p>
+                                            <p><strong>Hari berlalu:</strong>
+                                                {{ $refundInfo['days_since_payment'] ?? 0 }} hari</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- Cancellation Reason Input --}}
+                            <div class="mb-4">
+                                <label for="cancelation_reason" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-comment-alt mr-1"></i>
+                                    Alasan Pembatalan <span class="text-red-500">*</span>
+                                </label>
+                                <textarea wire:model="cancelationReason" id="cancelation_reason" rows="3"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm"
+                                    placeholder="Mohon jelaskan alasan pembatalan reservasi Anda..." maxlength="500"></textarea>
+                                <div class="text-xs text-gray-500 mt-1">
+                                    {{ strlen($cancelationReason) }}/500 karakter
+                                </div>
+                            </div>
+
                             <div class="space-y-3 mb-4">
                                 <div class="flex justify-between">
                                     <span class="text-gray-600">Total Dibayar:</span>
@@ -281,6 +332,10 @@
                                             <p><strong>Metode Pembayaran:</strong>
                                                 {{ $refundInfo['payment_method'] ?? 'QRIS' }}</p>
                                             <p class="text-xs mt-1">Pembayaran dapat direfund</p>
+                                            @if ($refundInfo['refund_deadline'])
+                                                <p class="text-xs mt-1"><strong>Batas refund:</strong>
+                                                    {{ $refundInfo['refund_deadline'] }}</p>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -289,7 +344,13 @@
                                     <div class="flex items-center">
                                         <i class="fas fa-times-circle text-red-600 mr-2"></i>
                                         <div class="text-red-700 text-sm">
-                                            <p>Refund hanya tersedia untuk pembayaran menggunakan QRIS</p>
+                                            @if (!$refundInfo['can_refund_by_time'])
+                                                <p>Batas waktu refund (7 hari) telah terlewati</p>
+                                            @elseif(!$refundInfo['is_qris_payment'])
+                                                <p>Refund hanya tersedia untuk pembayaran menggunakan QRIS</p>
+                                            @else
+                                                <p>Refund tidak tersedia</p>
+                                            @endif
                                             <p><strong>Metode Anda:</strong>
                                                 {{ $refundInfo['payment_method'] ?? 'Unknown' }}</p>
                                         </div>
@@ -319,21 +380,24 @@
                         <i class="fas fa-times mr-1"></i>
                         Batal
                     </button>
-                    @if ($refundInfo && ($refundInfo['can_refund'] ?? false))
-                        <button wire:click="processCancellation" wire:loading.attr="disabled"
-                            wire:loading.class="opacity-50 cursor-not-allowed"
-                            class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm {{ $isProcessing ? 'opacity-50 cursor-not-allowed' : '' }}"
-                            {{ $isProcessing ? 'disabled' : '' }}>
-                            <span wire:loading.remove wire:target="processCancellation">
-                                <i class="fas fa-check mr-1"></i>
-                                Proses Pembatalan
-                            </span>
-                            <span wire:loading wire:target="processCancellation">
-                                <i class="fas fa-spinner fa-spin mr-1"></i>
-                                Memproses...
-                            </span>
-                        </button>
-                    @endif
+                    {{-- Always allow cancellation, but show different messages based on refund eligibility --}}
+                    <button wire:click="processCancellation" wire:loading.attr="disabled"
+                        wire:loading.class="opacity-50 cursor-not-allowed"
+                        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm {{ $isProcessing ? 'opacity-50 cursor-not-allowed' : '' }}"
+                        {{ $isProcessing ? 'disabled' : '' }}>
+                        <span wire:loading.remove wire:target="processCancellation">
+                            <i class="fas fa-check mr-1"></i>
+                            @if ($refundInfo && ($refundInfo['can_refund'] ?? false))
+                                Proses Pembatalan & Refund
+                            @else
+                                Batalkan Reservasi
+                            @endif
+                        </span>
+                        <span wire:loading wire:target="processCancellation">
+                            <i class="fas fa-spinner fa-spin mr-1"></i>
+                            Memproses...
+                        </span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -361,12 +425,16 @@
 
         const alertDiv = document.createElement('div');
         alertDiv.className = `alert-notification fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${
-            type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            type === 'success' ? 'bg-green-500' :
+            type === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
         } text-white`;
 
         alertDiv.innerHTML = `
             <div class="flex items-center">
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} mr-2"></i>
+                <i class="fas ${
+                    type === 'success' ? 'fa-check-circle' :
+                    type === 'warning' ? 'fa-exclamation-triangle' : 'fa-exclamation-circle'
+                } mr-2"></i>
                 ${message}
             </div>
         `;

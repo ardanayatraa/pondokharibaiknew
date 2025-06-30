@@ -17,6 +17,7 @@ class ActionReservation extends Component
     public $refundInfo = null;
     public $isProcessing = false;
     public $debugPaymentInfo = null; // For debugging
+    public $cancelationReason = '';
 
     protected $listeners = [
         'openModal' => 'openModal',
@@ -25,6 +26,7 @@ class ActionReservation extends Component
     public function mount()
     {
         $this->refundInfo = null;
+        $this->cancelationReason = '';
     }
 
     public function openModal($idReservation)
@@ -49,6 +51,7 @@ class ActionReservation extends Component
 
         // Load refund information
         $this->loadRefundInfo();
+        $this->cancelationReason = '';
         $this->showCancelModal = true;
     }
 
@@ -102,9 +105,26 @@ class ActionReservation extends Component
         }
 
         if (!$this->refundInfo['can_refund']) {
+            $errorMessage = 'Pembatalan tidak dapat diproses';
+
+            if (!$this->refundInfo['can_refund_by_time']) {
+                $errorMessage = 'Refund hanya dapat dilakukan dalam 7 hari setelah pembayaran';
+            } elseif (!$this->refundInfo['is_qris_payment']) {
+                $errorMessage = 'Refund hanya tersedia untuk pembayaran menggunakan QRIS';
+            }
+
             $this->dispatch('show-alert', [
                 'type' => 'error',
-                'message' => 'Refund hanya tersedia untuk pembayaran menggunakan QRIS'
+                'message' => $errorMessage
+            ]);
+            return;
+        }
+
+        // Validate cancellation reason
+        if (empty(trim($this->cancelationReason))) {
+            $this->dispatch('show-alert', [
+                'type' => 'error',
+                'message' => 'Alasan pembatalan harus diisi'
             ]);
             return;
         }
@@ -118,33 +138,44 @@ class ActionReservation extends Component
             $request = new \Illuminate\Http\Request([
                 'reservation_id' => $this->reservation->id_reservation,
                 'refund_amount' => $this->refundInfo['refund_amount'],
-                'payment_method' => $this->refundInfo['payment_method']
+                'payment_method' => $this->refundInfo['payment_method'],
+                'cancelation_reason' => $this->cancelationReason,
             ]);
 
             $response = $refundController->processRefund($request);
             $responseData = json_decode($response->getContent(), true);
 
             if (isset($responseData['success']) && $responseData['success']) {
-                // Send email notification
+                // Send email notification for successful refund
                 SendEmailStatus::dispatch($this->reservation, 'cancelled');
 
                 $this->dispatch('show-alert', [
                     'type' => 'success',
                     'message' => 'Pembatalan berhasil diproses. Refund 50% akan diproses dalam 3-5 hari kerja.'
                 ]);
+            } elseif (isset($responseData['manual_process_required']) && $responseData['manual_process_required']) {
+                // Send email notification for failed refund (manual process required)
+                SendEmailStatus::dispatch($this->reservation, 'cancelled');
 
-                $this->showCancelModal = false;
-                $this->showModal = false;
-
-                // Refresh component
-                $this->dispatch('reservation-cancelled');
+                $this->dispatch('show-alert', [
+                    'type' => 'warning',
+                    'message' => 'Reservasi dibatalkan. Refund otomatis gagal, tim kami akan memproses refund manual dalam 1x24 jam.'
+                ]);
             } else {
                 $errorMessage = $responseData['error'] ?? 'Gagal memproses refund';
                 $this->dispatch('show-alert', [
                     'type' => 'error',
                     'message' => $errorMessage
                 ]);
+                return; // Don't close modal on error
             }
+
+            $this->showCancelModal = false;
+            $this->showModal = false;
+            $this->cancelationReason = '';
+
+            // Refresh component
+            $this->dispatch('reservation-cancelled');
 
         } catch (\Exception $e) {
             Log::error('Process cancellation error: ' . $e->getMessage());
@@ -179,6 +210,7 @@ class ActionReservation extends Component
         $this->refundInfo = null;
         $this->isProcessing = false;
         $this->debugPaymentInfo = null;
+        $this->cancelationReason = '';
     }
 
     public function closeCancelModal()
@@ -186,6 +218,7 @@ class ActionReservation extends Component
         $this->showCancelModal = false;
         $this->refundInfo = null;
         $this->isProcessing = false;
+        $this->cancelationReason = '';
     }
 
     public function render()
