@@ -39,7 +39,24 @@ class RefundController extends Controller
                 return response()->json(['error' => 'Reservation cannot be cancelled'], 400);
             }
 
-            // Check 7-day rule - calculate from latest payment date
+            // NEW: Check H-7 rule based on check-in date (not payment date)
+            $checkInDate = Carbon::parse($reservation->start_date)->startOfDay();
+            $today = Carbon::today();
+            $daysUntilCheckIn = $today->diffInDays($checkInDate, false);
+
+            Log::info('Cancellation H-7 check', [
+                'reservation_id' => $reservation->id_reservation,
+                'check_in_date' => $checkInDate->format('Y-m-d'),
+                'today' => $today->format('Y-m-d'),
+                'days_until_checkin' => $daysUntilCheckIn,
+                'is_h7_eligible' => $daysUntilCheckIn >= 7
+            ]);
+
+            // Determine refund eligibility based on H-7 rule
+            $isH7Eligible = $daysUntilCheckIn >= 7;
+            $actualRefundAmount = $isH7Eligible ? $validated['refund_amount'] : 0;
+
+            // Get latest payment for processing
             $latestPayment = $reservation->pembayaran()
                 ->where('status', 'paid')
                 ->latest('payment_date')
@@ -49,56 +66,90 @@ class RefundController extends Controller
                 return response()->json(['error' => 'No payment found for this reservation'], 400);
             }
 
-            $paymentDate = Carbon::parse($latestPayment->payment_date);
-            $daysSincePayment = $paymentDate->diffInDays(Carbon::now());
-
-            if ($daysSincePayment > 7) {
-                return response()->json([
-                    'error' => 'Refund hanya dapat dilakukan dalam 7 hari setelah pembayaran',
-                    'payment_date' => $paymentDate->format('d M Y H:i'),
-                    'days_since_payment' => $daysSincePayment
-                ], 400);
-            }
-
-            // Check if payment method is QRIS
-            $isQrisPayment = $this->checkIfQrisPayment($latestPayment);
-
-            if (!$isQrisPayment) {
-                return response()->json([
-                    'error' => 'Refund hanya tersedia untuk pembayaran menggunakan QRIS',
-                    'payment_method' => $validated['payment_method']
-                ], 400);
-            }
-
-            // Process refund via Midtrans API
-            $refundResult = $this->processMidtransRefund($latestPayment, $validated['refund_amount']);
-
-            // Update reservation status and set cancellation date regardless of refund result
+            // Update reservation status first
             $reservation->update([
                 'status' => 'cancelled',
                 'cancelation_date' => now(),
                 'cancelation_reason' => $validated['cancelation_reason'],
             ]);
 
+            // If not H-7 eligible, no refund processing
+            if (!$isH7Eligible) {
+                // Create no-refund payment record
+                Pembayaran::create([
+                    'guest_id' => $reservation->guest_id,
+                    'reservation_id' => $reservation->id_reservation,
+                    'amount' => 0, // No refund amount
+                    'payment_date' => now(),
+                    'snap_token' => null,
+                    'notifikasi' => "Pembatalan reservasi #{$reservation->id_reservation} - Tidak ada refund (kurang dari H-7) - Alasan: {$validated['cancelation_reason']} - Sisa hari: {$daysUntilCheckIn}",
+                    'status' => 'no_refund',
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Reservasi berhasil dibatalkan. Tidak ada refund karena pembatalan dilakukan kurang dari 7 hari sebelum check-in (sisa {$daysUntilCheckIn} hari).",
+                    'refund_amount' => 0,
+                    'cancelation_reason' => $validated['cancelation_reason'],
+                    'refund_status' => 'no_refund',
+                    'days_until_checkin' => $daysUntilCheckIn,
+                    'h7_eligible' => false,
+                    'refund_policy' => 'Refund 50% hanya berlaku jika pembatalan dilakukan minimal 7 hari sebelum check-in'
+                ]);
+            }
+
+            // H-7 eligible - proceed with refund processing
+            // Check if payment method supports refund (QRIS check)
+            $isQrisPayment = $this->checkIfQrisPayment($latestPayment);
+
+            if (!$isQrisPayment) {
+                // Create manual refund record for non-QRIS payments
+                Pembayaran::create([
+                    'guest_id' => $reservation->guest_id,
+                    'reservation_id' => $reservation->id_reservation,
+                    'amount' => -$actualRefundAmount,
+                    'payment_date' => now(),
+                    'snap_token' => null,
+                    'notifikasi' => "Refund 50% MANUAL untuk pembatalan reservasi #{$reservation->id_reservation} - Metode pembayaran tidak mendukung refund otomatis - Alasan: {$validated['cancelation_reason']}",
+                    'status' => 'manual_refund_required',
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Reservasi dibatalkan. Refund 50% akan diproses manual oleh tim kami dalam 1x24 jam karena metode pembayaran tidak mendukung refund otomatis.',
+                    'refund_amount' => $actualRefundAmount,
+                    'cancelation_reason' => $validated['cancelation_reason'],
+                    'refund_status' => 'manual_process_required',
+                    'days_until_checkin' => $daysUntilCheckIn,
+                    'h7_eligible' => true,
+                    'payment_method' => $validated['payment_method']
+                ]);
+            }
+
+            // Process automatic refund via Midtrans API for QRIS payments
+            $refundResult = $this->processMidtransRefund($latestPayment, $actualRefundAmount);
+
             if ($refundResult['success']) {
                 // Create successful refund payment record
                 Pembayaran::create([
                     'guest_id' => $reservation->guest_id,
                     'reservation_id' => $reservation->id_reservation,
-                    'amount' => -$validated['refund_amount'], // Negative amount for refund
+                    'amount' => -$actualRefundAmount, // Negative amount for refund
                     'payment_date' => now(),
                     'snap_token' => $refundResult['refund_id'] ?? null,
-                    'notifikasi' => "Refund 50% berhasil untuk pembatalan reservasi #{$reservation->id_reservation} - Alasan: {$validated['cancelation_reason']} - Refund ID: {$refundResult['refund_id']}",
+                    'notifikasi' => "Refund 50% berhasil untuk pembatalan reservasi #{$reservation->id_reservation} - Alasan: {$validated['cancelation_reason']} - Refund ID: {$refundResult['refund_id']} - H-7 eligible",
                     'status' => 'refunded',
                 ]);
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'Refund berhasil diproses',
-                    'refund_amount' => $validated['refund_amount'],
+                    'message' => 'Pembatalan berhasil diproses. Refund 50% akan diproses dalam 3-5 hari kerja.',
+                    'refund_amount' => $actualRefundAmount,
                     'refund_id' => $refundResult['refund_id'] ?? null,
                     'cancelation_reason' => $validated['cancelation_reason'],
                     'refund_status' => 'success',
+                    'days_until_checkin' => $daysUntilCheckIn,
+                    'h7_eligible' => true,
                     'midtrans_response' => $refundResult['response'] ?? null,
                 ]);
             } else {
@@ -106,19 +157,21 @@ class RefundController extends Controller
                 Pembayaran::create([
                     'guest_id' => $reservation->guest_id,
                     'reservation_id' => $reservation->id_reservation,
-                    'amount' => -$validated['refund_amount'], // Negative amount for refund
+                    'amount' => -$actualRefundAmount, // Negative amount for refund
                     'payment_date' => now(),
                     'snap_token' => null,
-                    'notifikasi' => "Refund 50% GAGAL untuk pembatalan reservasi #{$reservation->id_reservation} - Alasan: {$validated['cancelation_reason']} - Error: {$refundResult['message']}",
+                    'notifikasi' => "Refund 50% GAGAL untuk pembatalan reservasi #{$reservation->id_reservation} - Alasan: {$validated['cancelation_reason']} - Error: {$refundResult['message']} - H-7 eligible",
                     'status' => 'refund_failed',
                 ]);
 
                 return response()->json([
-                    'success' => false,
-                    'message' => 'Reservasi dibatalkan, namun refund otomatis gagal. Tim kami akan memproses refund manual.',
-                    'refund_amount' => $validated['refund_amount'],
+                    'success' => true, // Still success because reservation is cancelled
+                    'message' => 'Reservasi dibatalkan. Refund otomatis gagal, tim kami akan memproses refund manual dalam 1x24 jam.',
+                    'refund_amount' => $actualRefundAmount,
                     'cancelation_reason' => $validated['cancelation_reason'],
                     'refund_status' => 'failed',
+                    'days_until_checkin' => $daysUntilCheckIn,
+                    'h7_eligible' => true,
                     'error_detail' => $refundResult['message'],
                     'manual_process_required' => true
                 ]);
@@ -158,7 +211,7 @@ class RefundController extends Controller
             }
         }
 
-        // Default to true for testing - you can change this
+        // Default to true for testing - you can change this to false for production
         return true;
     }
 
@@ -170,7 +223,6 @@ class RefundController extends Controller
         try {
             // Generate order_id from payment data
             $orderId = $this->getOrderIdFromPayment($payment);
-
             if (!$orderId) {
                 return [
                     'success' => false,
@@ -182,12 +234,11 @@ class RefundController extends Controller
             $refundKey = 'refund-' . $payment->id . '-' . time();
 
             $client = new \GuzzleHttp\Client();
-
             $response = $client->request('POST', 'https://api.sandbox.midtrans.com/v2/' . $orderId . '/refund', [
                 'body' => json_encode([
                     'refund_key' => $refundKey,
                     'amount' => (int) $refundAmount,
-                    'reason' => 'Customer cancellation - 50% refund policy'
+                    'reason' => 'Customer cancellation - 50% refund policy (H-7 eligible)'
                 ]),
                 'headers' => [
                     'accept' => 'application/json',
@@ -226,6 +277,7 @@ class RefundController extends Controller
                 'response_body' => $responseBody,
                 'status_code' => $e->getResponse() ? $e->getResponse()->getStatusCode() : 'No status code'
             ]);
+
             return [
                 'success' => false,
                 'message' => 'Midtrans API error: ' . $e->getMessage()
@@ -272,7 +324,7 @@ class RefundController extends Controller
     }
 
     /**
-     * Get refund information for a reservation
+     * Get refund information for a reservation - UPDATED with H-7 check-in rule
      */
     public function getRefundInfo($reservationId): JsonResponse
     {
@@ -289,8 +341,17 @@ class RefundController extends Controller
                 ->where('status', 'paid')
                 ->sum('amount');
 
-            // Calculate 50% refund
-            $refundAmount = $totalPaid * 0.5;
+            // NEW: Check H-7 rule based on check-in date
+            $checkInDate = Carbon::parse($reservation->start_date)->startOfDay();
+            $today = Carbon::today();
+            $daysUntilCheckIn = $today->diffInDays($checkInDate, false);
+
+            // H-7 eligibility based on check-in date
+            $isH7Eligible = $daysUntilCheckIn >= 7;
+
+            // Calculate refund amount based on H-7 eligibility
+            $refundAmount = $isH7Eligible ? ($totalPaid * 0.5) : 0;
+            $refundPercentage = $isH7Eligible ? 50 : 0;
 
             // Get payment method info
             $latestPayment = $reservation->pembayaran()
@@ -300,31 +361,33 @@ class RefundController extends Controller
 
             $isQrisPayment = $latestPayment ? $this->checkIfQrisPayment($latestPayment) : false;
 
-            // Check 7-day rule
-            $canRefundByTime = true;
-            $daysSincePayment = 0;
-            $paymentDate = null;
+            // For H-7 eligible cancellations, check if automatic refund is possible
+            $canAutoRefund = $isH7Eligible && $isQrisPayment && $totalPaid > 0;
 
-            if ($latestPayment) {
-                $paymentDate = Carbon::parse($latestPayment->payment_date);
-                $daysSincePayment = $paymentDate->diffInDays(Carbon::now());
-                $canRefundByTime = $daysSincePayment <= 7;
-            }
-
-            $canRefund = $isQrisPayment && $totalPaid > 0 && $canRefundByTime;
+            // Overall refund capability
+            $canRefund = $isH7Eligible && $totalPaid > 0;
 
             return response()->json([
                 'total_paid' => $totalPaid,
                 'refund_amount' => $refundAmount,
-                'refund_percentage' => 50,
+                'refund_percentage' => $refundPercentage,
                 'is_qris_payment' => $isQrisPayment,
                 'can_refund' => $canRefund,
-                'can_refund_by_time' => $canRefundByTime,
-                'days_since_payment' => $daysSincePayment,
-                'payment_date' => $paymentDate ? $paymentDate->format('d M Y H:i') : null,
+                'can_auto_refund' => $canAutoRefund,
+                'is_h7_eligible' => $isH7Eligible,
+                'days_until_checkin' => $daysUntilCheckIn,
+                'check_in_date' => $checkInDate->format('d M Y'),
                 'payment_method' => $isQrisPayment ? 'QRIS' : 'Other',
                 'order_id' => $latestPayment ? $this->getOrderIdFromPayment($latestPayment) : null,
-                'refund_deadline' => $paymentDate ? $paymentDate->addDays(7)->format('d M Y H:i') : null
+                'refund_policy' => $isH7Eligible
+                    ? 'Refund 50% tersedia (pembatalan H-7 atau lebih)'
+                    : 'Tidak ada refund (pembatalan kurang dari H-7)',
+                'h7_deadline' => $checkInDate->subDays(7)->format('d M Y'),
+
+                // Legacy fields for backward compatibility
+                'can_refund_by_time' => $isH7Eligible, // Changed from payment-based to check-in based
+                'payment_date' => $latestPayment ? Carbon::parse($latestPayment->payment_date)->format('d M Y H:i') : null,
+                'refund_deadline' => $checkInDate->subDays(7)->format('d M Y') . ' (H-7 sebelum check-in)'
             ]);
 
         } catch (\Exception $e) {
@@ -343,7 +406,6 @@ class RefundController extends Controller
     {
         try {
             $client = new \GuzzleHttp\Client();
-
             $response = $client->request('GET', 'https://api.sandbox.midtrans.com/v2/' . $orderId . '/status', [
                 'headers' => [
                     'accept' => 'application/json',

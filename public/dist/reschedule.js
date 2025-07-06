@@ -11,6 +11,7 @@
     paymentNeeded: 0,
     isAdditionalPayment: false,
     isRescheduleMode: false,
+    canReschedule: false, // New property for H-7 validation
   }
 
   let rescheduleInPicker = null
@@ -34,7 +35,32 @@
   }
 
   /**
-   * Validate reschedule dates
+   * Check if reschedule is allowed (H-7 validation)
+   */
+  function checkRescheduleEligibility(originalCheckInDate) {
+    const today = new Date()
+    const checkInDate = new Date(originalCheckInDate)
+
+    // Reset time to start of day for accurate comparison
+    today.setHours(0, 0, 0, 0)
+    checkInDate.setHours(0, 0, 0, 0)
+
+    // Calculate difference in days
+    const diffTime = checkInDate.getTime() - today.getTime()
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+    return {
+      canReschedule: diffDays >= 7,
+      daysUntilCheckIn: diffDays,
+      message:
+        diffDays >= 7
+          ? `Reschedule diizinkan (${diffDays} hari sebelum check-in)`
+          : `Reschedule tidak diizinkan. Hanya dapat dilakukan minimal 7 hari sebelum check-in (sisa ${diffDays} hari)`,
+    }
+  }
+
+  /**
+   * Validate reschedule dates with H-7 rule
    */
   function validateRescheduleDates() {
     const checkInEl = document.getElementById("check-in")
@@ -48,27 +74,64 @@
     if (checkOutError) checkOutError.classList.add("hidden")
     if (dateRangeError) dateRangeError.classList.add("hidden")
 
-    // Tetap ambil nilai input untuk simpan ke state
     const checkInValue = checkInEl ? checkInEl.value : ""
     const checkOutValue = checkOutEl ? checkOutEl.value : ""
 
-    rescheduleState.newCheckIn = checkInValue
-    rescheduleState.newCheckOut = checkOutValue
+    let isValid = true
 
-    // Hitung malam jika memungkinkan
+    // Basic validation
+    if (!checkInValue) {
+      if (checkInError) {
+        checkInError.textContent = "Tanggal check-in harus dipilih"
+        checkInError.classList.remove("hidden")
+      }
+      isValid = false
+    }
+
+    if (!checkOutValue) {
+      if (checkOutError) {
+        checkOutError.textContent = "Tanggal check-out harus dipilih"
+        checkOutError.classList.remove("hidden")
+      }
+      isValid = false
+    }
+
     if (checkInValue && checkOutValue) {
       const inDate = new Date(checkInValue)
       const outDate = new Date(checkOutValue)
 
-      if (!isNaN(inDate.getTime()) && !isNaN(outDate.getTime())) {
-        rescheduleState.newNights = Math.ceil((outDate - inDate) / (1000 * 60 * 60 * 24))
-      } else {
-        rescheduleState.newNights = 0
+      if (outDate <= inDate) {
+        if (dateRangeError) {
+          dateRangeError.textContent = "Tanggal check-out harus setelah check-in"
+          dateRangeError.classList.remove("hidden")
+        }
+        isValid = false
+      }
+
+      // H-7 validation for new check-in date
+      const eligibility = checkRescheduleEligibility(checkInValue)
+      if (!eligibility.canReschedule) {
+        if (checkInError) {
+          checkInError.textContent = "Reschedule harus dilakukan minimal 7 hari sebelum tanggal check-in yang dipilih"
+          checkInError.classList.remove("hidden")
+        }
+        isValid = false
       }
     }
 
-    // Skipping validation (forced pass)
-    return true
+    // Update state
+    rescheduleState.newCheckIn = checkInValue
+    rescheduleState.newCheckOut = checkOutValue
+
+    if (checkInValue && checkOutValue && isValid) {
+      const inDate = new Date(checkInValue)
+      const outDate = new Date(checkOutValue)
+      rescheduleState.newNights = Math.ceil((outDate - inDate) / (1000 * 60 * 60 * 24))
+    } else {
+      rescheduleState.newNights = 0
+    }
+
+    return isValid
   }
 
   /**
@@ -84,6 +147,18 @@
       if (!res.ok) throw new Error("Failed to load reservation data")
 
       rescheduleState.originalReservation = await res.json()
+
+      // Check if reschedule is allowed based on H-7 rule
+      const eligibility = checkRescheduleEligibility(rescheduleState.originalReservation.original_start_date)
+      rescheduleState.canReschedule = eligibility.canReschedule
+
+      // If reschedule is not allowed, show error and return
+      if (!rescheduleState.canReschedule) {
+        alert(
+          `Reschedule Tidak Diizinkan\n\n${eligibility.message}\n\nReschedule hanya dapat dilakukan minimal 7 hari sebelum tanggal check-in.`,
+        )
+        return
+      }
 
       // Load villa details and reserved dates
       if (loadRoomDetails) await loadRoomDetails(rescheduleState.originalReservation.villa_id)
@@ -103,7 +178,7 @@
       // Initialize reschedule pickers after modal is shown
       setTimeout(() => {
         initReschedulePickers()
-      }, 500) // Increased timeout for production
+      }, 500)
     } catch (error) {
       alert("Gagal memuat data reservasi: " + error.message)
     }
@@ -125,18 +200,35 @@
       stepTitle.textContent = "Select New Dates"
     }
 
-    // Show original booking info
+    // Show original booking info with H-7 validation status
+    const eligibility = checkRescheduleEligibility(rescheduleState.originalReservation.original_start_date)
+
     const originalInfo = document.createElement("div")
     originalInfo.id = "reschedule-original-info"
-    originalInfo.className = "bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6"
+    originalInfo.className = "bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"
     originalInfo.innerHTML = `
-          <h5 class="font-medium text-yellow-800 mb-2">Original Booking</h5>
-          <div class="text-sm text-yellow-700">
-              <p>Check-in: ${rescheduleState.originalReservation.original_start_date}</p>
-              <p>Check-out: ${rescheduleState.originalReservation.original_end_date}</p>
-              <p>Total Paid: ${formatCurrency(rescheduleState.originalReservation.paid_amount)}</p>
-          </div>
-      `
+      <h5 class="font-medium text-blue-800 mb-2">Original Booking</h5>
+      <div class="text-sm text-blue-700 space-y-1">
+        <p><strong>Check-in:</strong> ${rescheduleState.originalReservation.original_start_date}</p>
+        <p><strong>Check-out:</strong> ${rescheduleState.originalReservation.original_end_date}</p>
+        <p><strong>Total Paid:</strong> ${formatCurrency(rescheduleState.originalReservation.paid_amount)}</p>
+      </div>
+    `
+
+    // Add H-7 validation info
+    const validationInfo = document.createElement("div")
+    validationInfo.className = `mt-4 p-3 rounded-lg ${eligibility.canReschedule ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`
+    validationInfo.innerHTML = `
+      <div class="flex items-center">
+        <i class="fas ${eligibility.canReschedule ? "fa-check-circle text-green-600" : "fa-exclamation-triangle text-red-600"} mr-2"></i>
+        <span class="text-sm ${eligibility.canReschedule ? "text-green-700" : "text-red-700"}">${eligibility.message}</span>
+      </div>
+      <div class="text-xs ${eligibility.canReschedule ? "text-green-600" : "text-red-600"} mt-1">
+        <i class="fas fa-info-circle mr-1"></i>
+        Kebijakan: Reschedule harus dilakukan minimal H-7 (7 hari) sebelum check-in
+      </div>
+    `
+    originalInfo.appendChild(validationInfo)
 
     // Insert after step title
     const stepTitleContainer = document.querySelector("#step-1 .flex.items-center")
@@ -146,7 +238,7 @@
   }
 
   /**
-   * Initialize date pickers for reschedule
+   * Initialize date pickers for reschedule with H-7 validation
    */
   function initReschedulePickers() {
     const inEl = document.getElementById("check-in")
@@ -177,12 +269,21 @@
       to: r.to,
     }))
 
+    // Add H-7 validation: disable dates that are less than 7 days from today
+    const today = new Date()
+    const minRescheduleDate = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000) // 7 days from today
+
     // Check if flatpickr is available
     if (typeof window.flatpickr === "undefined") {
       console.error("Flatpickr not loaded")
-      // Fallback to regular date inputs
+      // Fallback to regular date inputs with min date
       inEl.type = "date"
       outEl.type = "date"
+
+      // Set minimum date to H+7
+      const minDateStr = minRescheduleDate.toISOString().split("T")[0]
+      inEl.min = minDateStr
+      outEl.min = minDateStr
 
       inEl.addEventListener("change", function () {
         rescheduleState.newCheckIn = this.value
@@ -201,11 +302,11 @@
       return
     }
 
-    // Check-in picker
+    // Check-in picker with H-7 validation
     try {
       rescheduleInPicker = window.flatpickr(inEl, {
         dateFormat: "Y-m-d",
-        minDate: "today",
+        minDate: minRescheduleDate, // Minimum 7 days from today
         disable: fpDisabled,
         onChange: (selectedDates, dateStr) => {
           rescheduleState.newCheckIn = dateStr
@@ -213,8 +314,18 @@
           const errorEl = document.getElementById("check-in-error")
           if (errorEl) errorEl.classList.add("hidden")
 
-          // Update check-out picker
+          // Validate H-7 rule
           if (selectedDates[0]) {
+            const eligibility = checkRescheduleEligibility(dateStr)
+            if (!eligibility.canReschedule) {
+              if (errorEl) {
+                errorEl.textContent = "Tanggal check-in harus minimal 7 hari dari hari ini"
+                errorEl.classList.remove("hidden")
+              }
+              return
+            }
+
+            // Update check-out picker
             const nextDay = new Date(selectedDates[0].getTime() + 86400000)
             if (rescheduleOutPicker) {
               rescheduleOutPicker.set("minDate", nextDay)
@@ -235,7 +346,7 @@
     try {
       rescheduleOutPicker = window.flatpickr(outEl, {
         dateFormat: "Y-m-d",
-        minDate: "today",
+        minDate: minRescheduleDate,
         disable: fpDisabled,
         onChange: (selectedDates, dateStr) => {
           rescheduleState.newCheckOut = dateStr
@@ -287,37 +398,36 @@
       rescheduleState.isAdditionalPayment = data.is_additional_payment
 
       // Update UI
-if (rescheduleState.paymentNeeded > 0) {
-  amtEl.innerHTML = `
-    <div class="space-y-1 text-sm text-gray-700">
-      <div class="flex justify-between">
-        <span>New Total</span>
-        <span class="font-medium">${formatCurrency(data.new_total)}</span>
-      </div>
-      <div class="flex justify-between">
-        <span>Already Paid</span>
-        <span class="text-gray-500">${formatCurrency(data.paid_amount)}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="font-semibold text-red-500">Additional Payment</span>
-        <span class="font-semibold text-red-500">${formatCurrency(data.payment_needed)}</span>
-      </div>
-    </div>
-  `
-} else {
-  amtEl.innerHTML = `
-    <div class="space-y-1 text-sm text-gray-700">
-      <div class="flex justify-between">
-        <span>New Total</span>
-        <span class="font-medium">${formatCurrency(data.new_total)}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="font-semibold text-green-600">No additional payment needed</span>
-      </div>
-    </div>
-  `
-}
-
+      if (rescheduleState.paymentNeeded > 0) {
+        amtEl.innerHTML = `
+          <div class="space-y-1 text-sm text-gray-700">
+            <div class="flex justify-between">
+              <span>New Total</span>
+              <span class="font-medium">${formatCurrency(data.new_total)}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Already Paid</span>
+              <span class="text-gray-500">${formatCurrency(data.paid_amount)}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="font-semibold text-red-500">Additional Payment</span>
+              <span class="font-semibold text-red-500">${formatCurrency(data.payment_needed)}</span>
+            </div>
+          </div>
+        `
+      } else {
+        amtEl.innerHTML = `
+          <div class="space-y-1 text-sm text-gray-700">
+            <div class="flex justify-between">
+              <span>New Total</span>
+              <span class="font-medium">${formatCurrency(data.new_total)}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="font-semibold text-green-600">No additional payment needed</span>
+            </div>
+          </div>
+        `
+      }
 
       statusEl.textContent = ""
       wrapEl.classList.remove("hidden")
@@ -328,11 +438,18 @@ if (rescheduleState.paymentNeeded > 0) {
   }
 
   /**
-   * Process reschedule payment
+   * Process reschedule payment with validation
    */
   async function processReschedulePayment() {
-    // Validate dates first
+    // Validate dates first with H-7 rule
     if (!validateRescheduleDates()) {
+      return
+    }
+
+    // Double-check H-7 validation
+    const eligibility = checkRescheduleEligibility(rescheduleState.newCheckIn)
+    if (!eligibility.canReschedule) {
+      alert(`Reschedule Tidak Diizinkan\n\n${eligibility.message}`)
       return
     }
 
@@ -460,6 +577,7 @@ if (rescheduleState.paymentNeeded > 0) {
     rescheduleState.paymentNeeded = 0
     rescheduleState.isAdditionalPayment = false
     rescheduleState.isRescheduleMode = false
+    rescheduleState.canReschedule = false
 
     // Remove reschedule UI elements
     const originalInfo = document.getElementById("reschedule-original-info")
@@ -509,7 +627,7 @@ if (rescheduleState.paymentNeeded > 0) {
         // Check if we're in reschedule mode
         if (rescheduleState.isRescheduleMode && rescheduleState.reservationId) {
           if (window.currentStep === 1) {
-            // Validate dates
+            // Validate dates with H-7 rule
             if (!validateRescheduleDates()) {
               return
             }
@@ -532,4 +650,5 @@ if (rescheduleState.paymentNeeded > 0) {
   window.openRescheduleModal = openRescheduleModal
   window.rescheduleState = rescheduleState
   window.validateRescheduleDates = validateRescheduleDates
+  window.checkRescheduleEligibility = checkRescheduleEligibility
 })()

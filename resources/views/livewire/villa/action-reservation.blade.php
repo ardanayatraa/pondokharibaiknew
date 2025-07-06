@@ -36,6 +36,72 @@
                             </span>
                         </div>
 
+                        {{-- H-7 Reschedule Eligibility Info --}}
+                        @if (in_array($reservation->status, ['confirmed', 'rescheduled']))
+                            <div
+                                class="mb-4 p-3 rounded-lg border {{ $canReschedule ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200' }}">
+                                <div class="flex items-center">
+                                    <i
+                                        class="fas {{ $canReschedule ? 'fa-check-circle text-green-600' : 'fa-exclamation-triangle text-red-600' }} mr-2"></i>
+                                    <div>
+                                        <h4
+                                            class="font-semibold {{ $canReschedule ? 'text-green-800' : 'text-red-800' }} text-sm">
+                                            Status Reschedule
+                                        </h4>
+                                        <p class="{{ $canReschedule ? 'text-green-700' : 'text-red-700' }} text-sm">
+                                            {{ $rescheduleMessage }}
+                                        </p>
+                                        <p
+                                            class="text-xs {{ $canReschedule ? 'text-green-600' : 'text-red-600' }} mt-1">
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            Kebijakan: Reschedule harus dilakukan minimal H-7 (7 hari) sebelum check-in
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- H-7 Cancellation Policy Info --}}
+                            @php
+                                $checkInDate = \Carbon\Carbon::parse($reservation->start_date);
+                                $today = \Carbon\Carbon::today();
+                                $daysUntilCheckIn = $today->diffInDays($checkInDate, false);
+                                $canGetRefund = $daysUntilCheckIn >= 7;
+                            @endphp
+
+                            <div
+                                class="mb-4 p-3 rounded-lg border {{ $canGetRefund ? 'bg-blue-50 border-blue-200' : 'bg-orange-50 border-orange-200' }}">
+                                <div class="flex items-center">
+                                    <i
+                                        class="fas {{ $canGetRefund ? 'fa-money-bill-wave text-blue-600' : 'fa-exclamation-circle text-orange-600' }} mr-2"></i>
+                                    <div>
+                                        <h4
+                                            class="font-semibold {{ $canGetRefund ? 'text-blue-800' : 'text-orange-800' }} text-sm">
+                                            Kebijakan Refund Pembatalan
+                                        </h4>
+                                        @if ($canGetRefund)
+                                            <p class="text-blue-700 text-sm">
+                                                Refund 50% tersedia ({{ $daysUntilCheckIn }} hari sebelum check-in)
+                                            </p>
+                                            <p class="text-xs text-blue-600 mt-1">
+                                                <i class="fas fa-check-circle mr-1"></i>
+                                                Pembatalan dengan refund 50% dapat dilakukan hingga
+                                                {{ $checkInDate->copy()->subDays(7)->format('d M Y') }}
+                                            </p>
+                                        @else
+                                            <p class="text-orange-700 text-sm">
+                                                Tidak ada refund ({{ $daysUntilCheckIn }} hari sebelum check-in)
+                                            </p>
+                                            <p class="text-xs text-orange-600 mt-1">
+                                                <i class="fas fa-times-circle mr-1"></i>
+                                                Batas refund 50% telah terlewati (H-7:
+                                                {{ $checkInDate->copy()->subDays(7)->format('d M Y') }})
+                                            </p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
                         {{-- Show cancellation reason if cancelled --}}
                         @if ($reservation->status === 'cancelled' && $reservation->cancelation_reason)
                             <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -171,7 +237,16 @@
                                                 ->pembayaran()
                                                 ->where('status', 'refund_failed')
                                                 ->sum('amount');
+                                            $noRefund = $reservation
+                                                ->pembayaran()
+                                                ->where('status', 'no_refund')
+                                                ->exists();
+                                            $manualRefund = $reservation
+                                                ->pembayaran()
+                                                ->where('status', 'manual_refund_required')
+                                                ->sum('amount');
                                         @endphp
+
                                         @if ($refundAmount < 0)
                                             <tr>
                                                 <th class="text-left px-4 py-2 font-medium text-green-600">Refund (50%)
@@ -187,6 +262,20 @@
                                                 <td class="text-right px-4 py-2 text-orange-600">
                                                     Rp {{ number_format(abs($refundFailed), 0, ',', '.') }}
                                                 </td>
+                                            </tr>
+                                        @elseif($manualRefund < 0)
+                                            <tr>
+                                                <th class="text-left px-4 py-2 font-medium text-blue-600">Refund (50%)
+                                                    - Manual Process</th>
+                                                <td class="text-right px-4 py-2 text-blue-600">
+                                                    Rp {{ number_format(abs($manualRefund), 0, ',', '.') }}
+                                                </td>
+                                            </tr>
+                                        @elseif($noRefund)
+                                            <tr>
+                                                <th class="text-left px-4 py-2 font-medium text-red-600">Refund</th>
+                                                <td class="text-right px-4 py-2 text-red-600">
+                                                    Tidak Ada (< H-7) </td>
                                             </tr>
                                         @endif
                                     @endif
@@ -217,12 +306,21 @@
                         @if (in_array($reservation->status, ['confirmed', 'rescheduled']))
                             <div class="flex space-x-3">
                                 <button wire:click="rescheduleReservation"
-                                    class="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm">
+                                    class="px-4 py-2 rounded text-sm transition-colors duration-200 {{ $canReschedule ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed' }}"
+                                    {{ $canReschedule ? '' : 'disabled' }}
+                                    title="{{ $canReschedule ? '' : $rescheduleMessage }}">
+                                    <i class="fas fa-calendar-alt mr-1"></i>
                                     {{ $reservation->status === 'rescheduled' ? 'Reschedule Again' : 'Reschedule' }}
                                 </button>
                                 <button wire:click="cancelReservation"
                                     class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
+                                    <i class="fas fa-times mr-1"></i>
                                     Batalkan
+                                    @if ($canGetRefund)
+                                        <span class="text-xs">(Refund 50%)</span>
+                                    @else
+                                        <span class="text-xs">(No Refund)</span>
+                                    @endif
                                 </button>
                             </div>
                         @endif
@@ -244,7 +342,7 @@
         </div>
     @endif
 
-    {{-- Modal Konfirmasi Pembatalan --}}
+    {{-- Modal Konfirmasi Pembatalan - UPDATED --}}
     @if ($showCancelModal)
         <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
             wire:click.self="closeCancelModal">
@@ -263,29 +361,60 @@
                 <div class="px-6 py-4">
                     @if ($refundInfo && isset($refundInfo['total_paid']))
                         <div class="mb-4">
-                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                            {{-- H-7 Policy Info --}}
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                                 <div class="flex items-center mb-2">
-                                    <i class="fas fa-info-circle text-yellow-600 mr-2"></i>
-                                    <h3 class="font-semibold text-yellow-800">Kebijakan Refund Midtrans</h3>
+                                    <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                                    <h3 class="font-semibold text-blue-800">Kebijakan Refund H-7</h3>
                                 </div>
-                                <p class="text-yellow-700 text-sm">
-                                    Pembatalan reservasi akan dikenakan biaya administrasi 50%.
-                                    Anda akan menerima refund sebesar 50% dari total pembayaran melalui Midtrans.
-                                </p>
+                                <div class="text-blue-700 text-sm space-y-1">
+                                    <p><strong>• H-7 atau lebih:</strong> Refund 50% dari total pembayaran</p>
+                                    <p><strong>• Kurang dari H-7:</strong> Tidak ada refund</p>
+                                    <p class="text-xs mt-2">
+                                        <i class="fas fa-calendar mr-1"></i>
+                                        Check-in: {{ $refundInfo['check_in_date'] ?? 'N/A' }}
+                                        ({{ $refundInfo['days_until_checkin'] ?? 0 }} hari lagi)
+                                    </p>
+                                </div>
                             </div>
 
-                            {{-- 7-day rule warning --}}
-                            @if (!$refundInfo['can_refund_by_time'])
+                            {{-- H-7 Status --}}
+                            @if ($refundInfo['is_h7_eligible'] ?? false)
+                                <div class="p-3 bg-green-50 border border-green-200 rounded-lg mb-4">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                                        <div class="text-green-700 text-sm">
+                                            <p><strong>✓ Eligible untuk Refund 50%</strong></p>
+                                            <p>Pembatalan dilakukan {{ $refundInfo['days_until_checkin'] ?? 0 }} hari
+                                                sebelum check-in</p>
+                                            @if ($refundInfo['can_auto_refund'] ?? false)
+                                                <p class="text-xs mt-1">
+                                                    <i class="fas fa-bolt mr-1"></i>
+                                                    Refund otomatis tersedia
+                                                    ({{ $refundInfo['payment_method'] ?? 'QRIS' }})
+                                                </p>
+                                            @else
+                                                <p class="text-xs mt-1">
+                                                    <i class="fas fa-user-cog mr-1"></i>
+                                                    Refund manual (metode pembayaran:
+                                                    {{ $refundInfo['payment_method'] ?? 'Other' }})
+                                                </p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @else
                                 <div class="p-3 bg-red-50 border border-red-200 rounded-lg mb-4">
                                     <div class="flex items-center">
-                                        <i class="fas fa-clock text-red-600 mr-2"></i>
+                                        <i class="fas fa-times-circle text-red-600 mr-2"></i>
                                         <div class="text-red-700 text-sm">
-                                            <p><strong>Batas Waktu Refund Terlewati</strong></p>
-                                            <p>Refund hanya dapat dilakukan dalam 7 hari setelah pembayaran</p>
-                                            <p><strong>Pembayaran:</strong> {{ $refundInfo['payment_date'] ?? 'N/A' }}
+                                            <p><strong>✗ Tidak Eligible untuk Refund</strong></p>
+                                            <p>Pembatalan dilakukan {{ $refundInfo['days_until_checkin'] ?? 0 }} hari
+                                                sebelum check-in (kurang dari H-7)</p>
+                                            <p class="text-xs mt-1">
+                                                <i class="fas fa-clock mr-1"></i>
+                                                Batas refund: {{ $refundInfo['h7_deadline'] ?? 'N/A' }}
                                             </p>
-                                            <p><strong>Hari berlalu:</strong>
-                                                {{ $refundInfo['days_since_payment'] ?? 0 }} hari</p>
                                         </div>
                                     </div>
                                 </div>
@@ -305,64 +434,46 @@
                                 </div>
                             </div>
 
+                            {{-- Payment Summary --}}
                             <div class="space-y-3 mb-4">
                                 <div class="flex justify-between">
                                     <span class="text-gray-600">Total Dibayar:</span>
                                     <span class="font-semibold">Rp
                                         {{ number_format($refundInfo['total_paid'], 0, ',', '.') }}</span>
                                 </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Biaya Administrasi (50%):</span>
-                                    <span class="text-red-600">- Rp
-                                        {{ number_format($refundInfo['total_paid'] - $refundInfo['refund_amount'], 0, ',', '.') }}</span>
-                                </div>
-                                <hr class="border-gray-300">
-                                <div class="flex justify-between text-lg font-bold">
-                                    <span class="text-green-600">Jumlah Refund:</span>
-                                    <span class="text-green-600">Rp
-                                        {{ number_format($refundInfo['refund_amount'], 0, ',', '.') }}</span>
-                                </div>
+
+                                @if ($refundInfo['is_h7_eligible'] ?? false)
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Biaya Administrasi (50%):</span>
+                                        <span class="text-red-600">- Rp
+                                            {{ number_format($refundInfo['total_paid'] - $refundInfo['refund_amount'], 0, ',', '.') }}</span>
+                                    </div>
+                                    <hr class="border-gray-300">
+                                    <div class="flex justify-between text-lg font-bold">
+                                        <span class="text-green-600">Jumlah Refund:</span>
+                                        <span class="text-green-600">Rp
+                                            {{ number_format($refundInfo['refund_amount'], 0, ',', '.') }}</span>
+                                    </div>
+                                @else
+                                    <hr class="border-gray-300">
+                                    <div class="flex justify-between text-lg font-bold">
+                                        <span class="text-red-600">Jumlah Refund:</span>
+                                        <span class="text-red-600">Rp 0 (Tidak ada refund)</span>
+                                    </div>
+                                @endif
                             </div>
 
-                            @if ($refundInfo['can_refund'] ?? false)
-                                <div class="p-3 bg-green-50 border border-green-200 rounded-lg mb-4">
-                                    <div class="flex items-center">
-                                        <i class="fas fa-check-circle text-green-600 mr-2"></i>
-                                        <div class="text-green-700 text-sm">
-                                            <p><strong>Metode Pembayaran:</strong>
-                                                {{ $refundInfo['payment_method'] ?? 'QRIS' }}</p>
-                                            <p class="text-xs mt-1">Pembayaran dapat direfund</p>
-                                            @if ($refundInfo['refund_deadline'])
-                                                <p class="text-xs mt-1"><strong>Batas refund:</strong>
-                                                    {{ $refundInfo['refund_deadline'] }}</p>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            @else
-                                <div class="p-3 bg-red-50 border border-red-200 rounded-lg mb-4">
-                                    <div class="flex items-center">
-                                        <i class="fas fa-times-circle text-red-600 mr-2"></i>
-                                        <div class="text-red-700 text-sm">
-                                            @if (!$refundInfo['can_refund_by_time'])
-                                                <p>Batas waktu refund (7 hari) telah terlewati</p>
-                                            @elseif(!$refundInfo['is_qris_payment'])
-                                                <p>Refund hanya tersedia untuk pembayaran menggunakan QRIS</p>
-                                            @else
-                                                <p>Refund tidak tersedia</p>
-                                            @endif
-                                            <p><strong>Metode Anda:</strong>
-                                                {{ $refundInfo['payment_method'] ?? 'Unknown' }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-
                             <div class="text-xs text-gray-500 space-y-1">
-                                <p><i class="fas fa-clock mr-1"></i> Refund akan diproses dalam 3-5 hari kerja</p>
-                                <p><i class="fas fa-credit-card mr-1"></i> Dana akan dikembalikan ke metode pembayaran
-                                    yang sama</p>
-                                <p><i class="fas fa-envelope mr-1"></i> Konfirmasi refund akan dikirim via email</p>
+                                @if ($refundInfo['is_h7_eligible'] ?? false)
+                                    <p><i class="fas fa-clock mr-1"></i> Refund akan diproses dalam 3-5 hari kerja</p>
+                                    <p><i class="fas fa-credit-card mr-1"></i> Dana akan dikembalikan ke metode
+                                        pembayaran yang sama</p>
+                                @else
+                                    <p><i class="fas fa-ban mr-1"></i> Tidak ada refund untuk pembatalan kurang dari
+                                        H-7</p>
+                                @endif
+                                <p><i class="fas fa-envelope mr-1"></i> Konfirmasi pembatalan akan dikirim via email
+                                </p>
                             </div>
                         </div>
                     @else
@@ -380,17 +491,16 @@
                         <i class="fas fa-times mr-1"></i>
                         Batal
                     </button>
-                    {{-- Always allow cancellation, but show different messages based on refund eligibility --}}
                     <button wire:click="processCancellation" wire:loading.attr="disabled"
                         wire:loading.class="opacity-50 cursor-not-allowed"
                         class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm {{ $isProcessing ? 'opacity-50 cursor-not-allowed' : '' }}"
                         {{ $isProcessing ? 'disabled' : '' }}>
                         <span wire:loading.remove wire:target="processCancellation">
                             <i class="fas fa-check mr-1"></i>
-                            @if ($refundInfo && ($refundInfo['can_refund'] ?? false))
-                                Proses Pembatalan & Refund
+                            @if ($refundInfo && ($refundInfo['is_h7_eligible'] ?? false))
+                                Batalkan & Proses Refund 50%
                             @else
-                                Batalkan Reservasi
+                                Batalkan Reservasi (No Refund)
                             @endif
                         </span>
                         <span wire:loading wire:target="processCancellation">

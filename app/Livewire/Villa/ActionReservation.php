@@ -7,6 +7,7 @@ use App\Models\Reservasi;
 use App\Models\Pembayaran;
 use App\Jobs\SendEmailStatus;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class ActionReservation extends Component
 {
@@ -16,8 +17,10 @@ class ActionReservation extends Component
     public $reservation;
     public $refundInfo = null;
     public $isProcessing = false;
-    public $debugPaymentInfo = null; // For debugging
+    public $debugPaymentInfo = null;
     public $cancelationReason = '';
+    public $canReschedule = false; // New property for H-7 validation
+    public $rescheduleMessage = ''; // Message about reschedule eligibility
 
     protected $listeners = [
         'openModal' => 'openModal',
@@ -27,12 +30,15 @@ class ActionReservation extends Component
     {
         $this->refundInfo = null;
         $this->cancelationReason = '';
+        $this->canReschedule = false;
+        $this->rescheduleMessage = '';
     }
 
     public function openModal($idReservation)
     {
         $this->reservationId = $idReservation;
         $this->loadReservation();
+        $this->checkRescheduleEligibility();
         $this->showModal = true;
     }
 
@@ -42,6 +48,44 @@ class ActionReservation extends Component
             ->find($this->reservationId);
         if (! $this->reservation) {
             $this->showModal = false;
+        }
+    }
+
+    /**
+     * Check if reschedule is allowed based on H-7 rule
+     */
+    protected function checkRescheduleEligibility()
+    {
+        if (!$this->reservation) {
+            $this->canReschedule = false;
+            $this->rescheduleMessage = 'Reservasi tidak ditemukan';
+            return;
+        }
+
+        // Only allow reschedule for confirmed or rescheduled reservations
+        if (!in_array($this->reservation->status, ['confirmed', 'rescheduled'])) {
+            $this->canReschedule = false;
+            $this->rescheduleMessage = 'Reschedule tidak tersedia untuk status reservasi ini';
+            return;
+        }
+
+        $today = Carbon::today();
+        $checkInDate = Carbon::parse($this->reservation->start_date)->startOfDay();
+
+        // Calculate difference in days
+        $daysUntilCheckIn = $today->diffInDays($checkInDate, false);
+
+        // Allow reschedule if check-in is at least 7 days away
+        $this->canReschedule = $daysUntilCheckIn >= 7;
+
+        if ($this->canReschedule) {
+            $this->rescheduleMessage = "Reschedule diizinkan ({$daysUntilCheckIn} hari sebelum check-in)";
+        } else {
+            if ($daysUntilCheckIn < 0) {
+                $this->rescheduleMessage = "Check-in sudah berlalu, reschedule tidak dapat dilakukan";
+            } else {
+                $this->rescheduleMessage = "Reschedule hanya dapat dilakukan minimal 7 hari sebelum check-in (sisa {$daysUntilCheckIn} hari)";
+            }
         }
     }
 
@@ -72,7 +116,7 @@ class ActionReservation extends Component
 
             $this->refundInfo = $responseData;
 
-            // Debug payment info masih tetap ada
+            // Debug payment info
             $latestPayment = $this->reservation->pembayaran()
                 ->where('status', 'paid')
                 ->latest()
@@ -167,7 +211,7 @@ class ActionReservation extends Component
                     'type' => 'error',
                     'message' => $errorMessage
                 ]);
-                return; // Don't close modal on error
+                return;
             }
 
             $this->showCancelModal = false;
@@ -195,7 +239,20 @@ class ActionReservation extends Component
 
     public function rescheduleReservation()
     {
-        if (! $this->reservation || !in_array($this->reservation->status, ['confirmed', 'rescheduled'])) {
+        // Check H-7 eligibility before allowing reschedule
+        if (!$this->canReschedule) {
+            $this->dispatch('show-alert', [
+                'type' => 'error',
+                'message' => $this->rescheduleMessage
+            ]);
+            return;
+        }
+
+        if (!$this->reservation || !in_array($this->reservation->status, ['confirmed', 'rescheduled'])) {
+            $this->dispatch('show-alert', [
+                'type' => 'error',
+                'message' => 'Reschedule tidak tersedia untuk reservasi ini'
+            ]);
             return;
         }
 
@@ -211,6 +268,8 @@ class ActionReservation extends Component
         $this->isProcessing = false;
         $this->debugPaymentInfo = null;
         $this->cancelationReason = '';
+        $this->canReschedule = false;
+        $this->rescheduleMessage = '';
     }
 
     public function closeCancelModal()

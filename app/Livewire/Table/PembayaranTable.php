@@ -20,7 +20,8 @@ class PembayaranTable extends DataTableComponent
         return Pembayaran::query()
             ->with(['guest'])
             ->select('tbl_pembayaran.*')
-            ->orderBy('payment_date', 'desc');
+            ->orderBy('payment_date', 'desc')
+            ->orderBy('created_at', 'desc');
     }
 
     public function columns(): array
