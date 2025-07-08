@@ -111,7 +111,7 @@ class RefundController extends Controller
                     'payment_date' => now(),
                     'snap_token' => null,
                     'notifikasi' => "Refund 50% MANUAL untuk pembatalan reservasi #{$reservation->id_reservation} - Metode pembayaran tidak mendukung refund otomatis - Alasan: {$validated['cancelation_reason']}",
-                    'status' => 'manual_refund_required',
+                    'status' => 'notrefuned',
                 ]);
 
                 return response()->json([
@@ -119,7 +119,7 @@ class RefundController extends Controller
                     'message' => 'Reservasi dibatalkan. Refund 50% akan diproses manual oleh tim kami dalam 1x24 jam karena metode pembayaran tidak mendukung refund otomatis.',
                     'refund_amount' => $actualRefundAmount,
                     'cancelation_reason' => $validated['cancelation_reason'],
-                    'refund_status' => 'manual_process_required',
+                    'refund_status' => 'notrefuned',
                     'days_until_checkin' => $daysUntilCheckIn,
                     'h7_eligible' => true,
                     'payment_method' => $validated['payment_method']

@@ -19,8 +19,8 @@ class ActionReservation extends Component
     public $isProcessing = false;
     public $debugPaymentInfo = null;
     public $cancelationReason = '';
-    public $canReschedule = false; // New property for H-7 validation
-    public $rescheduleMessage = ''; // Message about reschedule eligibility
+    public $canReschedule = false;
+    public $rescheduleMessage = '';
 
     protected $listeners = [
         'openModal' => 'openModal',
@@ -148,22 +148,6 @@ class ActionReservation extends Component
             return;
         }
 
-        if (!$this->refundInfo['can_refund']) {
-            $errorMessage = 'Pembatalan tidak dapat diproses';
-
-            if (!$this->refundInfo['can_refund_by_time']) {
-                $errorMessage = 'Refund hanya dapat dilakukan dalam 7 hari setelah pembayaran';
-            } elseif (!$this->refundInfo['is_qris_payment']) {
-                $errorMessage = 'Refund hanya tersedia untuk pembayaran menggunakan QRIS';
-            }
-
-            $this->dispatch('show-alert', [
-                'type' => 'error',
-                'message' => $errorMessage
-            ]);
-            return;
-        }
-
         // Validate cancellation reason
         if (empty(trim($this->cancelationReason))) {
             $this->dispatch('show-alert', [
@@ -181,8 +165,8 @@ class ActionReservation extends Component
 
             $request = new \Illuminate\Http\Request([
                 'reservation_id' => $this->reservation->id_reservation,
-                'refund_amount' => $this->refundInfo['refund_amount'],
-                'payment_method' => $this->refundInfo['payment_method'],
+                'refund_amount' => $this->refundInfo['refund_amount'] ?? 0,
+                'payment_method' => $this->refundInfo['payment_method'] ?? 'Other',
                 'cancelation_reason' => $this->cancelationReason,
             ]);
 
@@ -190,23 +174,29 @@ class ActionReservation extends Component
             $responseData = json_decode($response->getContent(), true);
 
             if (isset($responseData['success']) && $responseData['success']) {
-                // Send email notification for successful refund
+                // Send email notification
                 SendEmailStatus::dispatch($this->reservation, 'cancelled');
 
-                $this->dispatch('show-alert', [
-                    'type' => 'success',
-                    'message' => 'Pembatalan berhasil diproses. Refund 50% akan diproses dalam 3-5 hari kerja.'
-                ]);
-            } elseif (isset($responseData['manual_process_required']) && $responseData['manual_process_required']) {
-                // Send email notification for failed refund (manual process required)
-                SendEmailStatus::dispatch($this->reservation, 'cancelled');
+                // Determine message based on refund status
+                if ($responseData['h7_eligible'] ?? false) {
+                    if ($responseData['manual_process_required'] ?? false) {
+                        $message = 'Reservasi dibatalkan. Refund 50% akan diproses manual dalam 1x24 jam.';
+                        $alertType = 'warning';
+                    } else {
+                        $message = 'Pembatalan berhasil diproses. Refund 50% akan diproses dalam 3-5 hari kerja.';
+                        $alertType = 'success';
+                    }
+                } else {
+                    $message = 'Reservasi berhasil dibatalkan. Tidak ada refund karena pembatalan dilakukan kurang dari H-7.';
+                    $alertType = 'success';
+                }
 
                 $this->dispatch('show-alert', [
-                    'type' => 'warning',
-                    'message' => 'Reservasi dibatalkan. Refund otomatis gagal, tim kami akan memproses refund manual dalam 1x24 jam.'
+                    'type' => $alertType,
+                    'message' => $message
                 ]);
             } else {
-                $errorMessage = $responseData['error'] ?? 'Gagal memproses refund';
+                $errorMessage = $responseData['error'] ?? 'Gagal memproses pembatalan';
                 $this->dispatch('show-alert', [
                     'type' => 'error',
                     'message' => $errorMessage

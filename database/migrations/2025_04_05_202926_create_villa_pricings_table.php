@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id('id_villa_pricing');
             $table->foreignId('villa_id');
             $table->foreignId('season_id');
-    $table->decimal('sunday_pricing',   10, 2)->nullable();
        $table->decimal('sunday_pricing',    10, 2)->default(0);
     $table->decimal('monday_pricing',    10, 2)->default(0);
     $table->decimal('tuesday_pricing',   10, 2)->default(0);

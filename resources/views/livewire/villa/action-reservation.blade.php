@@ -110,23 +110,6 @@
                             </div>
                         @endif
 
-                        {{-- Debug Payment Info (only show in development) --}}
-                        @if (config('app.debug') && $debugPaymentInfo)
-                            <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                <h4 class="font-semibold text-blue-800 mb-2">Debug Payment Info:</h4>
-                                <div class="text-xs text-blue-700 space-y-1">
-                                    <p><strong>Payment ID:</strong> {{ $debugPaymentInfo['id'] }}</p>
-                                    <p><strong>Snap Token:</strong> {{ $debugPaymentInfo['snap_token'] ?? 'N/A' }}</p>
-                                    <p><strong>Notifikasi:</strong> {{ $debugPaymentInfo['notifikasi'] ?? 'N/A' }}</p>
-                                    <p><strong>Amount:</strong> Rp
-                                        {{ number_format($debugPaymentInfo['amount'], 0, ',', '.') }}</p>
-                                    @if ($refundInfo && isset($refundInfo['order_id']))
-                                        <p><strong>Order ID:</strong> {{ $refundInfo['order_id'] ?? 'N/A' }}</p>
-                                    @endif
-                                </div>
-                            </div>
-                        @endif
-
                         {{-- Informasi Tamu --}}
                         <div class="mb-6">
                             <h3 class="text-lg font-medium text-gray-700 mb-2">Informasi Tamu</h3>
@@ -169,36 +152,6 @@
                                 <span class="font-semibold text-gray-600">Durasi:</span>
                                 <span class="text-gray-800">{{ $nights }} malam</span>
                             </p>
-                        </div>
-
-                        {{-- Rincian Harga per Malam --}}
-                        <div class="mb-6">
-                            <h3 class="text-lg font-medium text-gray-700 mb-2">Rincian Harga per Malam</h3>
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full bg-white border border-gray-200 rounded-md">
-                                    <thead>
-                                        <tr class="bg-gray-100">
-                                            <th class="px-4 py-2 text-left text-gray-600">Tanggal</th>
-                                            <th class="px-4 py-2 text-right text-gray-600">Harga/Malam (Rp)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @for ($i = 0; $i < $nights; $i++)
-                                            @php
-                                                $dateObj = $start->copy()->addDays($i);
-                                                $formattedDate = $dateObj->format('d M Y');
-                                                $price = $reservation->villa->priceForDate($dateObj->toDateString());
-                                            @endphp
-                                            <tr class="{{ $i % 2 === 0 ? 'bg-gray-50' : '' }}">
-                                                <td class="px-4 py-2 text-gray-800">{{ $formattedDate }}</td>
-                                                <td class="px-4 py-2 text-right text-gray-800">
-                                                    {{ number_format($price, 0, ',', '.') }}
-                                                </td>
-                                            </tr>
-                                        @endfor
-                                    </tbody>
-                                </table>
-                            </div>
                         </div>
 
                         {{-- Totals --}}
@@ -255,18 +208,10 @@
                                                     Rp {{ number_format(abs($refundAmount), 0, ',', '.') }}
                                                 </td>
                                             </tr>
-                                        @elseif($refundFailed < 0)
-                                            <tr>
-                                                <th class="text-left px-4 py-2 font-medium text-orange-600">Refund (50%)
-                                                    - Proses Manual</th>
-                                                <td class="text-right px-4 py-2 text-orange-600">
-                                                    Rp {{ number_format(abs($refundFailed), 0, ',', '.') }}
-                                                </td>
-                                            </tr>
                                         @elseif($manualRefund < 0)
                                             <tr>
                                                 <th class="text-left px-4 py-2 font-medium text-blue-600">Refund (50%)
-                                                    - Manual Process</th>
+                                                    - Akan Diproses</th>
                                                 <td class="text-right px-4 py-2 text-blue-600">
                                                     Rp {{ number_format(abs($manualRefund), 0, ',', '.') }}
                                                 </td>
@@ -342,7 +287,7 @@
         </div>
     @endif
 
-    {{-- Modal Konfirmasi Pembatalan - UPDATED --}}
+    {{-- Modal Konfirmasi Pembatalan --}}
     @if ($showCancelModal)
         <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
             wire:click.self="closeCancelModal">
@@ -387,19 +332,10 @@
                                             <p><strong>✓ Eligible untuk Refund 50%</strong></p>
                                             <p>Pembatalan dilakukan {{ $refundInfo['days_until_checkin'] ?? 0 }} hari
                                                 sebelum check-in</p>
-                                            @if ($refundInfo['can_auto_refund'] ?? false)
-                                                <p class="text-xs mt-1">
-                                                    <i class="fas fa-bolt mr-1"></i>
-                                                    Refund otomatis tersedia
-                                                    ({{ $refundInfo['payment_method'] ?? 'QRIS' }})
-                                                </p>
-                                            @else
-                                                <p class="text-xs mt-1">
-                                                    <i class="fas fa-user-cog mr-1"></i>
-                                                    Refund manual (metode pembayaran:
-                                                    {{ $refundInfo['payment_method'] ?? 'Other' }})
-                                                </p>
-                                            @endif
+                                            <p class="text-xs mt-1">
+                                                <i class="fas fa-info-circle mr-1"></i>
+                                                Refund akan diproses dalam 3-5 hari kerja
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
