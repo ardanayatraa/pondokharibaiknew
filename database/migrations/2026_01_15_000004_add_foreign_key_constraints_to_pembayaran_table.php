@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::table('tbl_pembayaran', function (Blueprint $table) {
             // Add foreign key constraints
             $table->unsignedBigInteger('guest_id')->nullable();
-            $table->unsignedBigInteger('reservation_id');
         });
     }
 
@@ -26,7 +25,6 @@ return new class extends Migration
         Schema::table('tbl_pembayaran', function (Blueprint $table) {
             // Drop foreign key constraints
             $table->dropForeign(['guest_id']);
-            $table->dropForeign(['reservation_id']);
         });
     }
-}; 
+};
