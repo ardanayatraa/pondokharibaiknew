@@ -173,43 +173,40 @@ class ActionReservation extends Component
             $response = $refundController->processRefund($request);
             $responseData = json_decode($response->getContent(), true);
 
-            if (isset($responseData['success']) && $responseData['success']) {
-                // Send email notification
-                SendEmailStatus::dispatch($this->reservation, 'cancelled');
-
-                // Determine message based on refund status
-                if ($responseData['h7_eligible'] ?? false) {
-                    if ($responseData['manual_process_required'] ?? false) {
-                        $message = 'Reservasi dibatalkan. Refund 50% akan diproses manual dalam 1x24 jam.';
-                        $alertType = 'warning';
-                    } else {
-                        $message = 'Pembatalan berhasil diproses. Refund 50% akan diproses dalam 3-5 hari kerja.';
-                        $alertType = 'success';
-                    }
-                } else {
-                    $message = 'Reservasi berhasil dibatalkan. Tidak ada refund karena pembatalan dilakukan kurang dari H-7.';
-                    $alertType = 'success';
+            // IMPROVED: Always check if cancellation was successful first
+            if (isset($responseData['cancellation_successful']) && $responseData['cancellation_successful']) {
+                // Send email notification for successful cancellation
+                try {
+                    SendEmailStatus::dispatch($this->reservation, 'cancelled');
+                } catch (\Exception $e) {
+                    Log::warning('Failed to send cancellation email: ' . $e->getMessage());
                 }
+
+                // Determine message and alert type based on refund status
+                $message = $this->getCancellationMessage($responseData);
+                $alertType = $this->getCancellationAlertType($responseData);
 
                 $this->dispatch('show-alert', [
                     'type' => $alertType,
                     'message' => $message
                 ]);
+
+                // Close modals and reset form
+                $this->showCancelModal = false;
+                $this->showModal = false;
+                $this->cancelationReason = '';
+
+                // Refresh component
+                $this->dispatch('reservation-cancelled');
+
             } else {
-                $errorMessage = $responseData['error'] ?? 'Gagal memproses pembatalan';
+                // Cancellation failed
+                $errorMessage = $responseData['error'] ?? $responseData['message'] ?? 'Gagal memproses pembatalan';
                 $this->dispatch('show-alert', [
                     'type' => 'error',
                     'message' => $errorMessage
                 ]);
-                return;
             }
-
-            $this->showCancelModal = false;
-            $this->showModal = false;
-            $this->cancelationReason = '';
-
-            // Refresh component
-            $this->dispatch('reservation-cancelled');
 
         } catch (\Exception $e) {
             Log::error('Process cancellation error: ' . $e->getMessage());
@@ -219,6 +216,57 @@ class ActionReservation extends Component
             ]);
         } finally {
             $this->isProcessing = false;
+        }
+    }
+
+    /**
+     * Get appropriate cancellation message based on response data
+     */
+    private function getCancellationMessage(array $responseData): string
+    {
+        $refundStatus = $responseData['refund_status'] ?? '';
+        $isH7Eligible = $responseData['h7_eligible'] ?? false;
+        $daysUntilCheckIn = $responseData['days_until_checkin'] ?? 0;
+
+        switch ($refundStatus) {
+            case 'no_refund':
+                return "Reservasi berhasil dibatalkan. Tidak ada refund karena pembatalan dilakukan kurang dari 7 hari sebelum check-in (sisa {$daysUntilCheckIn} hari).";
+
+            case 'refunded':
+                return 'Pembatalan berhasil diproses. Refund 50% akan diproses dalam 3-5 hari kerja.';
+
+            case 'manual_refund_required':
+                return 'Reservasi berhasil dibatalkan. Refund 50% akan diproses manual oleh tim kami dalam 1x24 jam karena metode pembayaran tidak mendukung refund otomatis.';
+
+            case 'refund_failed_manual_required':
+                return 'Reservasi berhasil dibatalkan. Refund otomatis gagal, tim kami akan memproses refund manual dalam 1x24 jam.';
+
+            case 'no_payment_found':
+                return 'Reservasi berhasil dibatalkan. Tidak ada pembayaran yang ditemukan untuk direfund.';
+
+            default:
+                if ($isH7Eligible) {
+                    return 'Reservasi berhasil dibatalkan. Refund 50% akan diproses sesuai kebijakan.';
+                } else {
+                    return "Reservasi berhasil dibatalkan. Tidak ada refund karena pembatalan dilakukan kurang dari H-7 (sisa {$daysUntilCheckIn} hari).";
+                }
+        }
+    }
+
+    /**
+     * Get appropriate alert type based on response data
+     */
+    private function getCancellationAlertType(array $responseData): string
+    {
+        $refundStatus = $responseData['refund_status'] ?? '';
+        $manualProcessRequired = $responseData['manual_process_required'] ?? false;
+
+        if (in_array($refundStatus, ['refunded'])) {
+            return 'success';
+        } elseif (in_array($refundStatus, ['manual_refund_required', 'refund_failed_manual_required']) || $manualProcessRequired) {
+            return 'warning';
+        } else {
+            return 'success'; // Cancellation successful regardless of refund status
         }
     }
 

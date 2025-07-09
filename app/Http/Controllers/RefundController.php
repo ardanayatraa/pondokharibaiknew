@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Carbon\Carbon;
@@ -15,10 +16,13 @@ use Carbon\Carbon;
 class RefundController extends Controller
 {
     /**
-     * Process refund for cancelled reservation
+     * Process refund for cancelled reservation - FIXED VERSION
      */
     public function processRefund(Request $request): JsonResponse
     {
+        // Start database transaction to ensure data consistency
+        DB::beginTransaction();
+
         try {
             $validated = $request->validate([
                 'reservation_id' => 'required|integer',
@@ -31,15 +35,17 @@ class RefundController extends Controller
 
             // Check if user owns this reservation
             if (Auth::guard('guest')->check() && Auth::guard('guest')->id() !== $reservation->guest_id) {
+                DB::rollBack();
                 return response()->json(['error' => 'Unauthorized access to reservation'], 403);
             }
 
             // Check if reservation can be cancelled
             if (!in_array($reservation->status, ['confirmed', 'rescheduled'])) {
+                DB::rollBack();
                 return response()->json(['error' => 'Reservation cannot be cancelled'], 400);
             }
 
-            // NEW: Check H-7 rule based on check-in date (not payment date)
+            // Calculate H-7 eligibility based on check-in date
             $checkInDate = Carbon::parse($reservation->start_date)->startOfDay();
             $today = Carbon::today();
             $daysUntilCheckIn = $today->diffInDays($checkInDate, false);
@@ -62,29 +68,32 @@ class RefundController extends Controller
                 ->latest('payment_date')
                 ->first();
 
-            if (!$latestPayment) {
-                return response()->json(['error' => 'No payment found for this reservation'], 400);
-            }
-
-            // Update reservation status first
+            // STEP 1: ALWAYS UPDATE RESERVATION STATUS FIRST (This ensures cancellation always succeeds)
             $reservation->update([
                 'status' => 'cancelled',
                 'cancelation_date' => now(),
                 'cancelation_reason' => $validated['cancelation_reason'],
             ]);
 
-            // If not H-7 eligible, no refund processing
+            Log::info('Reservation cancelled successfully', [
+                'reservation_id' => $reservation->id_reservation,
+                'status' => 'cancelled',
+                'reason' => $validated['cancelation_reason']
+            ]);
+
+            // STEP 2: Handle refund processing based on H-7 eligibility
             if (!$isH7Eligible) {
-                // Create no-refund payment record
-                Pembayaran::create([
+                // No refund case - create record for tracking
+                $this->createPaymentRecord([
                     'guest_id' => $reservation->guest_id,
                     'reservation_id' => $reservation->id_reservation,
-                    'amount' => 0, // No refund amount
-                    'payment_date' => now(),
-                    'snap_token' => null,
-                    'notifikasi' => "Pembatalan reservasi #{$reservation->id_reservation} - Tidak ada refund (kurang dari H-7) - Alasan: {$validated['cancelation_reason']} - Sisa hari: {$daysUntilCheckIn}",
+                    'order_id' => $this->generateOrderId($reservation->id_reservation, 'CANCEL'),
+                    'amount' => 0,
                     'status' => 'no_refund',
+                    'notifikasi' => "Pembatalan reservasi #{$reservation->id_reservation} - Tidak ada refund (kurang dari H-7) - Alasan: {$validated['cancelation_reason']} - Sisa hari: {$daysUntilCheckIn}"
                 ]);
+
+                DB::commit();
 
                 return response()->json([
                     'success' => true,
@@ -94,52 +103,83 @@ class RefundController extends Controller
                     'refund_status' => 'no_refund',
                     'days_until_checkin' => $daysUntilCheckIn,
                     'h7_eligible' => false,
-                    'refund_policy' => 'Refund 50% hanya berlaku jika pembatalan dilakukan minimal 7 hari sebelum check-in'
+                    'refund_policy' => 'Refund 50% hanya berlaku jika pembatalan dilakukan minimal 7 hari sebelum check-in',
+                    'cancellation_successful' => true
                 ]);
             }
 
-            // H-7 eligible - proceed with refund processing
-            // Check if payment method supports refund (QRIS check)
-            $isQrisPayment = $this->checkIfQrisPayment($latestPayment);
-
-            if (!$isQrisPayment) {
-                // Create manual refund record for non-QRIS payments
-                Pembayaran::create([
+            // STEP 3: H-7 eligible - process refund
+            if (!$latestPayment) {
+                // No payment found but still H-7 eligible
+                $this->createPaymentRecord([
                     'guest_id' => $reservation->guest_id,
                     'reservation_id' => $reservation->id_reservation,
-                    'amount' => -$actualRefundAmount,
-                    'payment_date' => now(),
-                    'snap_token' => null,
-                    'notifikasi' => "Refund 50% MANUAL untuk pembatalan reservasi #{$reservation->id_reservation} - Metode pembayaran tidak mendukung refund otomatis - Alasan: {$validated['cancelation_reason']}",
-                    'status' => 'notrefuned',
+                    'order_id' => $this->generateOrderId($reservation->id_reservation, 'CANCEL'),
+                    'amount' => 0,
+                    'status' => 'no_payment_found',
+                    'notifikasi' => "Pembatalan reservasi #{$reservation->id_reservation} - H-7 eligible tapi tidak ada pembayaran ditemukan - Alasan: {$validated['cancelation_reason']}"
                 ]);
+
+                DB::commit();
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'Reservasi dibatalkan. Refund 50% akan diproses manual oleh tim kami dalam 1x24 jam karena metode pembayaran tidak mendukung refund otomatis.',
-                    'refund_amount' => $actualRefundAmount,
+                    'message' => 'Reservasi berhasil dibatalkan. Tidak ada pembayaran yang ditemukan untuk direfund.',
+                    'refund_amount' => 0,
                     'cancelation_reason' => $validated['cancelation_reason'],
-                    'refund_status' => 'notrefuned',
+                    'refund_status' => 'no_payment_found',
                     'days_until_checkin' => $daysUntilCheckIn,
                     'h7_eligible' => true,
-                    'payment_method' => $validated['payment_method']
+                    'cancellation_successful' => true
                 ]);
             }
 
-            // Process automatic refund via Midtrans API for QRIS payments
-            $refundResult = $this->processMidtransRefund($latestPayment, $actualRefundAmount);
+            // Check if payment method supports automatic refund
+            $isQrisPayment = $this->checkIfQrisPayment($latestPayment);
 
-            if ($refundResult['success']) {
-                // Create successful refund payment record
-                Pembayaran::create([
+            if (!$isQrisPayment) {
+                // Manual refund required for non-QRIS payments
+                $this->createPaymentRecord([
                     'guest_id' => $reservation->guest_id,
                     'reservation_id' => $reservation->id_reservation,
-                    'amount' => -$actualRefundAmount, // Negative amount for refund
-                    'payment_date' => now(),
-                    'snap_token' => $refundResult['refund_id'] ?? null,
-                    'notifikasi' => "Refund 50% berhasil untuk pembatalan reservasi #{$reservation->id_reservation} - Alasan: {$validated['cancelation_reason']} - Refund ID: {$refundResult['refund_id']} - H-7 eligible",
-                    'status' => 'refunded',
+                    'order_id' => $this->generateOrderId($reservation->id_reservation, 'REFUND'),
+                    'amount' => $actualRefundAmount,
+                    'status' => 'manual_refund_required',
+                    'notifikasi' => "Refund 50% MANUAL untuk pembatalan reservasi #{$reservation->id_reservation} - Metode pembayaran tidak mendukung refund otomatis - Alasan: {$validated['cancelation_reason']}"
                 ]);
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Reservasi berhasil dibatalkan. Refund 50% akan diproses manual oleh tim kami dalam 1x24 jam karena metode pembayaran tidak mendukung refund otomatis.',
+                    'refund_amount' => $actualRefundAmount,
+                    'cancelation_reason' => $validated['cancelation_reason'],
+                    'refund_status' => 'manual_refund_required',
+                    'days_until_checkin' => $daysUntilCheckIn,
+                    'h7_eligible' => true,
+                    'payment_method' => $validated['payment_method'],
+                    'manual_process_required' => true,
+                    'cancellation_successful' => true
+                ]);
+            }
+
+            // STEP 4: Attempt automatic refund via Midtrans API
+            $refundResult = $this->processMidtransRefund($latestPayment, $actualRefundAmount, $reservation->id_reservation);
+
+            if ($refundResult['success']) {
+                // Successful automatic refund
+                $this->createPaymentRecord([
+                    'guest_id' => $reservation->guest_id,
+                    'reservation_id' => $reservation->id_reservation,
+                    'order_id' => $refundResult['order_id'] ?? $this->generateOrderId($reservation->id_reservation, 'REFUND'),
+                    'amount' => $actualRefundAmount,
+                    'status' => 'refunded',
+                    'snap_token' => $refundResult['refund_id'] ?? null,
+                    'notifikasi' => "Refund 50% berhasil untuk pembatalan reservasi #{$reservation->id_reservation} - Alasan: {$validated['cancelation_reason']} - Refund ID: {$refundResult['refund_id']} - H-7 eligible"
+                ]);
+
+                DB::commit();
 
                 return response()->json([
                     'success' => true,
@@ -147,42 +187,93 @@ class RefundController extends Controller
                     'refund_amount' => $actualRefundAmount,
                     'refund_id' => $refundResult['refund_id'] ?? null,
                     'cancelation_reason' => $validated['cancelation_reason'],
-                    'refund_status' => 'success',
+                    'refund_status' => 'refunded',
                     'days_until_checkin' => $daysUntilCheckIn,
                     'h7_eligible' => true,
                     'midtrans_response' => $refundResult['response'] ?? null,
+                    'cancellation_successful' => true
                 ]);
             } else {
-                // Create failed refund payment record
-                Pembayaran::create([
+                // Automatic refund failed - but cancellation still successful
+                $this->createPaymentRecord([
                     'guest_id' => $reservation->guest_id,
                     'reservation_id' => $reservation->id_reservation,
-                    'amount' => -$actualRefundAmount, // Negative amount for refund
-                    'payment_date' => now(),
-                    'snap_token' => null,
-                    'notifikasi' => "Refund 50% GAGAL untuk pembatalan reservasi #{$reservation->id_reservation} - Alasan: {$validated['cancelation_reason']} - Error: {$refundResult['message']} - H-7 eligible",
-                    'status' => 'refund_failed',
+                    'order_id' => $refundResult['order_id'] ?? $this->generateOrderId($reservation->id_reservation, 'REFUND'),
+                    'amount' => $actualRefundAmount,
+                    'status' => 'refund_failed_manual_required',
+                    'notifikasi' => "Refund 50% GAGAL (akan diproses manual) untuk pembatalan reservasi #{$reservation->id_reservation} - Alasan: {$validated['cancelation_reason']} - Error: {$refundResult['message']} - H-7 eligible"
                 ]);
+
+                DB::commit();
 
                 return response()->json([
                     'success' => true, // Still success because reservation is cancelled
-                    'message' => 'Reservasi dibatalkan. Refund otomatis gagal, tim kami akan memproses refund manual dalam 1x24 jam.',
+                    'message' => 'Reservasi berhasil dibatalkan. Refund otomatis gagal, tim kami akan memproses refund manual dalam 1x24 jam.',
                     'refund_amount' => $actualRefundAmount,
                     'cancelation_reason' => $validated['cancelation_reason'],
-                    'refund_status' => 'failed',
+                    'refund_status' => 'refund_failed_manual_required',
                     'days_until_checkin' => $daysUntilCheckIn,
                     'h7_eligible' => true,
                     'error_detail' => $refundResult['message'],
-                    'manual_process_required' => true
+                    'manual_process_required' => true,
+                    'cancellation_successful' => true
                 ]);
             }
 
         } catch (\Exception $e) {
-            Log::error('Refund processing error: ' . $e->getMessage());
+            DB::rollBack();
+            Log::error('Refund processing error: ' . $e->getMessage(), [
+                'reservation_id' => $validated['reservation_id'] ?? null,
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
-                'error' => 'Terjadi kesalahan saat memproses refund',
-                'message' => $e->getMessage()
+                'success' => false,
+                'error' => 'Terjadi kesalahan saat memproses pembatalan',
+                'message' => $e->getMessage(),
+                'cancellation_successful' => false
             ], 500);
+        }
+    }
+
+    /**
+     * Generate order ID for payment records
+     */
+    private function generateOrderId($reservationId, $type = 'ORDER'): string
+    {
+        return $type . '-' . $reservationId . '-' . time();
+    }
+
+    /**
+     * Create payment record with consistent structure - FIXED VERSION
+     */
+    private function createPaymentRecord(array $data): void
+    {
+        try {
+            Pembayaran::create([
+                'guest_id' => $data['guest_id'],
+                'reservation_id' => $data['reservation_id'],
+                'order_id' => $data['order_id'] ?? $this->generateOrderId($data['reservation_id']),
+                'amount' => $data['amount'],
+                'payment_date' => now(),
+                'snap_token' => $data['snap_token'] ?? null,
+                'notifikasi' => $data['notifikasi'],
+                'status' => $data['status'],
+            ]);
+
+            Log::info('Payment record created successfully', [
+                'reservation_id' => $data['reservation_id'],
+                'order_id' => $data['order_id'] ?? 'generated',
+                'amount' => $data['amount'],
+                'status' => $data['status']
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to create payment record: ' . $e->getMessage(), [
+                'data' => $data,
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
         }
     }
 
@@ -211,14 +302,14 @@ class RefundController extends Controller
             }
         }
 
-        // Default to true for testing - you can change this to false for production
+        // Default to true for testing - change to false for production
         return true;
     }
 
     /**
-     * Process refund via Midtrans API using Guzzle
+     * Process refund via Midtrans API using Guzzle - IMPROVED VERSION
      */
-    private function processMidtransRefund($payment, $refundAmount): array
+    private function processMidtransRefund($payment, $refundAmount, $reservationId): array
     {
         try {
             // Generate order_id from payment data
@@ -226,18 +317,43 @@ class RefundController extends Controller
             if (!$orderId) {
                 return [
                     'success' => false,
-                    'message' => 'Order ID tidak ditemukan'
+                    'message' => 'Order ID tidak ditemukan',
+                    'order_id' => null
                 ];
             }
 
-            // Generate refund key
-            $refundKey = 'refund-' . $payment->id . '-' . time();
+            // Validate refund amount
+            if ($refundAmount <= 0) {
+                return [
+                    'success' => false,
+                    'message' => 'Invalid refund amount: ' . $refundAmount,
+                    'order_id' => $orderId
+                ];
+            }
 
-            $client = new \GuzzleHttp\Client();
+            // Convert to integer (Midtrans expects integer in smallest currency unit)
+            $refundAmountInt = (int) round($refundAmount);
+
+            // Generate refund key
+            $refundKey = 'refund-' . $reservationId . '-' . time();
+
+            Log::info('Attempting Midtrans refund', [
+                'order_id' => $orderId,
+                'refund_key' => $refundKey,
+                'original_amount' => $refundAmount,
+                'refund_amount_int' => $refundAmountInt,
+                'payment_id' => $payment->id ?? null
+            ]);
+
+            $client = new \GuzzleHttp\Client([
+                'timeout' => 30,
+                'connect_timeout' => 10
+            ]);
+
             $response = $client->request('POST', 'https://api.sandbox.midtrans.com/v2/' . $orderId . '/refund', [
                 'body' => json_encode([
                     'refund_key' => $refundKey,
-                    'amount' => (int) $refundAmount,
+                    'amount' => $refundAmountInt,
                     'reason' => 'Customer cancellation - 50% refund policy (H-7 eligible)'
                 ]),
                 'headers' => [
@@ -256,52 +372,105 @@ class RefundController extends Controller
                 'status_code' => $response->getStatusCode()
             ]);
 
-            // Check if refund was successful based on response
+            // Check response for success/failure
+            if (isset($responseBody['status_code'])) {
+                $statusCode = $responseBody['status_code'];
+
+                // Handle different Midtrans status codes
+                if (in_array($statusCode, ['200', '201'])) {
+                    return [
+                        'success' => true,
+                        'refund_id' => $refundKey,
+                        'response' => $responseBody,
+                        'message' => 'Refund processed successfully',
+                        'order_id' => $orderId
+                    ];
+                } else {
+                    // Handle specific error codes
+                    $errorMessage = $responseBody['status_message'] ?? 'Unknown error';
+
+                    if ($statusCode === '414') {
+                        $errorMessage = 'Invalid refund amount - possibly exceeds original payment or payment not found';
+                    } elseif ($statusCode === '404') {
+                        $errorMessage = 'Transaction not found or not eligible for refund';
+                    }
+
+                    return [
+                        'success' => false,
+                        'message' => "Midtrans refund failed (Code: {$statusCode}): {$errorMessage}",
+                        'order_id' => $orderId,
+                        'midtrans_response' => $responseBody
+                    ];
+                }
+            }
+
+            // Fallback check based on HTTP status code
             if ($response->getStatusCode() === 200 || $response->getStatusCode() === 201) {
                 return [
                     'success' => true,
                     'refund_id' => $refundKey,
                     'response' => $responseBody,
-                    'message' => 'Refund processed successfully'
+                    'message' => 'Refund processed successfully',
+                    'order_id' => $orderId
                 ];
             } else {
                 return [
                     'success' => false,
-                    'message' => 'Midtrans refund failed with status: ' . $response->getStatusCode()
+                    'message' => 'Midtrans refund failed with HTTP status: ' . $response->getStatusCode(),
+                    'order_id' => $orderId
                 ];
             }
 
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
+            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'No status code';
+
             Log::error('Midtrans refund client error: ' . $e->getMessage(), [
                 'response_body' => $responseBody,
-                'status_code' => $e->getResponse() ? $e->getResponse()->getStatusCode() : 'No status code'
+                'status_code' => $statusCode,
+                'order_id' => $orderId ?? 'unknown'
             ]);
 
             return [
                 'success' => false,
-                'message' => 'Midtrans API error: ' . $e->getMessage()
+                'message' => 'Midtrans API client error: ' . $e->getMessage(),
+                'order_id' => $orderId ?? null
             ];
         } catch (\Exception $e) {
-            Log::error('Midtrans refund error: ' . $e->getMessage());
+            Log::error('Midtrans refund error: ' . $e->getMessage(), [
+                'order_id' => $orderId ?? 'unknown',
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return [
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => 'Refund processing error: ' . $e->getMessage(),
+                'order_id' => $orderId ?? null
             ];
         }
     }
 
     /**
-     * Extract order_id from payment data
+     * Extract order_id from payment data - IMPROVED VERSION
      */
     private function getOrderIdFromPayment($payment): ?string
     {
-        // Method 1: If you store order_id in snap_token field
+        if (!$payment) {
+            Log::warning('No payment provided to getOrderIdFromPayment');
+            return null;
+        }
+
+        // Method 1: Check if order_id field exists and has value
+        if (isset($payment->order_id) && !empty($payment->order_id)) {
+            return $payment->order_id;
+        }
+
+        // Method 2: If you store order_id in snap_token field
         if ($payment->snap_token && str_contains($payment->snap_token, 'ORDER-')) {
             return $payment->snap_token;
         }
 
-        // Method 2: If you store order_id in notifikasi field
+        // Method 3: If you store order_id in notifikasi field
         if ($payment->notifikasi) {
             // Try to extract order_id from notification
             if (preg_match('/ORDER-\d+/', $payment->notifikasi, $matches)) {
@@ -309,18 +478,18 @@ class RefundController extends Controller
             }
         }
 
-        // Method 3: Generate order_id based on your pattern
-        // Adjust this based on how you generate order_id in your payment process
-        $orderId = $payment->order_id;
+        // Method 4: Generate order_id based on payment ID (fallback)
+        $generatedOrderId = 'ORDER-' . ($payment->id ?? time());
 
         Log::warning('Order ID not found in payment data, using generated ID', [
-            'payment_id' => $payment->id,
-            'generated_order_id' => $orderId,
-            'snap_token' => $payment->snap_token,
-            'notifikasi' => $payment->notifikasi
+            'payment_id' => $payment->id ?? null,
+            'generated_order_id' => $generatedOrderId,
+            'snap_token' => $payment->snap_token ?? null,
+            'notifikasi' => $payment->notifikasi ?? null,
+            'order_id_field' => $payment->order_id ?? null
         ]);
 
-        return $orderId;
+        return $generatedOrderId;
     }
 
     /**
@@ -341,7 +510,7 @@ class RefundController extends Controller
                 ->where('status', 'paid')
                 ->sum('amount');
 
-            // NEW: Check H-7 rule based on check-in date
+            // Check H-7 rule based on check-in date
             $checkInDate = Carbon::parse($reservation->start_date)->startOfDay();
             $today = Carbon::today();
             $daysUntilCheckIn = $today->diffInDays($checkInDate, false);
@@ -385,7 +554,7 @@ class RefundController extends Controller
                 'h7_deadline' => $checkInDate->subDays(7)->format('d M Y'),
 
                 // Legacy fields for backward compatibility
-                'can_refund_by_time' => $isH7Eligible, // Changed from payment-based to check-in based
+                'can_refund_by_time' => $isH7Eligible,
                 'payment_date' => $latestPayment ? Carbon::parse($latestPayment->payment_date)->format('d M Y H:i') : null,
                 'refund_deadline' => $checkInDate->subDays(7)->format('d M Y') . ' (H-7 sebelum check-in)'
             ]);

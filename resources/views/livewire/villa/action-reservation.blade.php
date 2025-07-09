@@ -186,18 +186,17 @@
                                                 ->pembayaran()
                                                 ->where('status', 'refunded')
                                                 ->sum('amount');
-                                            $refundFailed = $reservation
+                                            $manualRefundAmount = $reservation
                                                 ->pembayaran()
-                                                ->where('status', 'refund_failed')
+                                                ->whereIn('status', [
+                                                    'manual_refund_required',
+                                                    'refund_failed_manual_required',
+                                                ])
                                                 ->sum('amount');
                                             $noRefund = $reservation
                                                 ->pembayaran()
                                                 ->where('status', 'no_refund')
                                                 ->exists();
-                                            $manualRefund = $reservation
-                                                ->pembayaran()
-                                                ->where('status', 'manual_refund_required')
-                                                ->sum('amount');
                                         @endphp
 
                                         @if ($refundAmount < 0)
@@ -208,12 +207,12 @@
                                                     Rp {{ number_format(abs($refundAmount), 0, ',', '.') }}
                                                 </td>
                                             </tr>
-                                        @elseif($manualRefund < 0)
+                                        @elseif($manualRefundAmount < 0)
                                             <tr>
                                                 <th class="text-left px-4 py-2 font-medium text-blue-600">Refund (50%)
-                                                    - Akan Diproses</th>
+                                                    - Akan Diproses Manual</th>
                                                 <td class="text-right px-4 py-2 text-blue-600">
-                                                    Rp {{ number_format(abs($manualRefund), 0, ',', '.') }}
+                                                    Rp {{ number_format(abs($manualRefundAmount), 0, ',', '.') }}
                                                 </td>
                                             </tr>
                                         @elseif($noRefund)
@@ -334,7 +333,8 @@
                                                 sebelum check-in</p>
                                             <p class="text-xs mt-1">
                                                 <i class="fas fa-info-circle mr-1"></i>
-                                                Refund akan diproses dalam 3-5 hari kerja
+                                                Refund akan diproses dalam 3-5 hari kerja (otomatis) atau 1x24 jam
+                                                (manual)
                                             </p>
                                         </div>
                                     </div>
@@ -355,6 +355,19 @@
                                     </div>
                                 </div>
                             @endif
+
+                            {{-- Important Notice --}}
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                                <div class="flex items-center">
+                                    <i class="fas fa-info-circle text-yellow-600 mr-2"></i>
+                                    <div class="text-yellow-800 text-sm">
+                                        <p><strong>Penting:</strong> Pembatalan reservasi akan tetap diproses meskipun
+                                            ada masalah dengan refund.</p>
+                                        <p class="text-xs mt-1">Jika refund otomatis gagal, tim kami akan memproses
+                                            secara manual.</p>
+                                    </div>
+                                </div>
+                            </div>
 
                             {{-- Cancellation Reason Input --}}
                             <div class="mb-4">
@@ -401,7 +414,8 @@
 
                             <div class="text-xs text-gray-500 space-y-1">
                                 @if ($refundInfo['is_h7_eligible'] ?? false)
-                                    <p><i class="fas fa-clock mr-1"></i> Refund akan diproses dalam 3-5 hari kerja</p>
+                                    <p><i class="fas fa-clock mr-1"></i> Refund akan diproses dalam 3-5 hari kerja
+                                        (otomatis) atau 1x24 jam (manual)</p>
                                     <p><i class="fas fa-credit-card mr-1"></i> Dana akan dikembalikan ke metode
                                         pembayaran yang sama</p>
                                 @else
@@ -473,7 +487,7 @@
         alertDiv.className = `alert-notification fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${
             type === 'success' ? 'bg-green-500' :
             type === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
-        } text-white`;
+        } text-white max-w-md`;
 
         alertDiv.innerHTML = `
             <div class="flex items-center">
@@ -481,17 +495,21 @@
                     type === 'success' ? 'fa-check-circle' :
                     type === 'warning' ? 'fa-exclamation-triangle' : 'fa-exclamation-circle'
                 } mr-2"></i>
-                ${message}
+                <div class="text-sm">${message}</div>
             </div>
         `;
 
         document.body.appendChild(alertDiv);
 
+        // Auto-hide after 8 seconds for success/warning, 10 seconds for error
+        const hideDelay = type === 'error' ? 10000 : 8000;
+
         setTimeout(() => {
             alertDiv.style.opacity = '0';
+            alertDiv.style.transform = 'translateX(100%)';
             setTimeout(() => {
                 alertDiv.remove();
             }, 300);
-        }, 5000);
+        }, hideDelay);
     }
 </script>
