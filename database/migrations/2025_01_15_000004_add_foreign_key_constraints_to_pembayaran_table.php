@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::table('tbl_pembayaran', function (Blueprint $table) {
             // Add foreign key constraints
-            $table->foreign('guest_id')->references('id_guest')->on('tbl_guest')->onDelete('cascade');
-            $table->foreign('reservation_id')->references('id_reservation')->on('tbl_reservasi')->onDelete('cascade');
+            $table->unsignedBigInteger('guest_id')->nullable();
+            $table->unsignedBigInteger('reservation_id');
         });
     }
 
