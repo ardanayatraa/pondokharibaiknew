@@ -3,47 +3,51 @@
 namespace App\Http\Controllers\Auth;
 
 use Throwable;
-use Symfony\Component\HttpFoundation\Response;
-use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController as FortifyController;
-use Laravel\Fortify\Http\Requests\LoginRequest;
 use Illuminate\Http\Request;
+use Laravel\Fortify\Http\Requests\LoginRequest;
 use Laravel\Fortify\Http\Responses\LogoutResponse;
+use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController as FortifyController;
 
 class CustomAuthenticatedSessionController extends FortifyController
 {
-    // Override method store agar kita bisa tangani error tanpa exception
+    /**
+     * Override login handler untuk redirect berdasarkan role user.
+     */
     public function store(LoginRequest $request)
     {
         try {
-            // Cobalah jalankan login sesuai Fortify
+            // Jalankan login default dari Fortify
             $response = parent::store($request);
 
-            // Jika berhasil login, ambil user dan set session role
+            // Ambil user yang sudah login
             $user = auth()->user();
 
-            $role = match (get_class($user)) {
-                \App\Models\Admin::class => 'admin',
-                \App\Models\Owner::class => 'owner',
-                \App\Models\Guest::class => 'guest',
-                default => 'guest',
-            };
+            // Tentukan role berdasarkan model dan tipe
+            if ($user instanceof \App\Models\Admin) {
+                $role = $user->tipe; // bisa "admin" atau "resepsionis"
+            } elseif ($user instanceof \App\Models\Owner) {
+                $role = 'owner';
+            } elseif ($user instanceof \App\Models\Guest) {
+                $role = 'guest';
+            } else {
+                $role = 'guest';
+            }
 
+            // Simpan role ke session
             session(['role' => $role]);
 
+            // Tentukan redirect berdasarkan role
             $redirectTo = match ($role) {
                 'admin' => '/dashboard',
                 'owner' => '/dashboard',
+                'resepsionis' => '/resepsionis/dashboard',
                 'guest' => '/',
                 default => '/',
             };
 
             return redirect()->intended($redirectTo);
-        }
-        catch (Throwable $e) {
-            // Jika ada error (misalnya kredensial salah atau error internal),
-            // kita log (opsional) lalu redirect kembali dengan pesan.
-
-
+        } catch (Throwable $e) {
+            // Login gagal — redirect kembali dengan error
             return redirect()
                 ->back()
                 ->withInput($request->only('username'))
@@ -53,7 +57,9 @@ class CustomAuthenticatedSessionController extends FortifyController
         }
     }
 
-    // Override destroy untuk logout bersih (tidak butuh perubahan besar)
+    /**
+     * Override logout handler agar semua guard dibersihkan.
+     */
     public function destroy(Request $request): LogoutResponse
     {
         auth()->guard('web')->logout();
@@ -68,3 +74,4 @@ class CustomAuthenticatedSessionController extends FortifyController
         return app(LogoutResponse::class);
     }
 }
+        

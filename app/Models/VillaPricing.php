@@ -11,8 +11,8 @@ class VillaPricing extends Model
 
     protected $primaryKey = 'id_villa_pricing';
         protected $table = 'tbl_villa_pricing';
-    public $incrementing = false;
-    protected $keyType = 'string';
+    public $incrementing = true;
+    protected $keyType = 'int';
 
     protected $fillable = [
         'villa_id',

@@ -39,5 +39,13 @@ class AccountSeeder extends Seeder
             'birthdate'       => '1995-08-12',
             'gender'          => 'male',
         ]);
+
+        // Resepsionis
+        Admin::create([
+            'username' => 'resepsionis',
+            'email' => 'resepsionis@example.com',
+            'password' => bcrypt('password'),
+            'tipe' => 'resepsionis',
+        ]);
     }
 }

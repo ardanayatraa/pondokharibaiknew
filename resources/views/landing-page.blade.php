@@ -538,10 +538,10 @@
                 <nav class="hidden md:flex items-center space-x-8">
                     <a href="#home"
                         class="text-elegant-charcoal hover:text-elegant-green transition-colors duration-300 font-medium">Home</a>
-                    <a href="#rooms"
-                        class="text-elegant-charcoal hover:text-elegant-green transition-colors duration-300 font-medium">Rooms</a>
-                    <a href="#amenities"
-                        class="text-elegant-charcoal hover:text-elegant-green transition-colors duration-300 font-medium">Amenities</a>
+                    <a href="#villas"
+                        class="text-elegant-charcoal hover:text-elegant-green transition-colors duration-300 font-medium">Villas</a>
+                    <a href="#facilities"
+                        class="text-elegant-charcoal hover:text-elegant-green transition-colors duration-300 font-medium">Facilities</a>
                     <a href="#location"
                         class="text-elegant-charcoal hover:text-elegant-green transition-colors duration-300 font-medium">Location</a>
                 </nav>
@@ -576,10 +576,10 @@
                 <nav class="flex flex-col space-y-3 mt-4">
                     <a href="#home"
                         class="text-elegant-charcoal hover:text-elegant-green transition-colors duration-300 font-medium">Home</a>
-                    <a href="#rooms"
-                        class="text-elegant-charcoal hover:text-elegant-green transition-colors duration-300 font-medium">Rooms</a>
-                    <a href="#amenities"
-                        class="text-elegant-charcoal hover:text-elegant-green transition-colors duration-300 font-medium">Amenities</a>
+                    <a href="#villas"
+                        class="text-elegant-charcoal hover:text-elegant-green transition-colors duration-300 font-medium">Villas</a>
+                    <a href="#facilities"
+                        class="text-elegant-charcoal hover:text-elegant-green transition-colors duration-300 font-medium">Facilities</a>
                     <a href="#location"
                         class="text-elegant-charcoal hover:text-elegant-green transition-colors duration-300 font-medium">Location</a>
                     @if (!Auth::guard('guest')->check())
@@ -618,8 +618,8 @@
     </section>
 
 
-    <!-- Rooms Section -->
-    <section id="rooms" class="py-24 bg-white bg-pattern-bg">
+    <!-- Villas Section -->
+    <section id="villas" class="py-24 bg-white bg-pattern-bg">
         <div class="container mx-auto px-4">
             <div class="text-center mb-16 animate-hidden">
                 <h2 class="text-4xl md:text-5xl font-cormorant font-bold text-elegant-charcoal mb-4">Our Villas</h2>
@@ -669,149 +669,27 @@
         </div>
     </section>
 
-    <!-- Amenities Section -->
-    <section id="amenities" class="py-24 bg-elegant-green text-elegant-white">
+    <!-- Facilities Section -->
+    <section id="facilities" class="py-24 bg-elegant-green text-elegant-white">
         <div class="container mx-auto px-4">
             <div class="text-center mb-16 animate-hidden">
-                <span class="text-elegant-orange text-sm uppercase tracking-widest">Services</span>
-                <h2 class="font-cormorant text-4xl md:text-5xl font-bold mb-4 tracking-wide text-elegant-white"
-                    data-lang-key="amenities_title">Premium Amenities</h2>
+                <span class="text-elegant-orange text-sm uppercase tracking-widest">Facilities</span>
+                <h2 class="font-cormorant text-4xl md:text-5xl font-bold mb-4 tracking-wide text-elegant-white">
+                    Premium Facilities
+                </h2>
                 <div class="decorative-line w-40 mx-auto mt-4"></div>
-                <p class="text-lg mt-6 max-w-3xl mx-auto text-elegant-white/80" data-lang-key="amenities_subtitle">
-                    Enjoy our world-class facilities designed for your comfort and relaxation</p>
+                <p class="text-lg mt-6 max-w-3xl mx-auto text-elegant-white/80">
+                    Enjoy our world-class facilities designed for your comfort and relaxation
+                </p>
             </div>
-
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
-                <!-- Amenity 1 -->
-                <div
-                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden border border-elegant-orange/30 subtle-shadow">
-                    <div
-                        class="bg-elegant-orange/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-orange">
-                        <i class="fas fa-swimming-pool text-2xl text-elegant-orange"></i>
-                    </div>
-                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-orange"
-                        data-lang-key="amenity1_title">Outdoor Pool</h3>
-                    <p class="text-elegant-white/70 text-sm" data-lang-key="amenity1_desc">Enjoy swimming with
-                        beautiful natural views</p>
-                </div>
-
-                <!-- Amenity 2 -->
-                <div
-                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-100 border border-elegant-orange/30 subtle-shadow">
-                    <div
-                        class="bg-elegant-orange/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-orange">
-                        <i class="fas fa-smoking-ban text-2xl text-elegant-orange"></i>
-                    </div>
-                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-orange"
-                        data-lang-key="amenity2_title">Non-Smoking Rooms</h3>
-                    <p class="text-elegant-white/70 text-sm" data-lang-key="amenity2_desc">Fresh air for your comfort
-                    </p>
-                </div>
-
-                <!-- Amenity 3 -->
-                <div
-                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-200 border border-elegant-orange/30 subtle-shadow">
-                    <div
-                        class="bg-elegant-orange/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-orange">
-                        <i class="fas fa-plane text-2xl text-elegant-orange"></i>
-                    </div>
-                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-orange"
-                        data-lang-key="amenity3_title">Airport Shuttle</h3>
-                    <p class="text-elegant-white/70 text-sm" data-lang-key="amenity3_desc">Exclusive transportation
-                        service</p>
-                </div>
-
-                <!-- Amenity 4 -->
-                <div
-                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-300 border border-elegant-orange/30 subtle-shadow">
-                    <div
-                        class="bg-elegant-orange/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-orange">
-                        <i class="fas fa-spa text-2xl text-elegant-orange"></i>
-                    </div>
-                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-orange"
-                        data-lang-key="amenity4_title">Spa & Wellness Center</h3>
-                    <p class="text-elegant-white/70 text-sm" data-lang-key="amenity4_desc">Premium relaxation and
-                        treatments</p>
-                </div>
-
-                <!-- Amenity 5 -->
-                <div
-                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-400 border border-elegant-orange/30 subtle-shadow">
-                    <div
-                        class="bg-elegant-orange/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-orange">
-                        <i class="fas fa-parking text-2xl text-elegant-orange"></i>
-                    </div>
-                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-orange"
-                        data-lang-key="amenity5_title">Free Parking</h3>
-                    <p class="text-elegant-white/70 text-sm" data-lang-key="amenity5_desc">Safe and convenient parking
-                    </p>
-                </div>
-
-                <!-- Amenity 6 -->
-                <div
-                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden border border-elegant-orange/30 subtle-shadow">
-                    <div
-                        class="bg-elegant-orange/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-orange">
-                        <i class="fas fa-concierge-bell text-2xl text-elegant-orange"></i>
-                    </div>
-                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-orange"
-                        data-lang-key="amenity6_title">Room Service</h3>
-                    <p class="text-elegant-white/70 text-sm" data-lang-key="amenity6_desc">24-hour service for your
-                        convenience</p>
-                </div>
-
-                <!-- Amenity 7 -->
-                <div
-                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-100 border border-elegant-orange/30 subtle-shadow">
-                    <div
-                        class="bg-elegant-orange/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-orange">
-                        <i class="fas fa-wifi text-2xl text-elegant-orange"></i>
-                    </div>
-                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-orange"
-                        data-lang-key="amenity7_title">Free WiFi</h3>
-                    <p class="text-elegant-white/70 text-sm" data-lang-key="amenity7_desc">Fast internet connection
-                        throughout</p>
-                </div>
-
-                <!-- Amenity 8 -->
-                <div
-                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-200 border border-elegant-orange/30 subtle-shadow">
-                    <div
-                        class="bg-elegant-orange/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-orange">
-                        <i class="fas fa-utensils text-2xl text-elegant-orange"></i>
-                    </div>
-                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-orange"
-                        data-lang-key="amenity8_title">Restaurant</h3>
-                    <p class="text-elegant-white/70 text-sm" data-lang-key="amenity8_desc">Indonesian and
-                        international cuisine</p>
-                </div>
-
-                <!-- Amenity 9 -->
-                <div
-                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-300 border border-elegant-orange/30 subtle-shadow">
-                    <div
-                        class="bg-elegant-orange/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-orange">
-                        <i class="fas fa-users text-2xl text-elegant-orange"></i>
-                    </div>
-                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-orange"
-                        data-lang-key="amenity9_title">Family Rooms</h3>
-                    <p class="text-elegant-white/70 text-sm" data-lang-key="amenity9_desc">Comfortable accommodation
-                        for families</p>
-                </div>
-
-                <!-- Amenity 10 -->
-                <div
-                    class="bg-elegant-navy/30 backdrop-blur-sm p-6 text-center transform hover:scale-105 transition-all duration-300 animate-hidden delay-400 border border-elegant-orange/30 subtle-shadow">
-                    <div
-                        class="bg-elegant-orange/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-elegant-orange">
-                        <i class="fas fa-coffee text-2xl text-elegant-orange"></i>
-                    </div>
-                    <h3 class="font-cormorant font-bold text-xl mb-2 text-elegant-orange"
-                        data-lang-key="amenity10_title">Breakfast</h3>
-                    <p class="text-elegant-white/70 text-sm" data-lang-key="amenity10_desc">Continental, Asian, and
-                        vegetarian options</p>
-                </div>
+            <div class="flex flex-wrap justify-center gap-3 mb-10">
+                @foreach($facilities as $facility)
+                    <span class="inline-block px-4 py-2 rounded-full bg-elegant-white/90 text-elegant-burgundy font-semibold shadow hover:bg-elegant-gold hover:text-elegant-white transition-all duration-200 border border-elegant-gold text-sm">
+                        {{ $facility->name_facility }}
+                    </span>
+                @endforeach
             </div>
+            <!-- (Optional) Tambahkan deskripsi atau grid lain di bawah badge jika ingin -->
         </div>
     </section>
 
@@ -1053,11 +931,11 @@
                         <li><a href="#about"
                                 class="text-elegant-white hover:text-elegant-orange transition-colors duration-300">About</a>
                         </li>
-                        <li><a href="#rooms"
-                                class="text-elegant-white hover:text-elegant-orange transition-colors duration-300">Rooms</a>
+                        <li><a href="#villas"
+                                class="text-elegant-white hover:text-elegant-orange transition-colors duration-300">Villas</a>
                         </li>
-                        <li><a href="#amenities"
-                                class="text-elegant-white hover:text-elegant-orange transition-colors duration-300">Amenities</a>
+                        <li><a href="#facilities"
+                                class="text-elegant-white hover:text-elegant-orange transition-colors duration-300">Facilities</a>
                         </li>
                         <li><a href="#location"
                                 class="text-elegant-white hover:text-elegant-orange transition-colors duration-300">Location</a>

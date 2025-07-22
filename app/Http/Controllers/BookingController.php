@@ -14,6 +14,7 @@ use App\Models\VillaPricing;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use App\Models\Facility;
 
 class BookingController extends Controller
 {
@@ -25,6 +26,7 @@ class BookingController extends Controller
         $villa = Villa::all();
         $user = null;
         $reservation = null;
+        $facilities = Facility::all();
 
         if (Auth::guard('guest')->check()) {
             $user = Auth::guard('guest')->user();
@@ -34,7 +36,7 @@ class BookingController extends Controller
 
         }
 
-        return view('landing-page', compact('villa', 'user', 'reservation'));
+        return view('landing-page', compact('villa', 'user', 'reservation', 'facilities'));
     }
 
     /**

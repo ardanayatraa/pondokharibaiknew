@@ -17,6 +17,8 @@ use App\Http\Controllers\SeasonController;
 use App\Http\Controllers\VillaPricingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\RefundController;
+use App\Http\Controllers\ResepsionisDashboardController;
+use App\Http\Controllers\CekKetersediaanResepsionisController;
 
 /*
 |--------------------------------------------------------------------------
@@ -151,6 +153,15 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{harga_villa}', [VillaPricingController::class, 'update'])->name('update');
         Route::delete('/{harga_villa}', [VillaPricingController::class, 'destroy'])->name('destroy');
     });
+});
+
+// Resepsionis Group
+Route::middleware(['auth:admin', 'role:resepsionis'])->prefix('resepsionis')->name('resepsionis.')->group(function () {
+    Route::get('/dashboard', [ResepsionisDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/reservasi', [ReservasiController::class, 'index'])->name('reservasi.index');
+    Route::get('/pembayaran', [PembayaranController::class, 'index'])->name('pembayaran.index');
+    Route::get('/laporan', [ReportController::class, 'index'])->name('laporan');
+    Route::get('/cek-ketersediaan', [CekKetersediaanResepsionisController::class, 'index'])->name('cek-ketersediaan');
 });
 
 // Dummy mail tester

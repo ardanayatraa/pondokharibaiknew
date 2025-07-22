@@ -253,6 +253,41 @@
             </nav>
         @endif
 
+        @if ($role == 'resepsionis')
+            <nav class="py-4" aria-label="Resepsionis Navigation">
+                <a href="{{ route('resepsionis.dashboard') }}"
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('resepsionis.dashboard') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200"
+                    aria-current="{{ request()->routeIs('resepsionis.dashboard') ? 'page' : 'false' }}">
+                    <i class="fas fa-home w-5 text-center" aria-hidden="true"></i>
+                    <span class="ml-3">Beranda</span>
+                </a>
+                <a href="{{ route('resepsionis.cek-ketersediaan') }}"
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('resepsionis.cek-ketersediaan') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200"
+                    aria-current="{{ request()->routeIs('resepsionis.cek-ketersediaan') ? 'page' : 'false' }}">
+                    <i class="fas fa-search w-5 text-center" aria-hidden="true"></i>
+                    <span class="ml-3">Cek Ketersediaan</span>
+                </a>
+                <a href="{{ route('resepsionis.reservasi.index') }}"
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('resepsionis.reservasi.index') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200"
+                    aria-current="{{ request()->routeIs('resepsionis.reservasi.index') ? 'page' : 'false' }}">
+                    <i class="fas fa-calendar-check w-5 text-center" aria-hidden="true"></i>
+                    <span class="ml-3">Reservasi</span>
+                </a>
+                <a href="{{ route('resepsionis.pembayaran.index') }}"
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('resepsionis.pembayaran.index') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200"
+                    aria-current="{{ request()->routeIs('resepsionis.pembayaran.index') ? 'page' : 'false' }}">
+                    <i class="fas fa-money-bill-wave w-5 text-center" aria-hidden="true"></i>
+                    <span class="ml-3">Pembayaran</span>
+                </a>
+                <a href="{{ route('resepsionis.laporan') }}"
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('resepsionis.laporan') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200"
+                    aria-current="{{ request()->routeIs('resepsionis.laporan') ? 'page' : 'false' }}">
+                    <i class="fas fa-chart-line w-5 text-center" aria-hidden="true"></i>
+                    <span class="ml-3">Laporan</span>
+                </a>
+            </nav>
+        @endif
+
     </aside>
 
     <!-- Main Content -->

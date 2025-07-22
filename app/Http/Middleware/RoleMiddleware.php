@@ -19,6 +19,9 @@ class RoleMiddleware
             }
 
             // Kalau role admin atau owner atau lainnya → ke /dashboard
+            if ($sessionRole === 'resepsionis') {
+                return redirect('/resepsionis/dashboard');
+            }
             return redirect('/dashboard');
         }
 

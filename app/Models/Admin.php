@@ -12,5 +12,5 @@ class Admin extends Authenticatable
 
     protected $table = 'tbl_admin';
     protected $primaryKey = 'id_admin';
-    protected $fillable = ['username', 'password', 'email'];
+    protected $fillable = ['username', 'password', 'email', 'tipe'];
 }

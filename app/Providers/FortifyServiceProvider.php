@@ -62,8 +62,15 @@ class FortifyServiceProvider extends ServiceProvider
             // Cek dari tabel admin
             $admin = Admin::where('username', $username)->first();
             if ($admin && Hash::check($password, $admin->password)) {
-                session(['role' => 'admin']);
+                $role = $admin->tipe === 'resepsionis' ? 'resepsionis' : 'admin';
+                session(['role' => $role]);
                 Auth::guard('admin')->login($admin); // Login dengan guard admin
+                \Log::info('LOGIN ADMIN', [
+                    'user' => $admin,
+                    'guard_admin_check' => Auth::guard('admin')->check(),
+                    'session_role' => session('role'),
+                    'all_session' => session()->all(),
+                ]);
                 return $admin;
             }
 

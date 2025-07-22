@@ -2,9 +2,9 @@
     <div class="mx-auto">
         <div class="w-full mx-auto py-6 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Total Room -->
+                <!-- Total Villa -->
                 <div class="bg-white shadow rounded-lg p-6">
-                    <h3 class="text-lg font-semibold mb-2">Total Room</h3>
+                    <h3 class="text-lg font-semibold mb-2">Total Villa</h3>
                     <p class="text-2xl font-bold">{{ $totalRoom }}</p>
                 </div>
 
