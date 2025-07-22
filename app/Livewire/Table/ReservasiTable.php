@@ -26,29 +26,34 @@ class ReservasiTable extends DataTableComponent
 
     public function columns(): array
     {
-        return [
-            Column::make("Id", "id_reservation")
+        $columns = [
+            Column::make("Id", "id_reservation")->sortable(),
+            Column::make("Guest", "guest.full_name")->sortable(),
+            Column::make("Villa", "villa.name")->sortable(),
+            Column::make("Start", "start_date")->sortable(),
+            Column::make("End", "end_date")->sortable(),
+            Column::make("Status", "status")->sortable(),
+            Column::make("Total", "total_amount")->sortable(),
+            Column::make("Status Check-in", "status_check_in")
+                ->label(fn($row) => view('components.badge-status-checkin', ['status' => $row->status_check_in]))
                 ->sortable(),
-            Column::make("Guest", "guest.full_name")
-                ->sortable(),
-            Column::make("Villa", "villa.name")
-                ->sortable(),
-
-            Column::make("Start", "start_date")
-                ->sortable(),
-            Column::make("End", "end_date")
-                ->sortable(),
-            Column::make("Status", "status")
-                ->sortable(),
-            Column::make("Total", "total_amount")
-                ->sortable(),
-                Column::make("Aksi")
-                ->label(fn ($row) => view('components.link-action-view', [
-                    'id' => $row->id_reservation,
-                    'routeName' => 'reservasi'
-                ]))
-                ->html(),
         ];
+
+        // Tambahkan kolom aksi check-in/out hanya jika ada reservasi yang belum checked_out
+        if (\App\Models\Reservasi::where('status_check_in', '!=', 'checked_out')->exists()) {
+            $columns[] = Column::make("Aksi Check-in/Out")
+                ->label(fn($row) => $row->status_check_in !== 'checked_out' ? view('components.action-checkin', ['row' => $row]) : null)
+                ->html();
+        }
+
+        $columns[] = Column::make("Aksi")
+            ->label(fn ($row) => view('components.link-action-view', [
+                'id' => $row->id_reservation,
+                'routeName' => 'reservasi'
+            ]))
+            ->html();
+
+        return $columns;
     }
 
     public function delete($id)

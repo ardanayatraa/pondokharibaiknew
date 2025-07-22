@@ -21,6 +21,11 @@ return new class extends Migration
             $table->date('start_date');
             $table->enum('status', ['pending', 'confirmed', 'cancelled', 'rescheduled'])->default('pending');
             $table->decimal('total_amount', 10, 2);
+            $table->enum('status_pembayaran', ['pending', 'success', 'failed'])->default('pending');
+            $table->timestamp('batas_waktu_pembayaran')->nullable();
+            $table->enum('status_check_in', ['pending', 'checked_in', 'checked_out'])->default('pending');
+            $table->timestamp('tanggal_check_in_aktual')->nullable();
+            $table->timestamp('tanggal_check_out_aktual')->nullable();
             $table->timestamps();
         });
     }

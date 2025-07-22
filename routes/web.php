@@ -193,5 +193,8 @@ Route::post('/payment/token', [BookingController::class,'paymentToken']);
     Route::post('/updateUser', [GuestController::class, 'updateUser'])->name('guest.updateUser');
 });
 
+Route::post('/reservasi/{reservasi}/checkin', [ReservasiController::class, 'checkin'])->name('reservasi.checkin');
+Route::post('/reservasi/{reservasi}/checkout', [ReservasiController::class, 'checkout'])->name('reservasi.checkout');
+
 
 

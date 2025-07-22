@@ -47,7 +47,13 @@ class BookingController extends Controller
     {
         $ranges = Reservasi::query()
             ->where('villa_id', $villa)
-            ->where('status', 'confirmed')
+            ->where(function($q) {
+                $q->where('status_pembayaran', 'success')
+                  ->orWhere(function($q2) {
+                      $q2->where('status_pembayaran', 'pending')
+                         ->where('batas_waktu_pembayaran', '>', now());
+                  });
+            })
             ->get(['start_date','end_date'])
             ->map(fn($r) => [
                 'from' => $r->start_date,
@@ -69,6 +75,7 @@ class BookingController extends Controller
             'capacity'    => $villa->capacity,
             'tag'         => $villa->tag,
             'description' => $villa->description,
+            'facility_names' => $villa->facility_names,
         ]);
     }
 
@@ -288,6 +295,8 @@ class BookingController extends Controller
             'guest_id'         => $validated['guest_id'],
             'villa_pricing_id' => $villaPricing?->id_villa_pricing,
             'status'           => 'confirmed',
+            'status_pembayaran'=> 'pending',
+            'batas_waktu_pembayaran' => Carbon::now()->addHour(),
         ]);
 
         $pembayaran = Pembayaran::create([

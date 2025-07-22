@@ -1066,30 +1066,7 @@
                                     <p id="room-description" class="text-gray-600 mb-4">This air-conditioned family
                                         room has a desk, a terrace, garden views and a private bathroom. The unit has 2
                                         beds.</p>
-                                    <div class="flex flex-wrap gap-4 text-sm">
-                                        <div class="flex items-center text-elegant-orange">
-                                            <i class="fas fa-users mr-2"></i>
-                                            <span id="room-capacity">Up to 4 people</span>
-                                        </div>
-                                        <div class="flex items-center text-elegant-orange">
-                                            <i class="fas fa-bath mr-2"></i>
-                                            <span>Private Bathroom</span>
-                                        </div>
-                                        <div class="flex items-center text-elegant-orange">
-                                            <i class="fas fa-tv mr-2"></i>
-                                            <span>Flat Screen TV</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center mt-3">
-                                        <div class="flex text-elegant-gold mr-2">
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                        </div>
-                                        <span class="text-sm font-semibold">4.8/5</span>
-                                    </div>
+                                    <div id="room-facilities" class="flex flex-wrap gap-2 mb-2"></div>
                                 </div>
 
                                 <!-- Booking Summary -->

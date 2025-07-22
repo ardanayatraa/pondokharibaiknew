@@ -356,6 +356,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (rateTotal) rateTotal.textContent = "Rp " + formatCurrency(roomTotal)
     if (summaryTotal) summaryTotal.textContent = "Rp " + formatCurrency(roomTotal)
+
+    if (bookingData.room && bookingData.room.facility_names) {
+      if (window.renderRoomFacilities) {
+        window.renderRoomFacilities(bookingData.room.facility_names, 'room-facilities');
+        window.renderRoomFacilities(bookingData.room.facility_names, 'summary-facilities');
+      }
+    }
   }
 
   window.renderStep3 = () => {
@@ -661,4 +668,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Expose functions to global scope
   window.bookingData = bookingData
+  window.renderRoomFacilities = function(facilityNames = [], targetId = 'room-facilities') {
+    console.log('[DEBUG] renderRoomFacilities target:', targetId, 'facilityNames:', facilityNames);
+    const container = document.getElementById(targetId);
+    if (!container) return;
+    container.innerHTML = '';
+    if (facilityNames.length === 0) {
+        container.innerHTML = '<span class="text-gray-400 text-xs">No facilities listed.</span>';
+        return;
+    }
+    facilityNames.forEach(name => {
+        const badge = document.createElement('span');
+        badge.className = 'inline-block px-3 py-1 rounded-full bg-elegant-green/10 text-elegant-green font-semibold border border-elegant-green text-xs mb-1';
+        badge.textContent = name;
+        container.appendChild(badge);
+    });
+}
 })

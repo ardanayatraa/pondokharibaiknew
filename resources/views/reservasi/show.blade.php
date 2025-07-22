@@ -61,6 +61,18 @@
                 </div>
             </section>
 
+            {{-- Fasilitas Villa Section --}}
+            <section class="bg-white shadow rounded-lg p-6 mb-8">
+                <h3 class="font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">Fasilitas Villa</h3>
+                <div class="flex flex-wrap gap-2 mb-2">
+                    @forelse($reservasi->villa->facility_names as $facility)
+                        <span class="inline-block px-3 py-1 rounded-full bg-elegant-green/10 text-elegant-green font-semibold border border-elegant-green text-xs mb-1">{{ $facility }}</span>
+                    @empty
+                        <span class="text-gray-400 text-xs">Tidak ada fasilitas terdaftar.</span>
+                    @endforelse
+                </div>
+            </section>
+
             {{-- Informasi Pembayaran Section --}}
             <section class="bg-white shadow rounded-lg p-6 mb-8">
                 <h3 class="font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">Informasi Pembayaran</h3>

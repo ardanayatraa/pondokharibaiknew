@@ -15,7 +15,8 @@ class Reservasi extends Model
         'guest_id', 'villa_id', 'cek_ketersediaan_id',
         'villa_pricing_id', 'start_date', 'end_date',
         'status', 'total_amount','cancelation_date',
-        'cancelation_reason'
+        'cancelation_reason', 'status_pembayaran', 'batas_waktu_pembayaran',
+        'status_check_in', 'tanggal_check_in_aktual', 'tanggal_check_out_aktual'
     ];
 
     public function guest()

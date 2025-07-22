@@ -8,6 +8,7 @@ use App\Models\Villa;
 use App\Models\CekKetersediaan;
 use App\Models\VillaPricing;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class ReservasiController extends Controller
 {
@@ -115,5 +116,23 @@ class ReservasiController extends Controller
         return redirect()
             ->route('reservasi.index')
             ->with('success', 'Reservasi berhasil dihapus.');
+    }
+
+    public function checkin(Reservasi $reservasi)
+    {
+        $reservasi->update([
+            'status_check_in' => 'checked_in',
+            'tanggal_check_in_aktual' => Carbon::now(),
+        ]);
+        return back()->with('success', 'Tamu berhasil check-in.');
+    }
+
+    public function checkout(Reservasi $reservasi)
+    {
+        $reservasi->update([
+            'status_check_in' => 'checked_out',
+            'tanggal_check_out_aktual' => Carbon::now(),
+        ]);
+        return back()->with('success', 'Tamu berhasil check-out.');
     }
 }

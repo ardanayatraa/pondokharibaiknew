@@ -14,10 +14,14 @@ class CekKetersediaanResepsionisController extends Controller
 
         $villas = Villa::with('reservasi')->get()->map(function($villa) use ($start, $end) {
             $reservasiBentrok = $villa->reservasi
-                ->where('status', 'confirmed')
-                ->filter(function($r) use ($start, $end) {
+                ->where(function($r) use ($start, $end) {
                     // Overlap: (start < r.end_date) && (end > r.start_date)
                     return $start < $r->end_date && $end > $r->start_date;
+                })
+                ->filter(function($r) {
+                    if ($r->status_pembayaran === 'success') return true;
+                    if ($r->status_pembayaran === 'pending' && $r->batas_waktu_pembayaran > now()) return true;
+                    return false;
                 });
 
             return [
