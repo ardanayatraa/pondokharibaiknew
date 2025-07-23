@@ -655,10 +655,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (window.snap) {
           window.snap.pay(snap_token, {
             onSuccess: async (r) => {
+              // Update status pembayaran menjadi success
+              await updatePaymentStatus('success', r);
               // Reservasi sudah dibuat, hanya perlu update status
               window.goToStep(5)
             },
             onPending: async (r) => {
+              // Update status pembayaran menjadi pending
+              await updatePaymentStatus('pending', r);
               window.goToStep(5)
             },
             onError: (e) => {
@@ -688,6 +692,46 @@ document.addEventListener("DOMContentLoaded", () => {
         btnPaynow.disabled = false;
       }
     })
+  }
+
+  // Function to update payment status
+  async function updatePaymentStatus(status, result) {
+    // Get CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    try {
+      // Ambil ID reservasi dari respons Midtrans
+      const reservationId = result?.order_id ? result.order_id.split('-')[1] : null;
+
+      if (!reservationId) {
+        console.error('Reservation ID not found in transaction result');
+        return;
+      }
+
+      // Send request to update payment status
+      const response = await fetch('/api/payment/update-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken,
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          reservation_id: reservationId,
+          status: status,
+          transaction_data: result
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update payment status');
+      }
+
+      const data = await response.json();
+      console.log('Payment status updated:', data);
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+    }
   }
 
   // Expose functions to global scope

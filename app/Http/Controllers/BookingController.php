@@ -306,7 +306,7 @@ class BookingController extends Controller
             'payment_date'   => now(),
             'snap_token'     => $validated['snap_token'] ?? null,
             'notifikasi'     => $validated['notifikasi'] ?? "Pesanan #{$reservasi->id_reservation} berhasil dibuat",
-            'status'         => 'paid',
+            'status'         => 'pending',
             'order_id'       => session('midtrans_order_id'),
         ]);
 
