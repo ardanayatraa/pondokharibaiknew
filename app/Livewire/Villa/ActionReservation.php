@@ -140,10 +140,10 @@ class ActionReservation extends Component
     {
         if ($this->isProcessing) return;
 
-        if (!$this->reservation || !$this->refundInfo) {
+        if (!$this->reservation) {
             $this->dispatch('show-alert', [
                 'type' => 'error',
-                'message' => 'Tidak dapat memproses pembatalan'
+                'message' => 'Tidak dapat memproses pembatalan: Reservasi tidak ditemukan'
             ]);
             return;
         }
@@ -159,6 +159,115 @@ class ActionReservation extends Component
 
         $this->isProcessing = true;
 
+        // Log the cancellation attempt
+        Log::info('Attempting cancellation', [
+            'reservation_id' => $this->reservation->id_reservation,
+            'refund_info' => $this->refundInfo,
+            'reason' => $this->cancelationReason
+        ]);
+
+        try {
+            // STEP 1: FIRST CANCEL THE RESERVATION DIRECTLY
+            // This ensures the reservation is always cancelled regardless of refund process
+            $reservationCancelled = $this->cancelReservationDirectly();
+
+            if (!$reservationCancelled) {
+                throw new \Exception('Gagal mengubah status reservasi menjadi cancelled');
+            }
+
+            // Send email notification for successful cancellation
+            try {
+                SendEmailStatus::dispatch($this->reservation, 'cancelled');
+            } catch (\Exception $e) {
+                Log::warning('Failed to send cancellation email: ' . $e->getMessage());
+            }
+
+            // STEP 2: ATTEMPT REFUND PROCESS
+            $refundResult = $this->processRefundForCancellation();
+
+            // Determine message and alert type based on refund status
+            $message = $this->getCancellationMessage($refundResult);
+            $alertType = $this->getCancellationAlertType($refundResult);
+
+            $this->dispatch('show-alert', [
+                'type' => $alertType,
+                'message' => $message
+            ]);
+
+            // Close modals and reset form
+            $this->showCancelModal = false;
+            $this->showModal = false;
+            $this->cancelationReason = '';
+
+            // Refresh component
+            $this->dispatch('reservation-cancelled');
+
+        } catch (\Exception $e) {
+            Log::error('Process cancellation error: ' . $e->getMessage(), [
+                'reservation_id' => $this->reservation->id_reservation,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            $this->dispatch('show-alert', [
+                'type' => 'error',
+                'message' => 'Terjadi kesalahan saat memproses pembatalan: ' . $e->getMessage()
+            ]);
+        } finally {
+            $this->isProcessing = false;
+        }
+    }
+
+    /**
+     * Cancel reservation directly by updating status
+     */
+    private function cancelReservationDirectly(): bool
+    {
+        try {
+            // Update reservation status directly
+            $this->reservation->update([
+                'status' => 'cancelled',
+                'cancelation_date' => now(),
+                'cancelation_reason' => $this->cancelationReason,
+            ]);
+
+            // Reload reservation to get fresh data
+            $this->reservation->refresh();
+
+            Log::info('Reservation cancelled successfully', [
+                'reservation_id' => $this->reservation->id_reservation,
+                'status' => $this->reservation->status
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to cancel reservation directly: ' . $e->getMessage(), [
+                'reservation_id' => $this->reservation->id_reservation
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Process refund for cancelled reservation
+     */
+    private function processRefundForCancellation(): array
+    {
+        // Default response if refund process fails
+        $defaultResponse = [
+            'success' => true,
+            'refund_status' => 'manual_refund_required',
+            'message' => 'Reservasi berhasil dibatalkan. Refund akan diproses manual.',
+            'cancellation_successful' => true
+        ];
+
+        // If no refund info, return default response
+        if (!$this->refundInfo) {
+            Log::warning('No refund info available for cancelled reservation', [
+                'reservation_id' => $this->reservation->id_reservation
+            ]);
+            return $defaultResponse;
+        }
+
         try {
             // Call RefundController to process refund
             $refundController = new \App\Http\Controllers\RefundController();
@@ -173,49 +282,24 @@ class ActionReservation extends Component
             $response = $refundController->processRefund($request);
             $responseData = json_decode($response->getContent(), true);
 
-            // IMPROVED: Always check if cancellation was successful first
-            if (isset($responseData['cancellation_successful']) && $responseData['cancellation_successful']) {
-                // Send email notification for successful cancellation
-                try {
-                    SendEmailStatus::dispatch($this->reservation, 'cancelled');
-                } catch (\Exception $e) {
-                    Log::warning('Failed to send cancellation email: ' . $e->getMessage());
-                }
+            Log::info('Refund process response', [
+                'reservation_id' => $this->reservation->id_reservation,
+                'response' => $responseData
+            ]);
 
-                // Determine message and alert type based on refund status
-                $message = $this->getCancellationMessage($responseData);
-                $alertType = $this->getCancellationAlertType($responseData);
-
-                $this->dispatch('show-alert', [
-                    'type' => $alertType,
-                    'message' => $message
-                ]);
-
-                // Close modals and reset form
-                $this->showCancelModal = false;
-                $this->showModal = false;
-                $this->cancelationReason = '';
-
-                // Refresh component
-                $this->dispatch('reservation-cancelled');
-
-            } else {
-                // Cancellation failed
-                $errorMessage = $responseData['error'] ?? $responseData['message'] ?? 'Gagal memproses pembatalan';
-                $this->dispatch('show-alert', [
-                    'type' => 'error',
-                    'message' => $errorMessage
-                ]);
+            // Ensure response has cancellation_successful flag
+            if (!isset($responseData['cancellation_successful'])) {
+                $responseData['cancellation_successful'] = true;
             }
 
+            return $responseData;
+
         } catch (\Exception $e) {
-            Log::error('Process cancellation error: ' . $e->getMessage());
-            $this->dispatch('show-alert', [
-                'type' => 'error',
-                'message' => 'Terjadi kesalahan saat memproses pembatalan: ' . $e->getMessage()
+            Log::error('Refund process error: ' . $e->getMessage(), [
+                'reservation_id' => $this->reservation->id_reservation
             ]);
-        } finally {
-            $this->isProcessing = false;
+
+            return $defaultResponse;
         }
     }
 

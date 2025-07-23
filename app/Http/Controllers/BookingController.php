@@ -240,7 +240,7 @@ class BookingController extends Controller
 
         // Fix: Check if reservation_id exists before using it
         $orderPrefix = isset($payload['reservation_id']) && $payload['reservation_id'] ? 'RESCHEDULE' : 'ORDER';
-        $orderId = $orderPrefix . '-' . time();
+        $orderId = $orderPrefix . '-' . \time();
         session(['midtrans_order_id' => $orderId]);
         $transaction = [
           'transaction_details' => [
@@ -395,5 +395,97 @@ class BookingController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Menampilkan halaman untuk melanjutkan pembayaran yang terputus
+     */
+    public function lanjutkanPembayaran($id)
+    {
+        try {
+            $reservation = Reservasi::with(['villa', 'guest'])->findOrFail($id);
+
+            // Cek apakah user memiliki reservasi ini
+            if (Auth::guard('guest')->id() !== $reservation->guest_id) {
+                return redirect()->route('dashboard')
+                    ->with('error', 'Anda tidak memiliki akses ke reservasi ini.');
+            }
+
+            // Cek apakah reservasi masih dalam status pending dan belum melewati batas waktu
+            if ($reservation->status_pembayaran !== 'pending' || $reservation->batas_waktu_pembayaran < now()) {
+                return redirect()->route('dashboard')
+                    ->with('error', 'Reservasi sudah tidak dapat dilanjutkan pembayarannya.');
+            }
+
+            // Ambil pembayaran terakhir
+            $pembayaran = $reservation->pembayaran()->latest()->first();
+
+            // Jika snap token masih ada dan valid, gunakan yang ada
+            if ($pembayaran && $pembayaran->snap_token) {
+                return view('reservasi.lanjutkan-pembayaran', [
+                    'reservasi' => $reservation,
+                    'pembayaran' => $pembayaran,
+                    'snap_token' => $pembayaran->snap_token
+                ]);
+            }
+
+            // Jika tidak ada snap token atau sudah expired, buat baru
+            $snapToken = $this->generateNewSnapToken($reservation);
+
+            // Update pembayaran dengan token baru
+            if ($pembayaran) {
+                $pembayaran->update(['snap_token' => $snapToken]);
+            } else {
+                // Buat pembayaran baru jika tidak ada
+                $pembayaran = Pembayaran::create([
+                    'guest_id' => $reservation->guest_id,
+                    'reservation_id' => $reservation->id_reservation,
+                    'amount' => $reservation->total_amount,
+                    'payment_date' => now(),
+                    'snap_token' => $snapToken,
+                    'notifikasi' => "Lanjutan pembayaran untuk reservasi #{$reservation->id_reservation}",
+                    'status' => 'pending',
+                    'order_id' => 'ORDER-RETRY-' . \time(),
+                ]);
+            }
+
+            return view('reservasi.lanjutkan-pembayaran', [
+                'reservasi' => $reservation,
+                'pembayaran' => $pembayaran,
+                'snap_token' => $snapToken
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Lanjutkan pembayaran error: ' . $e->getMessage());
+            return redirect()->route('dashboard')
+                ->with('error', 'Terjadi kesalahan saat memproses pembayaran: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Generate snap token baru untuk pembayaran
+     */
+    private function generateNewSnapToken(Reservasi $reservasi)
+    {
+        \Midtrans\Config::$serverKey = config('midtrans.server_key');
+        \Midtrans\Config::$isProduction = config('midtrans.is_production');
+        \Midtrans\Config::$isSanitized = config('midtrans.is_sanitized');
+        \Midtrans\Config::$is3ds = config('midtrans.is_3ds');
+
+        $orderId = 'ORDER-RETRY-' . \time();
+        session(['midtrans_order_id' => $orderId]);
+
+        $transaction = [
+            'transaction_details' => [
+                'order_id' => $orderId,
+                'gross_amount' => $reservasi->total_amount,
+            ],
+            'customer_details' => [
+                'first_name' => $reservasi->guest->full_name,
+                'email' => $reservasi->guest->email,
+                'phone' => $reservasi->guest->phone_number,
+            ],
+        ];
+
+        return \Midtrans\Snap::getSnapToken($transaction);
     }
 }

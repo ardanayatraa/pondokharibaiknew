@@ -682,14 +682,99 @@
                     Enjoy our world-class facilities designed for your comfort and relaxation
                 </p>
             </div>
-            <div class="flex flex-wrap justify-center gap-3 mb-10">
-                @foreach($facilities as $facility)
-                    <span class="inline-block px-4 py-2 rounded-full bg-elegant-white/90 text-elegant-burgundy font-semibold shadow hover:bg-elegant-gold hover:text-elegant-white transition-all duration-200 border border-elegant-gold text-sm">
-                        {{ $facility->name_facility }}
-                    </span>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-10">
+                @foreach ($facilities as $facility)
+                    <div
+                        class="flex flex-col items-center p-4 bg-elegant-white/90 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:transform hover:scale-105 border border-elegant-gold/30">
+                        <div
+                            class="w-16 h-16 flex items-center justify-center rounded-full bg-elegant-green/10 text-elegant-gold mb-3">
+                            <i class="fas {{ getFacilityIcon($facility->name_facility) }} text-2xl"></i>
+                        </div>
+                        <span
+                            class="text-sm font-semibold text-elegant-burgundy text-center">{{ $facility->name_facility }}</span>
+                    </div>
                 @endforeach
             </div>
-            <!-- (Optional) Tambahkan deskripsi atau grid lain di bawah badge jika ingin -->
+
+            <!-- Helper Script for Facility Icons -->
+            <script>
+                function getFacilityIcon(facilityName) {
+                    const name = facilityName.toLowerCase();
+
+                    // Map common facility names to Font Awesome icons
+                    const iconMap = {
+                        // Bedroom/Living
+                        'bedroom': 'fa-bed',
+                        'bed': 'fa-bed',
+                        'king bed': 'fa-bed',
+                        'queen bed': 'fa-bed',
+                        'living room': 'fa-couch',
+                        'sofa': 'fa-couch',
+
+                        // Kitchen
+                        'kitchen': 'fa-kitchen-set',
+                        'refrigerator': 'fa-refrigerator',
+                        'fridge': 'fa-refrigerator',
+                        'microwave': 'fa-microwave',
+                        'stove': 'fa-fire',
+                        'oven': 'fa-oven',
+                        'dishwasher': 'fa-sink',
+                        'coffee': 'fa-mug-hot',
+                        'coffee maker': 'fa-mug-hot',
+
+                        // Bathroom
+                        'bathroom': 'fa-bath',
+                        'shower': 'fa-shower',
+                        'bathtub': 'fa-bath',
+                        'toilet': 'fa-toilet',
+
+                        // Entertainment
+                        'tv': 'fa-tv',
+                        'television': 'fa-tv',
+                        'wifi': 'fa-wifi',
+                        'internet': 'fa-wifi',
+                        'game': 'fa-gamepad',
+
+                        // Outdoor
+                        'pool': 'fa-swimming-pool',
+                        'swimming pool': 'fa-swimming-pool',
+                        'garden': 'fa-leaf',
+                        'balcony': 'fa-door-open',
+                        'terrace': 'fa-mountain',
+                        'bbq': 'fa-fire',
+                        'grill': 'fa-fire',
+
+                        // Services
+                        'parking': 'fa-car',
+                        'breakfast': 'fa-utensils',
+                        'restaurant': 'fa-utensils',
+                        'laundry': 'fa-washing-machine',
+                        'cleaning': 'fa-broom',
+                        'housekeeping': 'fa-broom',
+
+                        // Amenities
+                        'air conditioning': 'fa-snowflake',
+                        'ac': 'fa-snowflake',
+                        'heating': 'fa-temperature-high',
+                        'elevator': 'fa-elevator',
+                        'security': 'fa-shield-alt',
+
+                        // Accessibility
+                        'wheelchair': 'fa-wheelchair',
+                        'accessible': 'fa-wheelchair',
+                    };
+
+                    // Check if facility name contains any of the keywords
+                    for (const [keyword, icon] of Object.entries(iconMap)) {
+                        if (name.includes(keyword)) {
+                            return icon;
+                        }
+                    }
+
+                    // Return default icon if no match found
+                    return 'fa-check-circle';
+                }
+            </script>
         </div>
     </section>
 

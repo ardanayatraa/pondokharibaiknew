@@ -191,6 +191,8 @@ Route::post('/payment/token', [BookingController::class,'paymentToken']);
     Route::post('/reservation/refund', [RefundController::class, 'processRefund']);
     // Change to updateUser route
     Route::post('/updateUser', [GuestController::class, 'updateUser'])->name('guest.updateUser');
+    // Route untuk melanjutkan pembayaran yang terputus
+    Route::get('/reservation/{id}/lanjutkan-pembayaran', [BookingController::class, 'lanjutkanPembayaran'])->name('reservation.lanjutkan-pembayaran');
 });
 
 Route::post('/reservasi/{reservasi}/checkin', [ReservasiController::class, 'checkin'])->name('reservasi.checkin');

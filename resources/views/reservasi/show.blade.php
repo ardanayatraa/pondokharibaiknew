@@ -64,14 +64,109 @@
             {{-- Fasilitas Villa Section --}}
             <section class="bg-white shadow rounded-lg p-6 mb-8">
                 <h3 class="font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">Fasilitas Villa</h3>
-                <div class="flex flex-wrap gap-2 mb-2">
-                    @forelse($reservasi->villa->facility_names as $facility)
-                        <span class="inline-block px-3 py-1 rounded-full bg-elegant-green/10 text-elegant-green font-semibold border border-elegant-green text-xs mb-1">{{ $facility }}</span>
-                    @empty
-                        <span class="text-gray-400 text-xs">Tidak ada fasilitas terdaftar.</span>
-                    @endforelse
-                </div>
+                @if (count($reservasi->villa->facility_names) > 0)
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        @foreach ($reservasi->villa->facility_names as $facility)
+                            <div
+                                class="flex flex-col items-center p-3 border border-gray-200 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow duration-300 hover:border-elegant-green">
+                                <div
+                                    class="w-10 h-10 flex items-center justify-center rounded-full bg-elegant-green/10 text-elegant-green mb-2">
+                                    <i class="fas {{ getFacilityIcon($facility) }} text-lg"></i>
+                                </div>
+                                <span class="text-xs font-medium text-gray-800 text-center">{{ $facility }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="p-6 text-center bg-gray-50 border border-gray-200 rounded-lg">
+                        <div class="w-16 h-16 mx-auto flex items-center justify-center rounded-full bg-gray-100 mb-4">
+                            <i class="fas fa-home text-gray-400 text-2xl"></i>
+                        </div>
+                        <h3 class="text-gray-500 font-medium mb-1">Tidak Ada Fasilitas</h3>
+                        <p class="text-gray-400 text-sm">Villa ini belum memiliki fasilitas terdaftar.</p>
+                    </div>
+                @endif
             </section>
+
+            {{-- Helper Script for Facility Icons --}}
+            <script>
+                function getFacilityIcon(facilityName) {
+                    const name = facilityName.toLowerCase();
+
+                    // Map common facility names to Font Awesome icons
+                    const iconMap = {
+                        // Bedroom/Living
+                        'bedroom': 'fa-bed',
+                        'bed': 'fa-bed',
+                        'king bed': 'fa-bed',
+                        'queen bed': 'fa-bed',
+                        'living room': 'fa-couch',
+                        'sofa': 'fa-couch',
+
+                        // Kitchen
+                        'kitchen': 'fa-kitchen-set',
+                        'refrigerator': 'fa-refrigerator',
+                        'fridge': 'fa-refrigerator',
+                        'microwave': 'fa-microwave',
+                        'stove': 'fa-fire',
+                        'oven': 'fa-oven',
+                        'dishwasher': 'fa-sink',
+                        'coffee': 'fa-mug-hot',
+                        'coffee maker': 'fa-mug-hot',
+
+                        // Bathroom
+                        'bathroom': 'fa-bath',
+                        'shower': 'fa-shower',
+                        'bathtub': 'fa-bath',
+                        'toilet': 'fa-toilet',
+
+                        // Entertainment
+                        'tv': 'fa-tv',
+                        'television': 'fa-tv',
+                        'wifi': 'fa-wifi',
+                        'internet': 'fa-wifi',
+                        'game': 'fa-gamepad',
+
+                        // Outdoor
+                        'pool': 'fa-swimming-pool',
+                        'swimming pool': 'fa-swimming-pool',
+                        'garden': 'fa-leaf',
+                        'balcony': 'fa-door-open',
+                        'terrace': 'fa-mountain',
+                        'bbq': 'fa-fire',
+                        'grill': 'fa-fire',
+
+                        // Services
+                        'parking': 'fa-car',
+                        'breakfast': 'fa-utensils',
+                        'restaurant': 'fa-utensils',
+                        'laundry': 'fa-washing-machine',
+                        'cleaning': 'fa-broom',
+                        'housekeeping': 'fa-broom',
+
+                        // Amenities
+                        'air conditioning': 'fa-snowflake',
+                        'ac': 'fa-snowflake',
+                        'heating': 'fa-temperature-high',
+                        'elevator': 'fa-elevator',
+                        'security': 'fa-shield-alt',
+
+                        // Accessibility
+                        'wheelchair': 'fa-wheelchair',
+                        'accessible': 'fa-wheelchair',
+                    };
+
+                    // Check if facility name contains any of the keywords
+                    for (const [keyword, icon] of Object.entries(iconMap)) {
+                        if (name.includes(keyword)) {
+                            return icon;
+                        }
+                    }
+
+                    // Return default icon if no match found
+                    return 'fa-check-circle';
+                }
+            </script>
 
             {{-- Informasi Pembayaran Section --}}
             <section class="bg-white shadow rounded-lg p-6 mb-8">

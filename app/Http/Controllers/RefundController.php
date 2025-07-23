@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Carbon\Carbon;
+use function time;
 
 class RefundController extends Controller
 {
@@ -36,13 +37,29 @@ class RefundController extends Controller
             // Check if user owns this reservation
             if (Auth::guard('guest')->check() && Auth::guard('guest')->id() !== $reservation->guest_id) {
                 DB::rollBack();
-                return response()->json(['error' => 'Unauthorized access to reservation'], 403);
+                return response()->json([
+                    'error' => 'Unauthorized access to reservation',
+                    'cancellation_successful' => false
+                ], 403);
             }
 
             // Check if reservation can be cancelled
             if (!in_array($reservation->status, ['confirmed', 'rescheduled'])) {
+                // If reservation is already cancelled, consider it a success
+                if ($reservation->status === 'cancelled') {
+                    DB::commit();
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Reservasi sudah dibatalkan sebelumnya.',
+                        'cancellation_successful' => true
+                    ]);
+                }
+
                 DB::rollBack();
-                return response()->json(['error' => 'Reservation cannot be cancelled'], 400);
+                return response()->json([
+                    'error' => 'Reservation cannot be cancelled',
+                    'cancellation_successful' => false
+                ], 400);
             }
 
             // Calculate H-7 eligibility based on check-in date
@@ -69,17 +86,29 @@ class RefundController extends Controller
                 ->first();
 
             // STEP 1: ALWAYS UPDATE RESERVATION STATUS FIRST (This ensures cancellation always succeeds)
-            $reservation->update([
-                'status' => 'cancelled',
-                'cancelation_date' => now(),
-                'cancelation_reason' => $validated['cancelation_reason'],
-            ]);
+            try {
+                $reservation->update([
+                    'status' => 'cancelled',
+                    'cancelation_date' => now(),
+                    'cancelation_reason' => $validated['cancelation_reason'],
+                ]);
 
-            Log::info('Reservation cancelled successfully', [
-                'reservation_id' => $reservation->id_reservation,
-                'status' => 'cancelled',
-                'reason' => $validated['cancelation_reason']
-            ]);
+                Log::info('Reservation cancelled successfully', [
+                    'reservation_id' => $reservation->id_reservation,
+                    'status' => 'cancelled',
+                    'reason' => $validated['cancelation_reason']
+                ]);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Failed to update reservation status: ' . $e->getMessage(), [
+                    'reservation_id' => $reservation->id_reservation
+                ]);
+                return response()->json([
+                    'error' => 'Failed to update reservation status',
+                    'message' => $e->getMessage(),
+                    'cancellation_successful' => false
+                ], 500);
+            }
 
             // STEP 2: Handle refund processing based on H-7 eligibility
             if (!$isH7Eligible) {
@@ -231,7 +260,8 @@ class RefundController extends Controller
                 'success' => false,
                 'error' => 'Terjadi kesalahan saat memproses pembatalan',
                 'message' => $e->getMessage(),
-                'cancellation_successful' => false
+                'cancellation_successful' => false,
+                'trace' => app()->environment('local') ? $e->getTraceAsString() : null
             ], 500);
         }
     }
@@ -241,7 +271,7 @@ class RefundController extends Controller
      */
     private function generateOrderId($reservationId, $type = 'ORDER'): string
     {
-        return $type . '-' . $reservationId . '-' . time();
+        return $type . '-' . $reservationId . '-' . Carbon::now()->timestamp;
     }
 
     /**
@@ -335,7 +365,7 @@ class RefundController extends Controller
             $refundAmountInt = (int) round($refundAmount);
 
             // Generate refund key
-            $refundKey = 'refund-' . $reservationId . '-' . time();
+            $refundKey = 'refund-' . $reservationId . '-' . Carbon::now()->timestamp;
 
             Log::info('Attempting Midtrans refund', [
                 'order_id' => $orderId,
@@ -479,7 +509,7 @@ class RefundController extends Controller
         }
 
         // Method 4: Generate order_id based on payment ID (fallback)
-        $generatedOrderId = 'ORDER-' . ($payment->id ?? time());
+        $generatedOrderId = 'ORDER-' . ($payment->id ?? Carbon::now()->timestamp);
 
         Log::warning('Order ID not found in payment data, using generated ID', [
             'payment_id' => $payment->id ?? null,
