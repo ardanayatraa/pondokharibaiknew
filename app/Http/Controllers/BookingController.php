@@ -294,7 +294,7 @@ class BookingController extends Controller
             'total_amount'     => $validated['total_amount'],
             'guest_id'         => $validated['guest_id'],
             'villa_pricing_id' => $villaPricing?->id_villa_pricing,
-            'status'           => 'confirmed',
+            'status'           => 'pending',
             'status_pembayaran'=> 'pending',
             'batas_waktu_pembayaran' => Carbon::now()->addMinutes(30),
         ]);
@@ -561,9 +561,10 @@ class BookingController extends Controller
                 return response()->json(['error' => 'Anda tidak memiliki akses ke reservasi ini.'], 403);
             }
 
-            // Update status pembayaran
+            // Update status pembayaran dan status reservasi
             $reservation->update([
                 'status_pembayaran' => $validated['status'] === 'success' ? 'success' : 'pending',
+                'status' => $validated['status'] === 'success' ? 'confirmed' : 'pending',
             ]);
 
             // Update pembayaran
