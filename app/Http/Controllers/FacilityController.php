@@ -35,7 +35,13 @@ class FacilityController extends Controller
             'name_facility'  => 'required|string|max:255',
             'description'    => 'nullable|string',
             'facility_type'  => 'required|string|max:255',
+            'icon'           => 'nullable|string|max:255',
         ]);
+
+        // Set default icon if not provided
+        if (!isset($validated['icon']) || empty($validated['icon'])) {
+            $validated['icon'] = 'fa-check-circle';
+        }
 
         Facility::create($validated);
 
@@ -69,7 +75,13 @@ class FacilityController extends Controller
             'name_facility'  => 'required|string|max:255',
             'description'    => 'nullable|string',
             'facility_type'  => 'required|string|max:255',
+            'icon'           => 'nullable|string|max:255',
         ]);
+
+        // Set default icon if not provided
+        if (!isset($validated['icon']) || empty($validated['icon'])) {
+            $validated['icon'] = 'fa-check-circle';
+        }
 
         $facility->update($validated);
 

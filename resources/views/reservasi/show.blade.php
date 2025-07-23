@@ -71,7 +71,7 @@
                                 class="flex flex-col items-center p-3 border border-gray-200 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow duration-300 hover:border-elegant-green">
                                 <div
                                     class="w-10 h-10 flex items-center justify-center rounded-full bg-elegant-green/10 text-elegant-green mb-2">
-                                    <i class="fas {{ getFacilityIcon($facility) }} text-lg"></i>
+                                    <i class="fas fa-check-circle text-lg"></i>
                                 </div>
                                 <span class="text-xs font-medium text-gray-800 text-center">{{ $facility }}</span>
                             </div>
@@ -88,85 +88,7 @@
                 @endif
             </section>
 
-            {{-- Helper Script for Facility Icons --}}
-            <script>
-                function getFacilityIcon(facilityName) {
-                    const name = facilityName.toLowerCase();
-
-                    // Map common facility names to Font Awesome icons
-                    const iconMap = {
-                        // Bedroom/Living
-                        'bedroom': 'fa-bed',
-                        'bed': 'fa-bed',
-                        'king bed': 'fa-bed',
-                        'queen bed': 'fa-bed',
-                        'living room': 'fa-couch',
-                        'sofa': 'fa-couch',
-
-                        // Kitchen
-                        'kitchen': 'fa-kitchen-set',
-                        'refrigerator': 'fa-refrigerator',
-                        'fridge': 'fa-refrigerator',
-                        'microwave': 'fa-microwave',
-                        'stove': 'fa-fire',
-                        'oven': 'fa-oven',
-                        'dishwasher': 'fa-sink',
-                        'coffee': 'fa-mug-hot',
-                        'coffee maker': 'fa-mug-hot',
-
-                        // Bathroom
-                        'bathroom': 'fa-bath',
-                        'shower': 'fa-shower',
-                        'bathtub': 'fa-bath',
-                        'toilet': 'fa-toilet',
-
-                        // Entertainment
-                        'tv': 'fa-tv',
-                        'television': 'fa-tv',
-                        'wifi': 'fa-wifi',
-                        'internet': 'fa-wifi',
-                        'game': 'fa-gamepad',
-
-                        // Outdoor
-                        'pool': 'fa-swimming-pool',
-                        'swimming pool': 'fa-swimming-pool',
-                        'garden': 'fa-leaf',
-                        'balcony': 'fa-door-open',
-                        'terrace': 'fa-mountain',
-                        'bbq': 'fa-fire',
-                        'grill': 'fa-fire',
-
-                        // Services
-                        'parking': 'fa-car',
-                        'breakfast': 'fa-utensils',
-                        'restaurant': 'fa-utensils',
-                        'laundry': 'fa-washing-machine',
-                        'cleaning': 'fa-broom',
-                        'housekeeping': 'fa-broom',
-
-                        // Amenities
-                        'air conditioning': 'fa-snowflake',
-                        'ac': 'fa-snowflake',
-                        'heating': 'fa-temperature-high',
-                        'elevator': 'fa-elevator',
-                        'security': 'fa-shield-alt',
-
-                        // Accessibility
-                        'wheelchair': 'fa-wheelchair',
-                        'accessible': 'fa-wheelchair',
-                    };
-
-                    // Check if facility name contains any of the keywords
-                    for (const [keyword, icon] of Object.entries(iconMap)) {
-                        if (name.includes(keyword)) {
-                            return icon;
-                        }
-                    }
-
-                    // Return default icon if no match found
-                    return 'fa-check-circle';
-                }
-            </script>
+            {{-- Facility icons are now using a default icon --}}
 
             {{-- Informasi Pembayaran Section --}}
             <section class="bg-white shadow rounded-lg p-6 mb-8">

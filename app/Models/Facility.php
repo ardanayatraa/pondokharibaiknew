@@ -11,7 +11,7 @@ class Facility extends Model
 
     protected $table = 'tbl_facility';
     protected $primaryKey = 'id_facility';
-    protected $fillable = ['name_facility', 'description', 'facility_type'];
+    protected $fillable = ['name_facility', 'description', 'facility_type', 'icon'];
 
     public function villas()
     {
