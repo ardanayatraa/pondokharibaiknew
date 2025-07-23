@@ -567,6 +567,16 @@ document.addEventListener("DOMContentLoaded", () => {
           try {
             const ok = await saveGuestProfileViaAPI()
             if (!ok) return
+
+            // Simpan data reservasi setelah profil guest berhasil disimpan
+            try {
+              await pushReservationToApi()
+              console.log("✅ Reservasi berhasil dikirim ke API pada step 3")
+            } catch (err) {
+              console.error("❌ Error saat push reservasi ke API pada step 3:", err)
+              alert("Gagal menyimpan data reservasi. Silakan coba lagi.")
+              return
+            }
           } catch (e) {
             alert(e.message)
             return
@@ -608,10 +618,7 @@ document.addEventListener("DOMContentLoaded", () => {
       btnPaynow.disabled = true;
 
       try {
-        // 1. Buat reservasi terlebih dahulu
-        await pushReservationToApi();
-
-        // 2. Setelah reservasi dibuat, ambil token pembayaran
+        // Ambil token pembayaran (reservasi sudah dibuat di step 3)
         const payload = {
           villa_id: bookingData.roomId,
           check_in: bookingData.checkIn,
@@ -671,8 +678,10 @@ document.addEventListener("DOMContentLoaded", () => {
               btnPaynow.innerHTML = '<i class="fas fa-credit-card mr-2"></i> Pay Now';
               btnPaynow.disabled = false;
             },
-            onClose: () => {
+            onClose: async () => {
               // Payment modal closed
+              // Update status pembayaran menjadi pending
+              await updatePaymentStatus('pending', { status: 'pending', message: 'Payment popup closed' });
               // Kembalikan tombol ke keadaan semula
               btnPaynow.innerHTML = '<i class="fas fa-credit-card mr-2"></i> Pay Now';
               btnPaynow.disabled = false;
