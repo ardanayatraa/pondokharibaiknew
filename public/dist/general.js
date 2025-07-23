@@ -603,17 +603,25 @@ document.addEventListener("DOMContentLoaded", () => {
     btnPaynow.addEventListener("click", async (e) => {
       e.preventDefault()
 
-      const payload = {
-        villa_id: bookingData.roomId,
-        check_in: bookingData.checkIn,
-        check_out: bookingData.checkOut,
-        total_amount: bookingData.totalAmount,
-        guest_name: bookingData.guestFullName,
-        guest_email: bookingData.guestEmail,
-        guest_phone: bookingData.guestPhone,
-      }
+      // Tampilkan loading spinner
+      btnPaynow.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+      btnPaynow.disabled = true;
 
       try {
+        // 1. Buat reservasi terlebih dahulu
+        await pushReservationToApi();
+
+        // 2. Setelah reservasi dibuat, ambil token pembayaran
+        const payload = {
+          villa_id: bookingData.roomId,
+          check_in: bookingData.checkIn,
+          check_out: bookingData.checkOut,
+          total_amount: bookingData.totalAmount,
+          guest_name: bookingData.guestFullName,
+          guest_email: bookingData.guestEmail,
+          guest_phone: bookingData.guestPhone,
+        }
+
         const res = await fetch("/payment/token", {
           method: "POST",
           headers: {
@@ -635,6 +643,10 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           alert("Error saat generate token. Cek console.")
           console.error("Payment token error:", errMsg)
+
+          // Kembalikan tombol ke keadaan semula
+          btnPaynow.innerHTML = '<i class="fas fa-credit-card mr-2"></i> Pay Now';
+          btnPaynow.disabled = false;
           return
         }
 
@@ -643,7 +655,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (window.snap) {
           window.snap.pay(snap_token, {
             onSuccess: async (r) => {
-              await pushReservationToApi()
+              // Reservasi sudah dibuat, hanya perlu update status
               window.goToStep(5)
             },
             onPending: async (r) => {
@@ -651,17 +663,29 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             onError: (e) => {
               alert("Payment failed")
+              // Kembalikan tombol ke keadaan semula
+              btnPaynow.innerHTML = '<i class="fas fa-credit-card mr-2"></i> Pay Now';
+              btnPaynow.disabled = false;
             },
             onClose: () => {
               // Payment modal closed
+              // Kembalikan tombol ke keadaan semula
+              btnPaynow.innerHTML = '<i class="fas fa-credit-card mr-2"></i> Pay Now';
+              btnPaynow.disabled = false;
             },
           })
         } else {
           alert("Midtrans Snap not loaded")
+          // Kembalikan tombol ke keadaan semula
+          btnPaynow.innerHTML = '<i class="fas fa-credit-card mr-2"></i> Pay Now';
+          btnPaynow.disabled = false;
         }
       } catch (e) {
         alert("Gagal menghubungi server. Cek koneksi atau console.")
         console.error("Payment error:", e)
+        // Kembalikan tombol ke keadaan semula
+        btnPaynow.innerHTML = '<i class="fas fa-credit-card mr-2"></i> Pay Now';
+        btnPaynow.disabled = false;
       }
     })
   }
