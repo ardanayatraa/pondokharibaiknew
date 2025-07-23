@@ -1460,11 +1460,20 @@
                                                         @endif
                                                     </span>
                                                 </div>
-                                                <button
-                                                    onclick="Livewire.dispatch('openModal', [{{ $res->id_reservation }}])"
-                                                    class="mt-2 text-elegant-green hover:underline text-sm">
-                                                    View Details
-                                                </button>
+                                                <div class="flex flex-col space-y-2 mt-2">
+                                                    @if ($res->status_pembayaran === 'pending' && $res->batas_waktu_pembayaran > now())
+                                                        <a href="{{ route('reservation.lanjutkan-pembayaran', $res->id_reservation) }}"
+                                                            class="text-white bg-elegant-orange hover:bg-elegant-orange/90 px-3 py-1 rounded text-xs font-medium text-center">
+                                                            <i class="fas fa-credit-card mr-1"></i> Lanjutkan
+                                                            Pembayaran
+                                                        </a>
+                                                    @endif
+                                                    <button
+                                                        onclick="Livewire.dispatch('openModal', [{{ $res->id_reservation }}])"
+                                                        class="text-elegant-green hover:underline text-sm">
+                                                        View Details
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
