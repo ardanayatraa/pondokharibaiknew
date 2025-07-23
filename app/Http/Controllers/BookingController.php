@@ -240,7 +240,7 @@ class BookingController extends Controller
 
         // Fix: Check if reservation_id exists before using it
         $orderPrefix = isset($payload['reservation_id']) && $payload['reservation_id'] ? 'RESCHEDULE' : 'ORDER';
-        $orderId = $orderPrefix . '-' . \time();
+        $orderId = $orderPrefix . '-' . \strtotime('now');
         session(['midtrans_order_id' => $orderId]);
         $transaction = [
           'transaction_details' => [
@@ -296,7 +296,7 @@ class BookingController extends Controller
             'villa_pricing_id' => $villaPricing?->id_villa_pricing,
             'status'           => 'confirmed',
             'status_pembayaran'=> 'pending',
-            'batas_waktu_pembayaran' => Carbon::now()->addHour(),
+            'batas_waktu_pembayaran' => Carbon::now()->addMinutes(30),
         ]);
 
         $pembayaran = Pembayaran::create([
@@ -445,7 +445,7 @@ class BookingController extends Controller
                     'snap_token' => $snapToken,
                     'notifikasi' => "Lanjutan pembayaran untuk reservasi #{$reservation->id_reservation}",
                     'status' => 'pending',
-                    'order_id' => 'ORDER-RETRY-' . \time(),
+                    'order_id' => 'ORDER-RETRY-' . \strtotime('now'),
                 ]);
             }
 
@@ -471,7 +471,7 @@ class BookingController extends Controller
         \Midtrans\Config::$isSanitized = config('midtrans.is_sanitized');
         \Midtrans\Config::$is3ds = config('midtrans.is_3ds');
 
-        $orderId = 'ORDER-RETRY-' . \time();
+        $orderId = 'ORDER-RETRY-' . \strtotime('now');
         session(['midtrans_order_id' => $orderId]);
 
         $transaction = [
@@ -487,5 +487,103 @@ class BookingController extends Controller
         ];
 
         return \Midtrans\Snap::getSnapToken($transaction);
+    }
+
+    /**
+     * Mendapatkan snap token untuk pembayaran langsung
+     */
+    public function getSnapToken($id)
+    {
+        try {
+            $reservation = Reservasi::with(['villa', 'guest'])->findOrFail($id);
+
+            // Cek apakah user memiliki reservasi ini
+            if (Auth::guard('guest')->id() !== $reservation->guest_id) {
+                return response()->json(['error' => 'Anda tidak memiliki akses ke reservasi ini.'], 403);
+            }
+
+            // Cek apakah reservasi masih dalam status pending dan belum melewati batas waktu
+            if ($reservation->status_pembayaran !== 'pending' || $reservation->batas_waktu_pembayaran < now()) {
+                return response()->json(['error' => 'Reservasi sudah tidak dapat dilanjutkan pembayarannya.'], 400);
+            }
+
+            // Ambil pembayaran terakhir
+            $pembayaran = $reservation->pembayaran()->latest()->first();
+
+            // Jika snap token masih ada dan valid, gunakan yang ada
+            if ($pembayaran && $pembayaran->snap_token) {
+                return response()->json(['snap_token' => $pembayaran->snap_token]);
+            }
+
+            // Jika tidak ada snap token atau sudah expired, buat baru
+            $snapToken = $this->generateNewSnapToken($reservation);
+
+            // Update pembayaran dengan token baru
+            if ($pembayaran) {
+                $pembayaran->update(['snap_token' => $snapToken]);
+            } else {
+                // Buat pembayaran baru jika tidak ada
+                $pembayaran = Pembayaran::create([
+                    'guest_id' => $reservation->guest_id,
+                    'reservation_id' => $reservation->id_reservation,
+                    'amount' => $reservation->total_amount,
+                    'payment_date' => now(),
+                    'snap_token' => $snapToken,
+                    'notifikasi' => "Lanjutan pembayaran untuk reservasi #{$reservation->id_reservation}",
+                    'status' => 'pending',
+                    'order_id' => 'ORDER-RETRY-' . \strtotime('now'),
+                ]);
+            }
+
+            return response()->json(['snap_token' => $snapToken]);
+        } catch (\Exception $e) {
+            Log::error('Get snap token error: ' . $e->getMessage());
+            return response()->json(['error' => 'Terjadi kesalahan saat memproses pembayaran: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Update status pembayaran
+     */
+    public function updatePaymentStatus(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'reservation_id' => 'required|integer',
+                'status' => 'required|string|in:success,pending,failed',
+                'transaction_data' => 'nullable',
+            ]);
+
+            $reservation = Reservasi::findOrFail($validated['reservation_id']);
+
+            // Cek apakah user memiliki reservasi ini
+            if (Auth::guard('guest')->id() !== $reservation->guest_id) {
+                return response()->json(['error' => 'Anda tidak memiliki akses ke reservasi ini.'], 403);
+            }
+
+            // Update status pembayaran
+            $reservation->update([
+                'status_pembayaran' => $validated['status'] === 'success' ? 'success' : 'pending',
+            ]);
+
+            // Update pembayaran
+            $pembayaran = $reservation->pembayaran()->latest()->first();
+            if ($pembayaran) {
+                $pembayaran->update([
+                    'status' => $validated['status'] === 'success' ? 'paid' : 'pending',
+                    'notifikasi' => $validated['status'] === 'success'
+                        ? "Pembayaran untuk reservasi #{$reservation->id_reservation} berhasil"
+                        : "Pembayaran untuk reservasi #{$reservation->id_reservation} dalam proses",
+                ]);
+            }
+
+            return response()->json([
+                'message' => 'Status pembayaran berhasil diupdate',
+                'status' => $validated['status'],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Update payment status error: ' . $e->getMessage());
+            return response()->json(['error' => 'Terjadi kesalahan saat update status pembayaran: ' . $e->getMessage()], 500);
+        }
     }
 }

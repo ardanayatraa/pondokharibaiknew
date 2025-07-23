@@ -1462,11 +1462,12 @@
                                                 </div>
                                                 <div class="flex flex-col space-y-2 mt-2">
                                                     @if ($res->status_pembayaran === 'pending' && $res->batas_waktu_pembayaran > now())
-                                                        <a href="{{ route('reservation.lanjutkan-pembayaran', $res->id_reservation) }}"
-                                                            class="text-white bg-elegant-orange hover:bg-elegant-orange/90 px-3 py-1 rounded text-xs font-medium text-center">
+                                                        <button
+                                                            class="direct-pay-button text-white bg-elegant-orange hover:bg-elegant-orange/90 px-3 py-1 rounded text-xs font-medium text-center"
+                                                            data-reservation-id="{{ $res->id_reservation }}">
                                                             <i class="fas fa-credit-card mr-1"></i> Lanjutkan
                                                             Pembayaran
-                                                        </a>
+                                                        </button>
                                                     @endif
                                                     <button
                                                         onclick="Livewire.dispatch('openModal', [{{ $res->id_reservation }}])"
@@ -1576,6 +1577,7 @@
     <!-- Load reschedule script after other scripts -->
     <script src="/dist/reschedule.js" defer></script>
     <script src="/dist/profile-update.js" defer></script>
+    <script src="/dist/direct-payment.js" defer></script>
 </body>
 
 </html>

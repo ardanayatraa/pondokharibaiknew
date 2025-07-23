@@ -193,6 +193,10 @@ Route::post('/payment/token', [BookingController::class,'paymentToken']);
     Route::post('/updateUser', [GuestController::class, 'updateUser'])->name('guest.updateUser');
     // Route untuk melanjutkan pembayaran yang terputus
     Route::get('/reservation/{id}/lanjutkan-pembayaran', [BookingController::class, 'lanjutkanPembayaran'])->name('reservation.lanjutkan-pembayaran');
+    // Route untuk mendapatkan snap token untuk pembayaran langsung
+    Route::get('/api/payment/get-snap-token/{id}', [BookingController::class, 'getSnapToken'])->name('payment.get-snap-token');
+    // Route untuk update status pembayaran
+    Route::post('/api/payment/update-status', [BookingController::class, 'updatePaymentStatus'])->name('payment.update-status');
 });
 
 Route::post('/reservasi/{reservasi}/checkin', [ReservasiController::class, 'checkin'])->name('reservasi.checkin');
