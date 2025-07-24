@@ -42,7 +42,7 @@ class VillaPricingTable extends DataTableComponent
                 Column::make("Aksi")
                 ->label(fn ($row) => view('components.link-action', [
                     'id' => $row->id_villa_pricing,
-                    'routeName' => 'harga-villa'
+                    'routeName' => 'villa-pricing'
                 ])->render()) // ← render() mengubah view jadi string
                 ->html(),
 
