@@ -1,8 +1,7 @@
 @php
     $isConfirmedOrRescheduled = in_array($row->status, ['confirmed', 'rescheduled']);
 
-    $canCheckIn =
-        $isConfirmedOrRescheduled && $row->status_check_in === 'pending' && now()->toDateString() >= $row->start_date;
+    $canCheckIn = $isConfirmedOrRescheduled && $row->status_check_in === 'pending';
 
     $canCheckOut = $isConfirmedOrRescheduled && $row->status_check_in === 'checked_in';
 @endphp
