@@ -26,38 +26,24 @@ use App\Http\Controllers\CekKetersediaanResepsionisController;
 |--------------------------------------------------------------------------
 */
 
-// Public Routes
 Route::get('/', [BookingController::class, 'index'])->name('home.index');
+
 Route::post('/login', [CustomAuthenticatedSessionController::class, 'store'])->name('login');
 Route::post('/register', [GuestController::class, 'store'])->name('guests.store');
 Route::post('/logout', [CustomAuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-// Public API Routes (untuk booking system)
-Route::get('/villa/{id}', [BookingController::class, 'villabyId']);
-Route::get('/villa/{villa}/reserved-dates', [BookingController::class, 'reservedDates']);
-Route::get('/villa/{villa}/calculate', [BookingController::class, 'calculate']);
-Route::get('/reservation/{id}/reschedule-data', [BookingController::class, 'getReservationForReschedule']);
-Route::get('/reservation/{id}/calculate-reschedule', [BookingController::class, 'calculateReschedule']);
-Route::post('/reservation/reschedule', [BookingController::class, 'processReschedule']);
-Route::post('/payment/token', [BookingController::class,'paymentToken']);
 
-// Public utility routes
-Route::get('/refund/status/{orderId}', [RefundController::class, 'checkRefundStatus']);
+Route::middleware('auth')->get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 
-// Protected Routes - General Auth
-Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-});
+// Admin Group
+Route::middleware(['auth'])->group(function () {
 
-// Admin Routes
-Route::middleware(['auth', 'role:admin'])->group(function () {
-
-    // Reports
     Route::get('/laporan', [ReportController::class, 'index'])->name('laporan');
     Route::get('/report/export', [ReportController::class, 'export'])->name('report.export');
 
-    // Admin Management
+
+    // Admin
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('index');
         Route::get('/create', [AdminController::class, 'create'])->name('create');
@@ -68,7 +54,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::delete('/{admin}', [AdminController::class, 'destroy'])->name('destroy');
     });
 
-    // Facility Management
+    // Facility
     Route::prefix('facility')->name('facility.')->group(function () {
         Route::get('/', [FacilityController::class, 'index'])->name('index');
         Route::get('/create', [FacilityController::class, 'create'])->name('create');
@@ -79,18 +65,19 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::delete('/{facility}', [FacilityController::class, 'destroy'])->name('destroy');
     });
 
-    // Guest Management
-    Route::prefix('guest')->name('guest.')->group(function () {
-        Route::get('/', [GuestController::class, 'index'])->name('index');
-        Route::get('/create', [GuestController::class, 'create'])->name('create');
-        Route::post('/', [GuestController::class, 'store'])->name('store');
-        Route::get('/{guest}', [GuestController::class, 'show'])->name('show');
-        Route::get('/{guest}/edit', [GuestController::class, 'edit'])->name('edit');
-        Route::put('/{guest}', [GuestController::class, 'update'])->name('update');
-        Route::delete('/{guest}', [GuestController::class, 'destroy'])->name('destroy');
-    });
+    // Guest
+        Route::prefix('guest')->name('guest.')->group(function () {
+            Route::get('/', [GuestController::class, 'index'])->name('index');
+            Route::get('/create', [GuestController::class, 'create'])->name('create');
+            Route::post('/', [GuestController::class, 'store'])->name('store');
+            Route::get('/{guest}', [GuestController::class, 'show'])->name('show');
+            Route::get('/{guest}/edit', [GuestController::class, 'edit'])->name('edit');
+            Route::put('/{guest}', [GuestController::class, 'update'])->name('update');
+            Route::delete('/{guest}', [GuestController::class, 'destroy'])->name('destroy');
+        });
 
-    // Owner Management
+
+    // Owner
     Route::prefix('owner')->name('owner.')->group(function () {
         Route::get('/', [OwnerController::class, 'index'])->name('index');
         Route::get('/create', [OwnerController::class, 'create'])->name('create');
@@ -101,7 +88,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::delete('/{owner}', [OwnerController::class, 'destroy'])->name('destroy');
     });
 
-    // Payment Management
+    // Pembayaran
     Route::prefix('pembayaran')->name('pembayaran.')->group(function () {
         Route::get('/', [PembayaranController::class, 'index'])->name('index');
         Route::get('/create', [PembayaranController::class, 'create'])->name('create');
@@ -112,7 +99,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::delete('/{pembayaran}', [PembayaranController::class, 'destroy'])->name('destroy');
     });
 
-    // Report Management
+    // Report
     Route::prefix('report')->name('report.')->group(function () {
         Route::get('/', [ReportController::class, 'index'])->name('index');
         Route::get('/create', [ReportController::class, 'create'])->name('create');
@@ -123,7 +110,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::delete('/{report}', [ReportController::class, 'destroy'])->name('destroy');
     });
 
-    // Reservation Management
+    // Reservasi
     Route::prefix('reservasi')->name('reservasi.')->group(function () {
         Route::get('/', [ReservasiController::class, 'index'])->name('index');
         Route::get('/create', [ReservasiController::class, 'create'])->name('create');
@@ -132,11 +119,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('/{reservasi}/edit', [ReservasiController::class, 'edit'])->name('edit');
         Route::put('/{reservasi}', [ReservasiController::class, 'update'])->name('update');
         Route::delete('/{reservasi}', [ReservasiController::class, 'destroy'])->name('destroy');
-        Route::post('/{reservasi}/checkin', [ReservasiController::class, 'checkin'])->name('checkin');
-        Route::post('/{reservasi}/checkout', [ReservasiController::class, 'checkout'])->name('checkout');
     });
 
-    // Season Management
+    // Season
     Route::prefix('season')->name('season.')->group(function () {
         Route::get('/', [SeasonController::class, 'index'])->name('index');
         Route::get('/create', [SeasonController::class, 'create'])->name('create');
@@ -147,18 +132,18 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::delete('/{season}', [SeasonController::class, 'destroy'])->name('destroy');
     });
 
-    // Villa Management
+    // Villa
     Route::prefix('villa')->name('villa.')->group(function () {
         Route::get('/', [VillaController::class, 'index'])->name('index');
         Route::get('/create', [VillaController::class, 'create'])->name('create');
         Route::post('/', [VillaController::class, 'store'])->name('store');
-        Route::get('/{villa}', [VillaController::class, 'show'])->name('show'); // Added missing route
+
         Route::get('/{villa}/edit', [VillaController::class, 'edit'])->name('edit');
         Route::put('/{villa}', [VillaController::class, 'update'])->name('update');
         Route::delete('/{villa}', [VillaController::class, 'destroy'])->name('destroy');
     });
 
-    // Villa Pricing Management
+    // Harga Villa
     Route::prefix('harga-villa')->name('harga-villa.')->group(function () {
         Route::get('/', [VillaPricingController::class, 'index'])->name('index');
         Route::get('/create', [VillaPricingController::class, 'create'])->name('create');
@@ -169,14 +154,13 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::delete('/{harga_villa}', [VillaPricingController::class, 'destroy'])->name('destroy');
     });
 
-    // Villa Pricing API Routes (moved inside middleware)
     Route::get('villa-pricing/{villa_id}/date/{date}', [VillaPricingController::class, 'getPricingByDate']);
-    Route::get('villa-pricing/{villa_id}/range/{start_date}/{end_date}', [VillaPricingController::class, 'getPricingByDateRange']);
-    Route::get('active-seasons/{date?}', [VillaPricingController::class, 'getActiveSeasons']);
+Route::get('villa-pricing/{villa_id}/range/{start_date}/{end_date}', [VillaPricingController::class, 'getPricingByDateRange']);
+Route::get('active-seasons/{date?}', [VillaPricingController::class, 'getActiveSeasons']);
 });
 
-// Resepsionis Routes
-Route::middleware(['auth', 'role:resepsionis'])->prefix('resepsionis')->name('resepsionis.')->group(function () {
+// Resepsionis Group
+Route::middleware(['auth:admin', 'role:resepsionis'])->prefix('resepsionis')->name('resepsionis.')->group(function () {
     Route::get('/dashboard', [ResepsionisDashboardController::class, 'index'])->name('dashboard');
     Route::get('/reservasi', [ReservasiController::class, 'index'])->name('reservasi.index');
     Route::get('/pembayaran', [PembayaranController::class, 'index'])->name('pembayaran.index');
@@ -184,21 +168,43 @@ Route::middleware(['auth', 'role:resepsionis'])->prefix('resepsionis')->name('re
     Route::get('/cek-ketersediaan', [CekKetersediaanResepsionisController::class, 'index'])->name('cek-ketersediaan');
 });
 
-// Guest Routes
-Route::middleware(['auth', 'role:guest'])->group(function () {
-    // Guest info
-    Route::get('/guestbyID/{id}', [BookingController::class, 'guestInfo']);
+// Dummy mail tester
+Route::get('/send', function () {
+    $nama  = 'Budi Santoso';
+    $email = 'madaryadev@gmail.com';
 
-    // Reservation management
-    Route::post('/reservation/store', [BookingController::class,'storeReservation']);
+    Mail::to($email)->send(new MailToGuest($nama));
+
+    return "Dummy email telah dikirim ke {$email} dengan nama “{$nama}”.";
+})->name('mail.test');
+Route::get('/refund/status/{orderId}', [RefundController::class, 'checkRefundStatus']);
+
+Route::get('/villa/{id}', [BookingController::class, 'villabyId']);
+Route::get('/villa/{villa}/reserved-dates', [BookingController::class, 'reservedDates']);
+Route::get('/villa/{villa}/calculate', [BookingController::class, 'calculate']);
+  Route::get('/reservation/{id}/reschedule-data', [BookingController::class, 'getReservationForReschedule']);
+    Route::get('/reservation/{id}/calculate-reschedule', [BookingController::class, 'calculateReschedule']);
+    Route::post('/reservation/reschedule', [BookingController::class, 'processReschedule']);
+Route::middleware(['auth', 'role:guest'])->get('/guestbyID/{id}', [App\Http\Controllers\BookingController::class, 'guestInfo']);
+Route::post('/payment/token', [BookingController::class,'paymentToken']);
+
+    Route::middleware(['auth:guest'])->group(function () {
+
+ Route::post('/reservation/store', [BookingController::class,'storeReservation']);
     Route::get('/reservation/{id}/refund-info', [RefundController::class, 'getRefundInfo']);
     Route::post('/reservation/refund', [RefundController::class, 'processRefund']);
-
-    // User management
+    // Change to updateUser route
     Route::post('/updateUser', [GuestController::class, 'updateUser'])->name('guest.updateUser');
-
-    // Payment routes
+    // Route untuk melanjutkan pembayaran yang terputus
     Route::get('/reservation/{id}/lanjutkan-pembayaran', [BookingController::class, 'lanjutkanPembayaran'])->name('reservation.lanjutkan-pembayaran');
+    // Route untuk mendapatkan snap token untuk pembayaran langsung
     Route::get('/api/payment/get-snap-token/{id}', [BookingController::class, 'getSnapToken'])->name('payment.get-snap-token');
+    // Route untuk update status pembayaran
     Route::post('/api/payment/update-status', [BookingController::class, 'updatePaymentStatus'])->name('payment.update-status');
 });
+
+Route::post('/reservasi/{reservasi}/checkin', [ReservasiController::class, 'checkin'])->name('reservasi.checkin');
+Route::post('/reservasi/{reservasi}/checkout', [ReservasiController::class, 'checkout'])->name('reservasi.checkout');
+
+
+
