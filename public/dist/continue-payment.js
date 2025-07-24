@@ -26,16 +26,34 @@ document.addEventListener("DOMContentLoaded", () => {
           onSuccess: function(result) {
             console.log('Pembayaran berhasil:', result);
             // Update status pembayaran menjadi success
-            updatePaymentStatus('success', result);
-            // Redirect ke dashboard dengan pesan sukses
-            window.location.href = '/dashboard?status=success&message=Pembayaran berhasil';
+            updatePaymentStatus('success', result)
+              .then(() => {
+                console.log('Payment status updated to success, redirecting...');
+                // Tambahkan delay sebelum redirect untuk memastikan status diperbarui
+                setTimeout(() => {
+                  window.location.href = '/dashboard?status=success&message=Pembayaran berhasil';
+                }, 1000);
+              })
+              .catch(err => {
+                console.error('Error updating payment status:', err);
+                alert('Pembayaran berhasil, tetapi gagal memperbarui status. Silakan refresh halaman.');
+              });
           },
           onPending: function(result) {
             console.log('Pembayaran pending:', result);
             // Update status pembayaran menjadi pending
-            updatePaymentStatus('pending', result);
-            // Redirect ke dashboard dengan pesan pending
-            window.location.href = '/dashboard?status=pending&message=Pembayaran dalam proses';
+            updatePaymentStatus('pending', result)
+              .then(() => {
+                console.log('Payment status updated to pending, redirecting...');
+                // Redirect ke dashboard dengan pesan pending
+                setTimeout(() => {
+                  window.location.href = '/dashboard?status=pending&message=Pembayaran dalam proses';
+                }, 1000);
+              })
+              .catch(err => {
+                console.error('Error updating payment status:', err);
+                alert('Pembayaran dalam proses, tetapi gagal memperbarui status. Silakan refresh halaman.');
+              });
           },
           onError: function(result) {
             console.log('Pembayaran gagal:', result);
@@ -72,13 +90,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!reservationId) {
       console.error('Reservation ID not found in URL');
-      return;
+      return Promise.reject(new Error('Reservation ID not found'));
     }
 
     console.log('Updating payment status for reservation:', reservationId, 'Status:', status);
 
     // Send request to update payment status
-    fetch('/api/payment/update-status', {
+    return fetch('/api/payment/update-status', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -99,9 +117,19 @@ document.addEventListener("DOMContentLoaded", () => {
     })
     .then(data => {
       console.log('Payment status updated:', data);
+
+      // Verifikasi status yang diperbarui
+      if (status === 'success') {
+        console.log('Reservation should now be confirmed');
+      } else {
+        console.log('Reservation remains in pending status');
+      }
+
+      return data;
     })
     .catch(error => {
       console.error('Error updating payment status:', error);
+      throw error;
     });
   }
 });

@@ -662,12 +662,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (window.snap) {
           window.snap.pay(snap_token, {
             onSuccess: async (r) => {
+              console.log('Payment successful:', r);
               // Update status pembayaran menjadi success
               await updatePaymentStatus('success', r);
               // Reservasi sudah dibuat, hanya perlu update status
               window.goToStep(5)
             },
             onPending: async (r) => {
+              console.log('Payment pending:', r);
               // Update status pembayaran menjadi pending
               await updatePaymentStatus('pending', r);
               window.goToStep(5)
@@ -739,6 +741,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      console.log(`Updating payment status for reservation ${reservationId} to ${status}`);
+
       // Send request to update payment status
       const response = await fetch('/api/payment/update-status', {
         method: 'POST',
@@ -760,6 +764,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = await response.json();
       console.log('Payment status updated:', data);
+
+      // Verifikasi status yang diperbarui
+      if (status === 'success') {
+        console.log('Reservation should now be confirmed');
+      } else {
+        console.log('Reservation remains in pending status');
+      }
     } catch (error) {
       console.error('Error updating payment status:', error);
     }

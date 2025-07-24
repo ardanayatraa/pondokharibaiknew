@@ -52,15 +52,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log('Pembayaran berhasil:', result);
                 // Update status pembayaran menjadi success
                 updatePaymentStatus(reservationId, 'success', result);
-                // Reload halaman dengan pesan sukses
-                window.location.reload();
+                // Tambahkan delay sebelum reload untuk memastikan status diperbarui
+                setTimeout(() => {
+                  console.log('Reloading page after successful payment');
+                  window.location.reload();
+                }, 1000);
               },
               onPending: function(result) {
                 console.log('Pembayaran pending:', result);
                 // Update status pembayaran menjadi pending
                 updatePaymentStatus(reservationId, 'pending', result);
                 // Reload halaman dengan pesan pending
-                window.location.reload();
+                setTimeout(() => {
+                  console.log('Reloading page after pending payment');
+                  window.location.reload();
+                }, 1000);
               },
               onError: function(result) {
                 console.log('Pembayaran gagal:', result);
@@ -108,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log('Updating payment status for reservation:', reservationId, 'Status:', status);
 
     // Send request to update payment status
-    fetch('/api/payment/update-status', {
+    return fetch('/api/payment/update-status', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -129,9 +135,19 @@ document.addEventListener("DOMContentLoaded", () => {
     })
     .then(data => {
       console.log('Payment status updated:', data);
+
+      // Verifikasi status yang diperbarui
+      if (status === 'success') {
+        console.log('Reservation should now be confirmed');
+      } else {
+        console.log('Reservation remains in pending status');
+      }
+
+      return data;
     })
     .catch(error => {
       console.error('Error updating payment status:', error);
+      throw error;
     });
   }
 });

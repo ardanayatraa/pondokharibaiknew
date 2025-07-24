@@ -606,20 +606,56 @@ class BookingController extends Controller
             }
 
             // Update status pembayaran dan status reservasi
-            $reservation->update([
-                'status_pembayaran' => $validated['status'] === 'success' ? 'success' : 'pending',
-                'status' => $validated['status'] === 'success' ? 'confirmed' : 'pending',
-            ]);
+            if ($validated['status'] === 'success') {
+                // Jika pembayaran berhasil, ubah status menjadi confirmed
+                $reservation->update([
+                    'status_pembayaran' => 'success',
+                    'status' => 'confirmed',
+                ]);
+
+                Log::info('Payment successful, reservation status updated to confirmed', [
+                    'reservation_id' => $reservationId,
+                    'status' => 'confirmed',
+                    'payment_status' => 'success'
+                ]);
+            } else {
+                // Jika pembayaran pending atau gagal, status tetap pending
+                $reservation->update([
+                    'status_pembayaran' => 'pending',
+                    'status' => 'pending',
+                ]);
+
+                Log::info('Payment pending, reservation status remains pending', [
+                    'reservation_id' => $reservationId,
+                    'status' => 'pending',
+                    'payment_status' => 'pending'
+                ]);
+            }
 
             // Update pembayaran
             $pembayaran = $reservation->pembayaran()->latest()->first();
             if ($pembayaran) {
-                $pembayaran->update([
-                    'status' => $validated['status'] === 'success' ? 'paid' : 'pending',
-                    'notifikasi' => $validated['status'] === 'success'
-                        ? "Pembayaran untuk reservasi #{$reservation->id_reservation} berhasil"
-                        : "Pembayaran untuk reservasi #{$reservation->id_reservation} dalam proses",
-                ]);
+                if ($validated['status'] === 'success') {
+                    $pembayaran->update([
+                        'status' => 'paid',
+                        'notifikasi' => "Pembayaran untuk reservasi #{$reservation->id_reservation} berhasil"
+                    ]);
+
+                    Log::info('Payment record updated to paid', [
+                        'payment_id' => $pembayaran->id_pembayaran,
+                        'status' => 'paid'
+                    ]);
+                } else {
+                    $pembayaran->update([
+                        'status' => 'pending',
+                        'notifikasi' => "Pembayaran untuk reservasi #{$reservation->id_reservation} dalam proses"
+                    ]);
+
+                    Log::info('Payment record remains pending', [
+                        'payment_id' => $pembayaran->id_pembayaran,
+                        'status' => 'pending'
+                    ]);
+                }
             }
 
             Log::info('Payment status updated successfully', [
