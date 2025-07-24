@@ -14,6 +14,7 @@ use App\Models\VillaPricing;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
 use App\Models\Facility;
 
 class BookingController extends Controller
@@ -618,6 +619,28 @@ class BookingController extends Controller
                     'status' => 'confirmed',
                     'payment_status' => 'success'
                 ]);
+
+                // Refresh reservation data
+                $reservation->refresh();
+
+                // Double-check status update
+                if ($reservation->status !== 'confirmed' || $reservation->status_pembayaran !== 'success') {
+                    Log::warning('Reservation status not updated correctly after success payment', [
+                        'reservation_id' => $reservationId,
+                        'expected_status' => 'confirmed',
+                        'actual_status' => $reservation->status,
+                        'expected_payment_status' => 'success',
+                        'actual_payment_status' => $reservation->status_pembayaran
+                    ]);
+
+                    // Force update again
+                    DB::table('tbl_reservasi')
+                        ->where('id_reservation', $reservationId)
+                        ->update([
+                            'status_pembayaran' => 'success',
+                            'status' => 'confirmed',
+                        ]);
+                }
             } else {
                 // Jika pembayaran pending atau gagal, status tetap pending
                 $reservation->update([
@@ -657,6 +680,9 @@ class BookingController extends Controller
                     ]);
                 }
             }
+
+            // Refresh reservation data again
+            $reservation->refresh();
 
             Log::info('Payment status updated successfully', [
                 'reservation_id' => $reservationId,

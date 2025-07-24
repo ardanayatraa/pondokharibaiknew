@@ -51,8 +51,10 @@
                 <h3 class="font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">Informasi Pembayaran</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm text-gray-700">
                     <div><strong>Status Pembayaran:</strong>
-                        <span class="inline-block px-2 py-1 rounded-md text-xs bg-yellow-100 text-yellow-700">
-                            Pending
+                        <span
+                            class="inline-block px-2 py-1 rounded-md text-xs
+                            {{ $reservasi->status_pembayaran === 'success' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
+                            {{ $reservasi->status_pembayaran === 'success' ? 'Success' : 'Pending' }}
                         </span>
                     </div>
                     <div><strong>Batas Waktu Pembayaran:</strong>
@@ -63,10 +65,16 @@
                 </div>
 
                 <div class="mt-8 flex justify-center">
-                    <button id="pay-button" data-snap-token="{{ $snap_token }}"
-                        class="bg-elegant-green hover:bg-elegant-green/90 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-200 flex items-center">
-                        <i class="fas fa-credit-card mr-2"></i> Lanjutkan Pembayaran
-                    </button>
+                    @if ($reservasi->status_pembayaran !== 'success')
+                        <button id="pay-button" data-snap-token="{{ $snap_token }}"
+                            class="bg-elegant-green hover:bg-elegant-green/90 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-200 flex items-center">
+                            <i class="fas fa-credit-card mr-2"></i> Lanjutkan Pembayaran
+                        </button>
+                    @else
+                        <div class="bg-green-100 text-green-800 px-6 py-3 rounded-lg shadow-lg flex items-center">
+                            <i class="fas fa-check-circle mr-2"></i> Pembayaran Berhasil
+                        </div>
+                    @endif
                 </div>
             </section>
 

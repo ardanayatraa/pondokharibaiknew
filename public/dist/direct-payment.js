@@ -51,22 +51,36 @@ document.addEventListener("DOMContentLoaded", () => {
               onSuccess: function(result) {
                 console.log('Pembayaran berhasil:', result);
                 // Update status pembayaran menjadi success
-                updatePaymentStatus(reservationId, 'success', result);
-                // Tambahkan delay sebelum reload untuk memastikan status diperbarui
-                setTimeout(() => {
-                  console.log('Reloading page after successful payment');
-                  window.location.reload();
-                }, 1000);
+                updatePaymentStatus(reservationId, 'success', result)
+                  .then(() => {
+                    console.log('Payment status updated to success, reloading...');
+                    // Tambahkan delay lebih lama sebelum reload untuk memastikan status diperbarui
+                    setTimeout(() => {
+                      console.log('Reloading page after successful payment');
+                      window.location.reload();
+                    }, 3000);
+                  })
+                  .catch(err => {
+                    console.error('Error updating payment status:', err);
+                    alert('Pembayaran berhasil, tetapi gagal memperbarui status. Silakan refresh halaman.');
+                  });
               },
               onPending: function(result) {
                 console.log('Pembayaran pending:', result);
                 // Update status pembayaran menjadi pending
-                updatePaymentStatus(reservationId, 'pending', result);
-                // Reload halaman dengan pesan pending
-                setTimeout(() => {
-                  console.log('Reloading page after pending payment');
-                  window.location.reload();
-                }, 1000);
+                updatePaymentStatus(reservationId, 'pending', result)
+                  .then(() => {
+                    console.log('Payment status updated to pending, reloading...');
+                    // Reload halaman dengan pesan pending
+                    setTimeout(() => {
+                      console.log('Reloading page after pending payment');
+                      window.location.reload();
+                    }, 3000);
+                  })
+                  .catch(err => {
+                    console.error('Error updating payment status:', err);
+                    alert('Pembayaran dalam proses, tetapi gagal memperbarui status. Silakan refresh halaman.');
+                  });
               },
               onError: function(result) {
                 console.log('Pembayaran gagal:', result);
@@ -114,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log('Updating payment status for reservation:', reservationId, 'Status:', status);
 
     // Send request to update payment status
-    return fetch('/api/payment/update-status', {
+    return fetch('/payment/update-status', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

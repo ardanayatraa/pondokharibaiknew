@@ -153,6 +153,10 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{harga_villa}', [VillaPricingController::class, 'update'])->name('update');
         Route::delete('/{harga_villa}', [VillaPricingController::class, 'destroy'])->name('destroy');
     });
+
+    Route::get('villa-pricing/{villa_id}/date/{date}', [VillaPricingController::class, 'getPricingByDate']);
+Route::get('villa-pricing/{villa_id}/range/{start_date}/{end_date}', [VillaPricingController::class, 'getPricingByDateRange']);
+Route::get('active-seasons/{date?}', [VillaPricingController::class, 'getActiveSeasons']);
 });
 
 // Resepsionis Group

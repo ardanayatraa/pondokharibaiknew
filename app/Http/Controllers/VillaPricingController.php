@@ -6,6 +6,7 @@ use App\Models\VillaPricing;
 use App\Models\Villa;
 use App\Models\Season;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class VillaPricingController extends Controller
 {
@@ -27,6 +28,7 @@ class VillaPricingController extends Controller
     public function create()
     {
         $villas   = Villa::all();
+        // Urutkan season berdasarkan tanggal mulai (terbaru dulu)
         $seasons  = Season::orderBy('tgl_mulai_season', 'desc')->get();
         return view('harga-villa.create', compact('villas', 'seasons'));
     }
@@ -37,8 +39,8 @@ class VillaPricingController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'villa_id'                 => 'nullable|exists:tbl_villa,id_villa',
-            'season_id'                => 'nullable|exists:tbl_season,id_season',
+            'villa_id'                 => 'required|exists:tbl_villa,id_villa',
+            'season_id'                => 'required|exists:tbl_season,id_season',
             'sunday_pricing'           => 'nullable|integer|min:0',
             'monday_pricing'           => 'nullable|integer|min:0',
             'tuesday_pricing'          => 'nullable|integer|min:0',
@@ -47,6 +49,17 @@ class VillaPricingController extends Controller
             'friday_pricing'           => 'nullable|integer|min:0',
             'saturday_pricing'         => 'nullable|integer|min:0',
         ]);
+
+        // Cek apakah sudah ada pricing untuk villa dan season yang sama
+        $existingPricing = VillaPricing::where('villa_id', $validated['villa_id'])
+                                      ->where('season_id', $validated['season_id'])
+                                      ->first();
+
+        if ($existingPricing) {
+            return redirect()->back()
+                           ->withErrors(['season_id' => 'Pricing untuk villa dan season ini sudah ada.'])
+                           ->withInput();
+        }
 
         VillaPricing::create($validated);
 
@@ -83,8 +96,8 @@ class VillaPricingController extends Controller
         $pricing = VillaPricing::findOrFail($id_villa_pricing);
 
         $validated = $request->validate([
-            'villa_id'                 => 'nullable|exists:tbl_villa,id_villa',
-            'season_id'                => 'nullable|exists:tbl_season,id_season',
+            'villa_id'                 => 'required|exists:tbl_villa,id_villa',
+            'season_id'                => 'required|exists:tbl_season,id_season',
             'sunday_pricing'           => 'nullable|integer|min:0',
             'monday_pricing'           => 'nullable|integer|min:0',
             'tuesday_pricing'          => 'nullable|integer|min:0',
@@ -93,6 +106,18 @@ class VillaPricingController extends Controller
             'friday_pricing'           => 'nullable|integer|min:0',
             'saturday_pricing'         => 'nullable|integer|min:0',
         ]);
+
+        // Cek apakah ada pricing lain dengan villa dan season yang sama (kecuali yang sedang di-edit)
+        $existingPricing = VillaPricing::where('villa_id', $validated['villa_id'])
+                                      ->where('season_id', $validated['season_id'])
+                                      ->where('id_villa_pricing', '!=', $id_villa_pricing)
+                                      ->first();
+
+        if ($existingPricing) {
+            return redirect()->back()
+                           ->withErrors(['season_id' => 'Pricing untuk villa dan season ini sudah ada.'])
+                           ->withInput();
+        }
 
         $pricing->update($validated);
 
@@ -110,5 +135,166 @@ class VillaPricingController extends Controller
 
         return redirect()->route('harga-villa.index')
                          ->with('success', 'VillaPricing berhasil dihapus.');
+    }
+
+    /**
+     * Get pricing for a specific villa on a specific date
+     */
+    public function getPricingByDate($villa_id, $date)
+    {
+        try {
+            $targetDate = Carbon::parse($date);
+            $dayOfWeek = $targetDate->dayOfWeek; // 0 = Sunday, 1 = Monday, etc.
+
+            // Cari season yang aktif pada tanggal tersebut
+            $activeSeason = Season::where('tgl_mulai_season', '<=', $targetDate)
+                                  ->where('tgl_selesai_season', '>=', $targetDate)
+                                  ->first();
+
+            if (!$activeSeason) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada season aktif untuk tanggal ini'
+                ], 404);
+            }
+
+            // Cek apakah hari ini termasuk dalam days_of_week season
+            if (!in_array($dayOfWeek, $activeSeason->days_of_week)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Villa tidak tersedia pada hari ini sesuai season'
+                ], 404);
+            }
+
+            // Cari pricing untuk villa dan season tersebut
+            $pricing = VillaPricing::where('villa_id', $villa_id)
+                                  ->where('season_id', $activeSeason->id_season)
+                                  ->first();
+
+            if (!$pricing) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pricing tidak ditemukan untuk villa dan season ini'
+                ], 404);
+            }
+
+            // Mapping day of week ke field pricing
+            $dayMapping = [
+                0 => 'sunday_pricing',
+                1 => 'monday_pricing',
+                2 => 'tuesday_pricing',
+                3 => 'wednesday_pricing',
+                4 => 'thursday_pricing',
+                5 => 'friday_pricing',
+                6 => 'saturday_pricing'
+            ];
+
+            $pricingField = $dayMapping[$dayOfWeek];
+            $price = $pricing->$pricingField;
+
+            if ($price === null || $price === 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Harga tidak tersedia untuk hari ini'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'villa_id' => $villa_id,
+                    'date' => $date,
+                    'day_of_week' => $dayOfWeek,
+                    'season' => $activeSeason->nama_season,
+                    'price' => $price,
+                    'pricing_field' => $pricingField
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get pricing for a villa within a date range
+     */
+    public function getPricingByDateRange($villa_id, $start_date, $end_date)
+    {
+        try {
+            $startDate = Carbon::parse($start_date);
+            $endDate = Carbon::parse($end_date);
+            $pricing = [];
+
+            $currentDate = $startDate->copy();
+            while ($currentDate->lte($endDate)) {
+                $response = $this->getPricingByDate($villa_id, $currentDate->format('Y-m-d'));
+                $responseData = json_decode($response->getContent(), true);
+
+                if ($responseData['success']) {
+                    $pricing[] = $responseData['data'];
+                } else {
+                    $pricing[] = [
+                        'date' => $currentDate->format('Y-m-d'),
+                        'day_of_week' => $currentDate->dayOfWeek,
+                        'available' => false,
+                        'reason' => $responseData['message']
+                    ];
+                }
+
+                $currentDate->addDay();
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'villa_id' => $villa_id,
+                    'start_date' => $start_date,
+                    'end_date' => $end_date,
+                    'pricing' => $pricing,
+                    'total_days' => count($pricing),
+                    'available_days' => count(array_filter($pricing, function($day) {
+                        return isset($day['price']);
+                    }))
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get active seasons for a specific date
+     */
+    public function getActiveSeasons($date = null)
+    {
+        try {
+            $targetDate = $date ? Carbon::parse($date) : Carbon::now();
+
+            $activeSeasons = Season::where('tgl_mulai_season', '<=', $targetDate)
+                                  ->where('tgl_selesai_season', '>=', $targetDate)
+                                  ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'date' => $targetDate->format('Y-m-d'),
+                    'active_seasons' => $activeSeasons
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

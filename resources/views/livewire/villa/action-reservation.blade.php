@@ -18,7 +18,7 @@
                         <div class="mb-4">
                             <span
                                 class="px-3 py-1 rounded-full text-sm font-medium
-                                @if ($reservation->status === 'confirmed') bg-green-100 text-green-800
+                                @if ($reservation->status === 'confirmed' || $reservation->status_pembayaran === 'success') bg-green-100 text-green-800
                                 @elseif($reservation->status === 'rescheduled') bg-blue-100 text-blue-800
                                 @elseif($reservation->status === 'pending') bg-yellow-100 text-yellow-800
                                 @elseif($reservation->status === 'cancelled') bg-red-100 text-red-800
@@ -30,6 +30,8 @@
                                     @if ($reservation->cancelation_date)
                                         ({{ \Carbon\Carbon::parse($reservation->cancelation_date)->format('d M Y H:i') }})
                                     @endif
+                                @elseif($reservation->status === 'confirmed' || $reservation->status_pembayaran === 'success')
+                                    Confirmed
                                 @else
                                     {{ ucfirst($reservation->status) }}
                                 @endif

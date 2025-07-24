@@ -1461,7 +1461,7 @@
                                                     </span>
                                                 </div>
                                                 <div class="flex flex-col space-y-2 mt-2">
-                                                    @if ($res->status_pembayaran === 'pending' && $res->batas_waktu_pembayaran > now())
+                                                    @if ($res->status_pembayaran === 'pending' && $res->status !== 'confirmed' && $res->batas_waktu_pembayaran > now())
                                                         <button
                                                             class="direct-pay-button text-white bg-elegant-orange hover:bg-elegant-orange/90 px-3 py-1 rounded text-xs font-medium text-center"
                                                             data-reservation-id="{{ $res->id_reservation }}">

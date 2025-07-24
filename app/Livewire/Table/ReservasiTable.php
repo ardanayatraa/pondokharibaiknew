@@ -42,7 +42,7 @@ class ReservasiTable extends DataTableComponent
         // Tambahkan kolom aksi check-in/out hanya jika ada reservasi yang belum checked_out
         if (\App\Models\Reservasi::where('status_check_in', '!=', 'checked_out')->exists()) {
             $columns[] = Column::make("Aksi Check-in/Out")
-                ->label(fn($row) => $row->status_check_in !== 'checked_out' ? view('components.action-checkin', ['row' => $row]) : null)
+                ->label(fn($row) => $row->status_check_in !== 'checked_out' ? view('components.action-checkin', ['row' => $row]) : view('components.badge-status-checkin', ['status' => 'checked_out']))
                 ->html();
         }
 

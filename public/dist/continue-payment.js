@@ -29,10 +29,10 @@ document.addEventListener("DOMContentLoaded", () => {
             updatePaymentStatus('success', result)
               .then(() => {
                 console.log('Payment status updated to success, redirecting...');
-                // Tambahkan delay sebelum redirect untuk memastikan status diperbarui
+                // Tambahkan delay lebih lama sebelum redirect untuk memastikan status diperbarui
                 setTimeout(() => {
                   window.location.href = '/dashboard?status=success&message=Pembayaran berhasil';
-                }, 1000);
+                }, 3000);
               })
               .catch(err => {
                 console.error('Error updating payment status:', err);
@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Redirect ke dashboard dengan pesan pending
                 setTimeout(() => {
                   window.location.href = '/dashboard?status=pending&message=Pembayaran dalam proses';
-                }, 1000);
+                }, 3000);
               })
               .catch(err => {
                 console.error('Error updating payment status:', err);
