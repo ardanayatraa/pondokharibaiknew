@@ -189,58 +189,6 @@
                             </div>
                         </div>
 
-                        <!-- Range Date Price -->
-                        <div class="mb-6">
-                            <h4 class="text-md font-semibold text-gray-800 mb-4">Range Date Price</h4>
-                            <div id="range-date-container">
-                                @php
-                                    $rangeDatePrices = old('range_date_price', $villaPricing->range_date_price ?? []);
-                                    if (empty($rangeDatePrices)) {
-                                        $rangeDatePrices = [['start_date' => '', 'end_date' => '', 'price' => '']];
-                                    }
-                                @endphp
-
-                                @foreach ($rangeDatePrices as $index => $rangeDatePrice)
-                                    <div class="range-date-item grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal
-                                                Mulai</label>
-                                            <input type="date"
-                                                name="range_date_price[{{ $index }}][start_date]"
-                                                value="{{ $rangeDatePrice['start_date'] ?? '' }}"
-                                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal
-                                                Akhir</label>
-                                            <input type="date"
-                                                name="range_date_price[{{ $index }}][end_date]"
-                                                value="{{ $rangeDatePrice['end_date'] ?? '' }}"
-                                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Harga</label>
-                                            <input type="number" name="range_date_price[{{ $index }}][price]"
-                                                value="{{ $rangeDatePrice['price'] ?? '' }}" min="0"
-                                                step="1000"
-                                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                                placeholder="0">
-                                        </div>
-                                        <div class="flex items-end">
-                                            <button type="button" onclick="removeRangeDateItem(this)"
-                                                class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-full">
-                                                Hapus
-                                            </button>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                            <button type="button" onclick="addRangeDateItem()"
-                                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                                <i class="fas fa-plus"></i> Tambah Range Date
-                            </button>
-                        </div>
-
                         <!-- Submit Button -->
                         <div class="flex justify-end space-x-4">
                             <a href="{{ route('villa-pricing.index') }}"
@@ -268,47 +216,5 @@
                 section.style.display = 'none';
             }
         });
-
-        let rangeDateIndex = {{ count($rangeDatePrices) }};
-
-        function addRangeDateItem() {
-            const container = document.getElementById('range-date-container');
-            const newItem = document.createElement('div');
-            newItem.className = 'range-date-item grid grid-cols-1 md:grid-cols-4 gap-4 mb-4';
-            newItem.innerHTML = `
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai</label>
-                    <input type="date" name="range_date_price[${rangeDateIndex}][start_date]"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Akhir</label>
-                    <input type="date" name="range_date_price[${rangeDateIndex}][end_date]"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Harga</label>
-                    <input type="number" name="range_date_price[${rangeDateIndex}][price]"
-                           min="0" step="1000"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                           placeholder="0">
-                </div>
-                <div class="flex items-end">
-                    <button type="button" onclick="removeRangeDateItem(this)"
-                            class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-full">
-                        Hapus
-                    </button>
-                </div>
-            `;
-            container.appendChild(newItem);
-            rangeDateIndex++;
-        }
-
-        function removeRangeDateItem(button) {
-            const container = document.getElementById('range-date-container');
-            if (container.children.length > 1) {
-                button.closest('.range-date-item').remove();
-            }
-        }
     </script>
 </x-app-layout>

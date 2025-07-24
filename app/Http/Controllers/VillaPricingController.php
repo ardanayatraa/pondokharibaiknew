@@ -13,14 +13,36 @@ class VillaPricingController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $pricings = VillaPricing::with(['villa', 'season'])
-            ->orderBy('villa_id')
-            ->orderBy('season_id')
-            ->paginate(15);
+        $query = VillaPricing::with(['villa', 'season']);
 
-        return view('villa-pricing.index', compact('pricings'));
+        // Filter by villa
+        if ($request->filled('villa_id')) {
+            $query->where('villa_id', $request->villa_id);
+        }
+
+        // Filter by season
+        if ($request->filled('season_id')) {
+            $query->where('season_id', $request->season_id);
+        }
+
+        // Search by villa name
+        if ($request->filled('search')) {
+            $query->whereHas('villa', function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $pricings = $query->orderBy('villa_id')
+            ->orderBy('season_id')
+            ->paginate(15)
+            ->withQueryString();
+
+        $villas = Villa::orderBy('name')->get();
+        $seasons = Season::orderBy('nama_season')->get();
+
+        return view('villa-pricing.index', compact('pricings', 'villas', 'seasons'));
     }
 
     /**
@@ -52,10 +74,6 @@ class VillaPricingController extends Controller
             'special_price' => 'nullable|numeric|min:0',
             'use_special_price' => 'boolean',
             'special_price_description' => 'nullable|string|max:255',
-            'range_date_price' => 'nullable|array',
-            'range_date_price.*.start_date' => 'nullable|date',
-            'range_date_price.*.end_date' => 'nullable|date|after_or_equal:range_date_price.*.start_date',
-            'range_date_price.*.price' => 'nullable|numeric|min:0',
             'special_price_range' => 'nullable|array',
         ]);
 
@@ -78,13 +96,6 @@ class VillaPricingController extends Controller
 
         $data = $request->all();
         $data['use_special_price'] = $request->has('use_special_price');
-
-        // Clean up range_date_price array
-        if ($request->has('range_date_price')) {
-            $data['range_date_price'] = array_filter($request->range_date_price, function($item) {
-                return !empty($item['start_date']) && !empty($item['end_date']) && !empty($item['price']);
-            });
-        }
 
         VillaPricing::create($data);
 
@@ -130,10 +141,6 @@ class VillaPricingController extends Controller
             'special_price' => 'nullable|numeric|min:0',
             'use_special_price' => 'boolean',
             'special_price_description' => 'nullable|string|max:255',
-            'range_date_price' => 'nullable|array',
-            'range_date_price.*.start_date' => 'nullable|date',
-            'range_date_price.*.end_date' => 'nullable|date|after_or_equal:range_date_price.*.start_date',
-            'range_date_price.*.price' => 'nullable|numeric|min:0',
             'special_price_range' => 'nullable|array',
         ]);
 
@@ -158,13 +165,6 @@ class VillaPricingController extends Controller
         $data = $request->all();
         $data['use_special_price'] = $request->has('use_special_price');
 
-        // Clean up range_date_price array
-        if ($request->has('range_date_price')) {
-            $data['range_date_price'] = array_filter($request->range_date_price, function($item) {
-                return !empty($item['start_date']) && !empty($item['end_date']) && !empty($item['price']);
-            });
-        }
-
         $villaPricing->update($data);
 
         return redirect()->route('villa-pricing.index')
@@ -180,5 +180,72 @@ class VillaPricingController extends Controller
 
         return redirect()->route('villa-pricing.index')
             ->with('success', 'Villa pricing berhasil dihapus!');
+    }
+
+    /**
+     * Bulk delete selected villa pricings
+     */
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'selected_ids' => 'required|array',
+            'selected_ids.*' => 'exists:tbl_villa_pricing,id_villa_pricing'
+        ]);
+
+        $count = VillaPricing::whereIn('id_villa_pricing', $request->selected_ids)->delete();
+
+        return redirect()->route('villa-pricing.index')
+            ->with('success', "Berhasil menghapus {$count} villa pricing!");
+    }
+
+    /**
+     * Copy pricing from one season to another
+     */
+    public function copyPricing(Request $request)
+    {
+        $request->validate([
+            'source_season_id' => 'required|exists:tbl_season,id_season',
+            'target_season_id' => 'required|exists:tbl_season,id_season|different:source_season_id',
+            'villa_ids' => 'nullable|array',
+            'villa_ids.*' => 'exists:tbl_villa,id_villa'
+        ]);
+
+        $sourcePricings = VillaPricing::where('season_id', $request->source_season_id);
+
+        if ($request->has('villa_ids') && !empty($request->villa_ids)) {
+            $sourcePricings->whereIn('villa_id', $request->villa_ids);
+        }
+
+        $sourcePricings = $sourcePricings->get();
+
+        $copiedCount = 0;
+        foreach ($sourcePricings as $pricing) {
+            // Check if target pricing already exists
+            $existingPricing = VillaPricing::where('villa_id', $pricing->villa_id)
+                ->where('season_id', $request->target_season_id)
+                ->first();
+
+            if (!$existingPricing) {
+                VillaPricing::create([
+                    'villa_id' => $pricing->villa_id,
+                    'season_id' => $request->target_season_id,
+                    'sunday_pricing' => $pricing->sunday_pricing,
+                    'monday_pricing' => $pricing->monday_pricing,
+                    'tuesday_pricing' => $pricing->tuesday_pricing,
+                    'wednesday_pricing' => $pricing->wednesday_pricing,
+                    'thursday_pricing' => $pricing->thursday_pricing,
+                    'friday_pricing' => $pricing->friday_pricing,
+                    'saturday_pricing' => $pricing->saturday_pricing,
+                    'special_price' => $pricing->special_price,
+                    'use_special_price' => $pricing->use_special_price,
+                    'special_price_description' => $pricing->special_price_description,
+                    'special_price_range' => $pricing->special_price_range,
+                ]);
+                $copiedCount++;
+            }
+        }
+
+        return redirect()->route('villa-pricing.index')
+            ->with('success', "Berhasil menyalin {$copiedCount} villa pricing ke season baru!");
     }
 }
