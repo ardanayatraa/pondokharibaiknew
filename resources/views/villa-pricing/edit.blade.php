@@ -324,25 +324,6 @@
                             </div>
                         </div>
 
-                        <!-- Quick Actions -->
-                        <div class="mb-6">
-                            <h4 class="text-md font-semibold text-gray-800 mb-3">Quick Actions</h4>
-                            <div class="flex flex-wrap gap-2">
-                                <button type="button" onclick="copyWeekdayPrice()"
-                                    class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded text-sm">
-                                    <i class="fas fa-copy mr-1"></i>Copy Senin ke Selasa-Jumat
-                                </button>
-                                <button type="button" onclick="copyWeekendPrice()"
-                                    class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded text-sm">
-                                    <i class="fas fa-copy mr-1"></i>Copy Sabtu ke Minggu
-                                </button>
-                                <button type="button" onclick="clearAllPrices()"
-                                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-sm">
-                                    <i class="fas fa-eraser mr-1"></i>Clear All
-                                </button>
-                            </div>
-                        </div>
-
                         <!-- Submit Button -->
                         <div class="flex justify-between items-center pt-6 border-t">
                             <div class="flex space-x-3">
@@ -487,48 +468,7 @@
             return dayNumbers.map(num => dayNames[num] || '');
         }
 
-        // Quick Actions Functions
-        function copyWeekdayPrice() {
-            const mondayPrice = document.getElementById('monday_pricing').value;
-            if (mondayPrice) {
-                ['tuesday_pricing', 'wednesday_pricing', 'thursday_pricing', 'friday_pricing'].forEach(id => {
-                    const input = document.getElementById(id);
-                    if (!input.disabled) {
-                        input.value = mondayPrice;
-                    }
-                });
-                showToast('Harga Senin berhasil disalin ke hari kerja lainnya!', 'success');
-            } else {
-                showToast('Isi harga Senin terlebih dahulu!', 'warning');
-            }
-        }
-
-        function copyWeekendPrice() {
-            const saturdayPrice = document.getElementById('saturday_pricing').value;
-            if (saturdayPrice) {
-                const sundayInput = document.getElementById('sunday_pricing');
-                if (!sundayInput.disabled) {
-                    sundayInput.value = saturdayPrice;
-                    showToast('Harga Sabtu berhasil disalin ke Minggu!', 'success');
-                }
-            } else {
-                showToast('Isi harga Sabtu terlebih dahulu!', 'warning');
-            }
-        }
-
-        function clearAllPrices() {
-            if (confirm('Apakah Anda yakin ingin menghapus semua harga?')) {
-                ['sunday_pricing', 'monday_pricing', 'tuesday_pricing', 'wednesday_pricing', 'thursday_pricing',
-                    'friday_pricing', 'saturday_pricing'
-                ].forEach(id => {
-                    const input = document.getElementById(id);
-                    if (!input.disabled) {
-                        input.value = '';
-                    }
-                });
-                showToast('Semua harga berhasil dihapus!', 'info');
-            }
-        }
+        // Quick Actions Functions - Removed per user request
 
         function showToast(message, type = 'info') {
             // Simple toast notification

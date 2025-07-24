@@ -335,29 +335,6 @@
                             </div>
                         </div>
 
-                        <!-- Quick Actions -->
-                        <div class="mb-6">
-                            <h4 class="text-md font-semibold text-gray-800 mb-3">Quick Actions</h4>
-                            <div class="flex flex-wrap gap-2">
-                                <button type="button" onclick="copyWeekdayPrice()"
-                                    class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded text-sm">
-                                    <i class="fas fa-copy mr-1"></i>Copy Senin ke Selasa-Jumat
-                                </button>
-                                <button type="button" onclick="copyWeekendPrice()"
-                                    class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded text-sm">
-                                    <i class="fas fa-copy mr-1"></i>Copy Sabtu ke Minggu
-                                </button>
-                                <button type="button" onclick="fillSamplePrices()"
-                                    class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm">
-                                    <i class="fas fa-magic mr-1"></i>Isi Contoh Harga
-                                </button>
-                                <button type="button" onclick="clearAllPrices()"
-                                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-sm">
-                                    <i class="fas fa-eraser mr-1"></i>Clear All
-                                </button>
-                            </div>
-                        </div>
-
                         <!-- Price Summary -->
                         <div id="price-summary" class="mb-6 hidden">
                             <h4 class="text-md font-semibold text-gray-800 mb-3">Ringkasan Harga</h4>
@@ -446,7 +423,7 @@
                 weeklyPricing.classList.remove('hidden');
                 rangePricing.classList.add('hidden');
                 pricingNote.innerHTML =
-                '<i class="fas fa-repeat mr-1"></i>(Pricing akan diterapkan berulang setiap minggu)';
+                    '<i class="fas fa-repeat mr-1"></i>(Pricing akan diterapkan berulang setiap minggu)';
 
                 updateDayAvailability(daysOfWeek);
             } else {
