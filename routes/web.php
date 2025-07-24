@@ -161,19 +161,6 @@ Route::middleware(['auth'])->group(function () {
     });
 
 
-    Route::prefix('api/villa-pricing')->group(function () {
-    // Get pricing by date
-    Route::get('{villa_id}/date/{date}', [VillaPricingController::class, 'getPricingByDate'])
-         ->name('api.villa-pricing.by-date');
-
-    // Get pricing by date range
-    Route::get('{villa_id}/date-range/{start_date}/{end_date}', [VillaPricingController::class, 'getPricingByDateRange'])
-         ->name('api.villa-pricing.by-date-range');
-
-    // Get active seasons
-    Route::get('seasons/active/{date?}', [VillaPricingController::class, 'getActiveSeasons'])
-         ->name('api.villa-pricing.active-seasons');
-});
 
     Route::get('villa-pricing/{villa_id}/date/{date}', [VillaPricingController::class, 'getPricingByDate']);
 Route::get('villa-pricing/{villa_id}/range/{start_date}/{end_date}', [VillaPricingController::class, 'getPricingByDateRange']);
@@ -229,18 +216,3 @@ Route::post('/reservasi/{reservasi}/checkout', [ReservasiController::class, 'che
 
 
 
-
-
-// AJAX Routes untuk menambah range pricing
-Route::post('villa-pricing/{id_villa_pricing}/add-range-date-price', [VillaPricingController::class, 'addRangeDatePrice'])
-     ->name('harga-villa.add-range-date-price');
-
-Route::post('villa-pricing/{id_villa_pricing}/add-special-price-range', [VillaPricingController::class, 'addSpecialPriceRange'])
-     ->name('harga-villa.add-special-price-range');
-
-// Routes untuk mendapatkan data range pricing
-Route::get('villa-pricing/{id_villa_pricing}/range-date-prices', [VillaPricingController::class, 'getRangeDatePrices'])
-     ->name('harga-villa.get-range-date-prices');
-
-Route::get('villa-pricing/{id_villa_pricing}/special-price-ranges', [VillaPricingController::class, 'getSpecialPriceRanges'])
-     ->name('harga-villa.get-special-price-ranges');
