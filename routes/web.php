@@ -175,9 +175,13 @@ Route::middleware(['auth'])->group(function () {
 
 
 
-    Route::get('villa-pricing/{villa_id}/date/{date}', [VillaPricingController::class, 'getPricingByDate']);
-Route::get('villa-pricing/{villa_id}/range/{start_date}/{end_date}', [VillaPricingController::class, 'getPricingByDateRange']);
-Route::get('active-seasons/{date?}', [VillaPricingController::class, 'getActiveSeasons']);
+        // Additional villa pricing routes
+        Route::get('{villa_id}/date/{date}', [VillaPricingController::class, 'getPricingByDate'])
+             ->name('get-pricing-by-date');
+        Route::get('{villa_id}/range/{start_date}/{end_date}', [VillaPricingController::class, 'getPricingByDateRange'])
+             ->name('get-pricing-by-date-range');
+        Route::get('/active-seasons/{date?}', [VillaPricingController::class, 'getActiveSeasons'])
+             ->name('active-seasons');
 });
 
 // Resepsionis Group
