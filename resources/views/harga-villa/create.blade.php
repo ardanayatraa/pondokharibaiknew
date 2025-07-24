@@ -6,23 +6,21 @@
     <div class="py-2">
         <div class="w-full mx-auto sm:px-6 lg:px-8">
             <div class="w-full mb-4 bg-white dark:bg-gray-900 py-4 px-6">
-                <h2 class="text-sm font-bold">
-                    Tambah Harga Villa
-                </h2>
+                <h2 class="text-sm font-bold">Tambah Harga Villa</h2>
             </div>
 
             <div class="bg-white shadow-lg rounded-lg p-6">
-                <form action="{{ route('harga-villa.store') }}" method="POST" id="form-create-pricing">
+                <form action="{{ route('harga-villa.store') }}" method="POST" id="villa-pricing-form">
                     @csrf
 
+                    <!-- Basic Information -->
                     <div class="space-y-6">
-                        {{-- 1) Pilih Villa --}}
+                        <!-- Villa Selection -->
                         <div>
                             <x-label for="villa_id" value="Villa" />
-                            <select id="villa_id" name="villa_id"
+                            <select id="villa_id" name="villa_id" required
                                 class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                <option value="" disabled {{ old('villa_id') ? '' : 'selected' }}>-- Pilih Villa
-                                    --</option>
+                                <option value="">-- Pilih Villa --</option>
                                 @foreach ($villas as $villa)
                                     <option value="{{ $villa->id_villa }}"
                                         {{ old('villa_id') == $villa->id_villa ? 'selected' : '' }}>
@@ -35,15 +33,16 @@
                             @enderror
                         </div>
 
-                        {{-- 2) Pilih Season --}}
+                        <!-- Season Selection -->
                         <div>
                             <x-label for="season_id" value="Season" />
-                            <select id="season_id" name="season_id"
+                            <select id="season_id" name="season_id" required
                                 class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                <option value="" disabled {{ old('season_id') ? '' : 'selected' }}>-- Pilih Season
-                                    --</option>
+                                <option value="">-- Pilih Season --</option>
                                 @foreach ($seasons as $season)
                                     <option value="{{ $season->id_season }}"
+                                        data-repeat-weekly="{{ $season->repeat_weekly ? 'true' : 'false' }}"
+                                        data-days="{{ json_encode($season->days_of_week) }}"
                                         {{ old('season_id') == $season->id_season ? 'selected' : '' }}>
                                         {{ $season->nama_season }} ({{ $season->periode_label }})
                                     </option>
@@ -54,526 +53,606 @@
                             @enderror
                         </div>
 
-                        {{-- 3) Checkbox: Samakan Semua Hari --}}
-                        <div id="container-samakan-semua" class="flex items-center space-x-2" style="display: none;">
-                            <input type="checkbox" id="samakan_semua"
-                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded" />
-                            <label for="samakan_semua" class="font-medium text-gray-700">
-                                Samakan Harga ke Semua Hari
-                            </label>
-                        </div>
-
-                        {{-- 4) Input harga tunggal (muncul jika "samakan semua" dicentang) --}}
-                        <div id="container-harga-semua" class="mt-2" style="display: none;">
-                            <x-label for="harga_semua" value="Harga Semua Hari" />
-                            <x-input id="harga_semua" name="harga_semua" type="number" min="0"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                placeholder="Masukkan harga yang sama untuk semua hari" />
-                            <span class="text-sm text-gray-500">Nilai ini akan diterapkan ke semua hari sesuai
-                                season.</span>
-                        </div>
-
-                        {{-- 5) Container tempat input harga per-hari --}}
-                        <div id="container-pricing-fields"
-                            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
-                            {{-- Field akan digenerate di JavaScript berdasarkan season_id --}}
-                            @if (old('season_id'))
-                                {{-- Saat validasi gagal, kita render ulang fields-nya --}}
-                                @php
-                                    $mappingNamaHari = [
-                                        0 => 'sunday',
-                                        1 => 'monday',
-                                        2 => 'tuesday',
-                                        3 => 'wednesday',
-                                        4 => 'thursday',
-                                        5 => 'friday',
-                                        6 => 'saturday',
-                                    ];
-                                    $oldSeason = collect($seasons)->firstWhere('id_season', old('season_id'));
-                                    $oldDaysArray = $oldSeason ? $oldSeason->days_of_week : [];
-                                @endphp
-                                @foreach ($oldDaysArray as $dayIndex)
-                                    @php
-                                        $dayName = $mappingNamaHari[$dayIndex];
-                                        $fieldValue = old($dayName . '_pricing');
-                                    @endphp
-                                    <div class="pricing-field" data-day="{{ $dayName }}">
-                                        <x-label for="{{ $dayName }}_pricing" :value="ucfirst($dayName) . ' Pricing'" />
-                                        <x-input id="{{ $dayName }}_pricing" name="{{ $dayName }}_pricing"
-                                            type="number" min="0"
-                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                            value="{{ $fieldValue }}" placeholder="Kosongkan jika tidak ada" />
-                                        @error($dayName . '_pricing')
-                                            <span class="text-sm text-red-600">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                @endforeach
-                            @endif
-                        </div>
-
-                        {{-- 6) Special Price Global --}}
-                        <div class="border-t pt-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Special Price (Global)</h3>
-
-                            <div class="flex items-center space-x-2 mb-4">
-                                <input type="checkbox" id="use_special_price" name="use_special_price" value="1"
-                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded"
-                                    {{ old('use_special_price') ? 'checked' : '' }} />
-                                <label for="use_special_price" class="font-medium text-gray-700">
-                                    Gunakan Special Price Global (untuk semua hari dalam season)
-                                </label>
-                            </div>
-
-                            <div id="container-special-price-global" style="display: none;">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <x-label for="special_price" value="Special Price" />
-                                        <x-input id="special_price" name="special_price" type="number" min="0"
-                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                            value="{{ old('special_price') }}" placeholder="Masukkan special price" />
-                                        @error('special_price')
-                                            <span class="text-sm text-red-600">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                    <div>
-                                        <x-label for="special_price_description" value="Deskripsi Special Price" />
-                                        <x-input id="special_price_description" name="special_price_description"
-                                            type="text"
-                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                            value="{{ old('special_price_description') }}"
-                                            placeholder="Contoh: Promo Akhir Tahun" />
-                                        @error('special_price_description')
-                                            <span class="text-sm text-red-600">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- 7) Range Date Price Override --}}
-                        <div class="border-t pt-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Override Harga untuk Periode Tertentu
-                            </h3>
-                            <p class="text-sm text-gray-600 mb-4">
-                                Gunakan untuk override harga reguler atau special price pada tanggal tertentu
-                            </p>
-
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                <div>
-                                    <x-label for="start_date" value="Tanggal Mulai" />
-                                    <x-input id="start_date" name="start_date" type="date"
-                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                        value="{{ old('start_date') }}" />
-                                    @error('start_date')
-                                        <span class="text-sm text-red-600">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                                <div>
-                                    <x-label for="end_date" value="Tanggal Selesai" />
-                                    <x-input id="end_date" name="end_date" type="date"
-                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                        value="{{ old('end_date') }}" />
-                                    @error('end_date')
-                                        <span class="text-sm text-red-600">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                                <div>
-                                    <x-label for="range_date_price_value" value="Harga Override" />
-                                    <x-input id="range_date_price_value" name="range_date_price_value" type="number"
-                                        min="0"
-                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                        placeholder="Harga untuk periode ini" />
-                                    <span class="text-sm text-gray-500">Kosongkan jika tidak ingin override</span>
-                                </div>
-                            </div>
-
-                            {{-- Container untuk menampilkan range date price yang sudah ditambahkan --}}
-                            <div id="added-range-date-prices" class="mt-4 space-y-4" style="display: none;">
-                                <h4 class="font-medium text-gray-700">Range Date Price yang Ditambahkan:</h4>
-                                <div id="range-date-price-list" class="space-y-2">
-                                    <!-- Range date prices akan ditambahkan di sini via JavaScript -->
-                                </div>
-                            </div>
-
-                            <div class="flex justify-end">
-                                <button type="button" id="btn-add-range-date-price"
-                                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                    Tambah Range Date Price
-                                </button>
-                            </div>
-                        </div>
-
-                        {{-- 8) Special Price untuk Range Date Tertentu --}}
-                        <div class="border-t pt-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Special Price untuk Tanggal Tertentu
-                            </h3>
-                            <p class="text-sm text-gray-600 mb-4">
-                                Gunakan untuk memberikan special price pada tanggal/periode tertentu (prioritas
-                                tertinggi)
-                            </p>
-
-                            <div class="flex items-center space-x-2 mb-4">
-                                <input type="checkbox" id="use_special_price_for_range"
-                                    name="use_special_price_for_range" value="1"
-                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded"
-                                    {{ old('use_special_price_for_range') ? 'checked' : '' }} />
-                                <label for="use_special_price_for_range" class="font-medium text-gray-700">
-                                    Aktifkan Special Price untuk Tanggal Tertentu
-                                </label>
-                            </div>
-
-                            <div id="container-special-price-range" style="display: none;">
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                    <div>
-                                        <x-label for="special_price_start_date" value="Tanggal Mulai Special Price" />
-                                        <x-input id="special_price_start_date" name="special_price_start_date"
-                                            type="date"
-                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                            value="{{ old('special_price_start_date') }}" />
-                                        @error('special_price_start_date')
-                                            <span class="text-sm text-red-600">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                    <div>
-                                        <x-label for="special_price_end_date" value="Tanggal Selesai Special Price" />
-                                        <x-input id="special_price_end_date" name="special_price_end_date"
-                                            type="date"
-                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                            value="{{ old('special_price_end_date') }}" />
-                                        @error('special_price_end_date')
-                                            <span class="text-sm text-red-600">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                    <div>
-                                        <x-label for="special_price_range" value="Harga Special" />
-                                        <x-input id="special_price_range" name="special_price_range" type="number"
-                                            min="0"
-                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                            value="{{ old('special_price_range') }}"
-                                            placeholder="Masukkan harga special" />
-                                        @error('special_price_range')
-                                            <span class="text-sm text-red-600">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                </div>
-
-                                {{-- Container untuk menampilkan special price range yang sudah ditambahkan --}}
-                                <div id="added-special-price-ranges" class="mt-4 space-y-4" style="display: none;">
-                                    <h4 class="font-medium text-gray-700">Special Price Range yang Ditambahkan:</h4>
-                                    <div id="special-price-range-list" class="space-y-2">
-                                        <!-- Special price ranges akan ditambahkan di sini via JavaScript -->
-                                    </div>
-                                </div>
-
-                                <div class="flex justify-end mt-4">
-                                    <button type="button" id="btn-add-special-price-range"
-                                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                        Tambah Special Price Range
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- 9) Informasi Prioritas Pricing --}}
-                        <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
-                            <h4 class="font-medium text-blue-900 mb-2">Prioritas Penggunaan Harga:</h4>
-                            <ol class="list-decimal list-inside text-sm text-blue-800 space-y-1">
-                                <li><strong>Special Price untuk Tanggal Tertentu</strong> - Prioritas tertinggi</li>
-                                <li><strong>Override Harga untuk Periode Tertentu</strong> - Prioritas kedua</li>
-                                <li><strong>Special Price Global</strong> - Prioritas ketiga</li>
-                                <li><strong>Harga per Hari</strong> - Prioritas terendah (default)</li>
-                            </ol>
+                        <!-- Season Info Display -->
+                        <div id="season-info" class="hidden bg-blue-50 border border-blue-200 rounded-md p-4">
+                            <h4 class="font-medium text-blue-900 mb-2">Informasi Season:</h4>
+                            <div id="season-details" class="text-sm text-blue-800"></div>
                         </div>
                     </div>
 
-                    {{-- Tombol Simpan / Batal --}}
-                    <div class="mt-6 flex justify-end space-x-4">
+                    <!-- Daily Pricing Section -->
+                    <div id="daily-pricing-section" class="mt-8 hidden">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Harga Per Hari</h3>
+
+                        <!-- Bulk Price Setting -->
+                        <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center space-x-2 mb-3">
+                                <input type="checkbox" id="use_bulk_price"
+                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                <label for="use_bulk_price" class="font-medium text-gray-700">
+                                    Gunakan Harga yang Sama untuk Semua Hari
+                                </label>
+                            </div>
+                            <div id="bulk-price-input" class="hidden">
+                                <x-input id="bulk_price" type="number" min="0" step="1000"
+                                    class="mt-1 block w-full max-w-md border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                    placeholder="Masukkan harga untuk semua hari" />
+                                <p class="text-sm text-gray-500 mt-1">Harga akan diterapkan ke semua hari yang tersedia
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Individual Day Pricing -->
+                        <div id="day-pricing-fields" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Day pricing fields will be generated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Global Special Price Section -->
+                    <div class="mt-8 border-t pt-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Special Price Global</h3>
+                        <p class="text-sm text-gray-600 mb-4">
+                            Special price yang berlaku untuk semua hari dalam season (menggantikan harga per hari)
+                        </p>
+
+                        <div class="flex items-center space-x-2 mb-4">
+                            <input type="checkbox" id="use_special_price" name="use_special_price" value="1"
+                                class="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                                {{ old('use_special_price') ? 'checked' : '' }}>
+                            <label for="use_special_price" class="font-medium text-gray-700">
+                                Aktifkan Special Price Global
+                            </label>
+                        </div>
+
+                        <div id="special-price-fields" class="hidden space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <x-label for="special_price" value="Special Price" />
+                                    <x-input id="special_price" name="special_price" type="number" min="0"
+                                        step="1000"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        value="{{ old('special_price') }}" placeholder="Contoh: 500000" />
+                                    @error('special_price')
+                                        <span class="text-sm text-red-600">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <x-label for="special_price_description" value="Deskripsi" />
+                                    <x-input id="special_price_description" name="special_price_description"
+                                        type="text"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        value="{{ old('special_price_description') }}"
+                                        placeholder="Contoh: Promo Akhir Tahun" />
+                                    @error('special_price_description')
+                                        <span class="text-sm text-red-600">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Range Date Price Section -->
+                    <div class="mt-8 border-t pt-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Override Harga Periode Tertentu</h3>
+                        <p class="text-sm text-gray-600 mb-4">
+                            Override harga reguler atau special price untuk tanggal/periode tertentu
+                        </p>
+
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div>
+                                    <x-label for="range_start_date" value="Tanggal Mulai" />
+                                    <x-input id="range_start_date" type="date"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                                </div>
+                                <div>
+                                    <x-label for="range_end_date" value="Tanggal Selesai" />
+                                    <x-input id="range_end_date" type="date"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                                </div>
+                                <div>
+                                    <x-label for="range_price" value="Harga Override" />
+                                    <x-input id="range_price" type="number" min="0" step="1000"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        placeholder="Contoh: 750000" />
+                                </div>
+                                <div class="flex items-end">
+                                    <button type="button" id="add-range-price"
+                                        class="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                        Tambah
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Range Price List -->
+                            <div id="range-price-list" class="hidden space-y-2">
+                                <h4 class="font-medium text-gray-700">Range Price yang Ditambahkan:</h4>
+                                <div id="range-price-items" class="space-y-2"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Special Price Range Section -->
+                    <div class="mt-8 border-t pt-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Special Price Tanggal Tertentu</h3>
+                        <p class="text-sm text-gray-600 mb-4">
+                            Special price untuk tanggal/periode tertentu (prioritas tertinggi)
+                        </p>
+
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div>
+                                    <x-label for="special_start_date" value="Tanggal Mulai" />
+                                    <x-input id="special_start_date" type="date"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                                </div>
+                                <div>
+                                    <x-label for="special_end_date" value="Tanggal Selesai" />
+                                    <x-input id="special_end_date" type="date"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                                </div>
+                                <div>
+                                    <x-label for="special_range_price" value="Special Price" />
+                                    <x-input id="special_range_price" type="number" min="0" step="1000"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        placeholder="Contoh: 900000" />
+                                </div>
+                                <div class="flex items-end">
+                                    <button type="button" id="add-special-range"
+                                        class="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                        Tambah
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Special Range List -->
+                            <div id="special-range-list" class="hidden space-y-2">
+                                <h4 class="font-medium text-gray-700">Special Price Range yang Ditambahkan:</h4>
+                                <div id="special-range-items" class="space-y-2"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pricing Priority Info -->
+                    <div class="mt-8 bg-blue-50 border border-blue-200 rounded-md p-4">
+                        <h4 class="font-medium text-blue-900 mb-2">Prioritas Penggunaan Harga:</h4>
+                        <ol class="list-decimal list-inside text-sm text-blue-800 space-y-1">
+                            <li><strong>Special Price Tanggal Tertentu</strong> - Prioritas tertinggi</li>
+                            <li><strong>Override Harga Periode Tertentu</strong> - Prioritas kedua</li>
+                            <li><strong>Special Price Global</strong> - Prioritas ketiga</li>
+                            <li><strong>Harga per Hari</strong> - Prioritas default</li>
+                        </ol>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="mt-8 flex justify-end space-x-4">
                         <a href="{{ route('harga-villa.index') }}"
-                            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100">
+                            class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
                             Batal
                         </a>
-                        <x-button>
+                        <button type="submit"
+                            class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             Simpan
-                        </x-button>
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    {{-- JavaScript --}}
+    <!-- JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Mapping index hari → nama field
-            const dayMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+            const PricingManager = {
+                // Configuration
+                dayNames: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+                dayLabels: ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'],
 
-            // Kirim array { id: season_id, days: days_of_week } ke JS
-            const seasons = @json(
-                $seasons->map(fn($s) => [
-                        'id' => $s->id_season,
-                        'days' => $s->days_of_week,
-                    ]));
+                // DOM Elements
+                seasonSelect: document.getElementById('season_id'),
+                seasonInfo: document.getElementById('season-info'),
+                seasonDetails: document.getElementById('season-details'),
+                dailyPricingSection: document.getElementById('daily-pricing-section'),
+                dayPricingFields: document.getElementById('day-pricing-fields'),
+                useBulkPrice: document.getElementById('use_bulk_price'),
+                bulkPriceInput: document.getElementById('bulk-price-input'),
+                bulkPrice: document.getElementById('bulk_price'),
+                useSpecialPrice: document.getElementById('use_special_price'),
+                specialPriceFields: document.getElementById('special-price-fields'),
 
-            const selectSeason = document.getElementById('season_id');
-            const containerFields = document.getElementById('container-pricing-fields');
-            const checkboxSemua = document.getElementById('samakan_semua');
-            const containerSamakan = document.getElementById('container-samakan-semua');
-            const containerHargaAll = document.getElementById('container-harga-semua');
-            const inputHargaAll = document.getElementById('harga_semua');
+                // Range pricing elements
+                addRangePrice: document.getElementById('add-range-price'),
+                rangePriceList: document.getElementById('range-price-list'),
+                rangePriceItems: document.getElementById('range-price-items'),
+                addSpecialRange: document.getElementById('add-special-range'),
+                specialRangeList: document.getElementById('special-range-list'),
+                specialRangeItems: document.getElementById('special-range-items'),
 
-            // Special Price Global
-            const checkboxSpecialPrice = document.getElementById('use_special_price');
-            const containerSpecialPriceGlobal = document.getElementById('container-special-price-global');
+                // Data storage
+                rangePrices: [],
+                specialRanges: [],
+                currentSeason: null,
 
-            // Special Price Range
-            const checkboxSpecialPriceRange = document.getElementById('use_special_price_for_range');
-            const containerSpecialPriceRange = document.getElementById('container-special-price-range');
+                init() {
+                    this.bindEvents();
+                    this.restoreFormState();
+                },
 
-            // Hapus semua elemen child di container-pricing-fields
-            function clearPricingFields() {
-                while (containerFields.firstChild) {
-                    containerFields.removeChild(containerFields.firstChild);
-                }
-            }
+                bindEvents() {
+                    // Season selection
+                    this.seasonSelect.addEventListener('change', () => this.handleSeasonChange());
 
-            // Cari days_of_week berdasarkan season_id
-            function getDaysBySeasonId(seasonId) {
-                const found = seasons.find(s => s.id === parseInt(seasonId));
-                return found ? found.days : [];
-            }
+                    // Bulk pricing
+                    this.useBulkPrice.addEventListener('change', () => this.handleBulkPriceToggle());
+                    this.bulkPrice.addEventListener('input', () => this.handleBulkPriceInput());
 
-            // Render input harga per hari berdasarkan array daysArray
-            function renderPricingFields(daysArray) {
-                clearPricingFields();
+                    // Special price
+                    this.useSpecialPrice.addEventListener('change', () => this.handleSpecialPriceToggle());
 
-                daysArray.forEach(dayIndex => {
-                    const dayName = dayMap[dayIndex]; // ex: 'monday'
-                    const labelText = dayName.charAt(0).toUpperCase() + dayName.slice(1) + ' Pricing';
+                    // Range pricing
+                    this.addRangePrice.addEventListener('click', () => this.handleAddRangePrice());
+                    this.addSpecialRange.addEventListener('click', () => this.handleAddSpecialRange());
+                },
 
-                    const wrapper = document.createElement('div');
-                    wrapper.classList.add('pricing-field');
-                    wrapper.dataset.day = dayName;
+                handleSeasonChange() {
+                    const selectedOption = this.seasonSelect.selectedOptions[0];
+                    if (!selectedOption || !selectedOption.value) {
+                        this.hideAllSections();
+                        return;
+                    }
 
-                    // Label
-                    const label = document.createElement('label');
-                    label.setAttribute('for', `${dayName}_pricing`);
-                    label.classList.add('block', 'text-sm', 'font-medium', 'text-gray-700');
-                    label.textContent = labelText;
+                    const seasonData = {
+                        id: selectedOption.value,
+                        name: selectedOption.textContent.split(' (')[0],
+                        repeatWeekly: selectedOption.dataset.repeatWeekly === 'true',
+                        daysOfWeek: JSON.parse(selectedOption.dataset.days || '[]')
+                    };
 
-                    // Input
-                    const input = document.createElement('input');
-                    input.type = 'number';
-                    input.min = '0';
-                    input.id = `${dayName}_pricing`;
-                    input.name = `${dayName}_pricing`;
-                    input.placeholder = 'Kosongkan jika tidak ada';
-                    input.classList.add(
-                        'mt-1', 'block', 'w-full', 'border-gray-300',
-                        'rounded-md', 'shadow-sm', 'focus:ring-indigo-500', 'focus:border-indigo-500'
-                    );
+                    this.currentSeason = seasonData;
+                    this.showSeasonInfo(seasonData);
+                    this.generateDayPricingFields(seasonData);
+                },
 
-                    // Prefill bila old() ada (validasi gagal)
-                    @if (old('season_id'))
-                        if (selectSeason.value == '{{ old('season_id') }}' && dayName) {
-                            const oldVal = '{{ old(`${dayName}_pricing`) }}';
-                            if (oldVal !== '') {
-                                input.value = oldVal;
-                            }
+                showSeasonInfo(seasonData) {
+                    let infoHtml =
+                        `<strong>Tipe Season:</strong> ${seasonData.repeatWeekly ? 'Weekly (Berulang Mingguan)' : 'Date Range (Rentang Tanggal)'}<br>`;
+
+                    if (seasonData.repeatWeekly) {
+                        const dayLabels = seasonData.daysOfWeek.map(dayIndex => this.dayLabels[dayIndex]);
+                        infoHtml += `<strong>Hari Tersedia:</strong> ${dayLabels.join(', ')}`;
+                    } else {
+                        infoHtml += `<strong>Mode:</strong> Rentang tanggal (semua hari dalam periode season)`;
+                    }
+
+                    this.seasonDetails.innerHTML = infoHtml;
+                    this.seasonInfo.classList.remove('hidden');
+                    this.dailyPricingSection.classList.remove('hidden');
+                },
+
+                generateDayPricingFields(seasonData) {
+                    this.dayPricingFields.innerHTML = '';
+
+                    if (seasonData.repeatWeekly) {
+                        // Generate fields for specific days of week
+                        seasonData.daysOfWeek.forEach(dayIndex => {
+                            this.createDayPricingField(dayIndex);
+                        });
+                    } else {
+                        // For date range seasons, show info that daily pricing applies to all days
+                        const infoDiv = document.createElement('div');
+                        infoDiv.className =
+                        'col-span-full bg-yellow-50 border border-yellow-200 rounded-md p-4';
+                        infoDiv.innerHTML = `
+                            <div class="text-sm text-yellow-800">
+                                <strong>Catatan:</strong> Untuk season dengan rentang tanggal, harga per hari akan berlaku untuk semua hari dalam periode season.
+                                Anda dapat menggunakan "Override Harga Periode Tertentu" atau "Special Price" untuk mengatur harga khusus.
+                            </div>
+                        `;
+                        this.dayPricingFields.appendChild(infoDiv);
+
+                        // Create basic daily pricing fields for reference
+                        for (let i = 0; i < 7; i++) {
+                            this.createDayPricingField(i);
+                        }
+                    }
+                },
+
+                createDayPricingField(dayIndex) {
+                    const dayName = this.dayNames[dayIndex];
+                    const dayLabel = this.dayLabels[dayIndex];
+
+                    const fieldDiv = document.createElement('div');
+                    fieldDiv.className = 'pricing-field';
+                    fieldDiv.dataset.day = dayName;
+
+                    const oldValue = this.getOldValue(`${dayName}_pricing`);
+
+                    fieldDiv.innerHTML = `
+                        <label for="${dayName}_pricing" class="block text-sm font-medium text-gray-700 mb-1">
+                            ${dayLabel}
+                        </label>
+                        <input type="number"
+                               id="${dayName}_pricing"
+                               name="${dayName}_pricing"
+                               min="0"
+                               step="1000"
+                               value="${oldValue}"
+                               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                               placeholder="Kosongkan jika tidak ada">
+                        ${this.getErrorMessage(`${dayName}_pricing`)}
+                    `;
+
+                    this.dayPricingFields.appendChild(fieldDiv);
+                },
+
+                handleBulkPriceToggle() {
+                    if (this.useBulkPrice.checked) {
+                        this.bulkPriceInput.classList.remove('hidden');
+                        this.bulkPrice.focus();
+                    } else {
+                        this.bulkPriceInput.classList.add('hidden');
+                        this.bulkPrice.value = '';
+                    }
+                },
+
+                handleBulkPriceInput() {
+                    const bulkValue = this.bulkPrice.value;
+                    const pricingInputs = this.dayPricingFields.querySelectorAll('input[type="number"]');
+
+                    pricingInputs.forEach(input => {
+                        input.value = bulkValue;
+                    });
+                },
+
+                handleSpecialPriceToggle() {
+                    if (this.useSpecialPrice.checked) {
+                        this.specialPriceFields.classList.remove('hidden');
+                    } else {
+                        this.specialPriceFields.classList.add('hidden');
+                        document.getElementById('special_price').value = '';
+                        document.getElementById('special_price_description').value = '';
+                    }
+                },
+
+                handleAddRangePrice() {
+                    const startDate = document.getElementById('range_start_date').value;
+                    const endDate = document.getElementById('range_end_date').value;
+                    const price = document.getElementById('range_price').value;
+
+                    if (!this.validateRangeInput(startDate, endDate, price)) {
+                        return;
+                    }
+
+                    const rangeData = {
+                        start_date: startDate,
+                        end_date: endDate,
+                        price: parseInt(price),
+                        description: 'Harga khusus untuk periode tertentu'
+                    };
+
+                    this.rangePrices.push(rangeData);
+                    this.renderRangePriceItem(rangeData, this.rangePrices.length - 1);
+                    this.addHiddenInput('range_date_prices[]', JSON.stringify(rangeData));
+                    this.clearRangeInputs();
+                    this.showRangePriceList();
+                },
+
+                handleAddSpecialRange() {
+                    const startDate = document.getElementById('special_start_date').value;
+                    const endDate = document.getElementById('special_end_date').value;
+                    const price = document.getElementById('special_range_price').value;
+
+                    if (!this.validateRangeInput(startDate, endDate, price)) {
+                        return;
+                    }
+
+                    const rangeData = {
+                        start_date: startDate,
+                        end_date: endDate,
+                        price: parseInt(price),
+                        description: 'Special price untuk tanggal tertentu'
+                    };
+
+                    this.specialRanges.push(rangeData);
+                    this.renderSpecialRangeItem(rangeData, this.specialRanges.length - 1);
+                    this.addHiddenInput('special_price_ranges[]', JSON.stringify(rangeData));
+                    this.clearSpecialInputs();
+                    this.showSpecialRangeList();
+                },
+
+                validateRangeInput(startDate, endDate, price) {
+                    if (!startDate || !endDate || !price) {
+                        alert('Semua field harus diisi!');
+                        return false;
+                    }
+
+                    if (new Date(startDate) > new Date(endDate)) {
+                        alert('Tanggal mulai tidak boleh lebih dari tanggal selesai!');
+                        return false;
+                    }
+
+                    if (parseInt(price) <= 0) {
+                        alert('Harga harus lebih dari 0!');
+                        return false;
+                    }
+
+                    return true;
+                },
+
+                renderRangePriceItem(rangeData, index) {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className =
+                        'bg-gray-50 p-3 rounded-lg border border-gray-200 flex justify-between items-center';
+                    itemDiv.innerHTML = `
+                        <div>
+                            <p class="font-medium text-gray-900">${this.formatDate(rangeData.start_date)} - ${this.formatDate(rangeData.end_date)}</p>
+                            <p class="text-sm text-gray-600">${rangeData.description}</p>
+                            <p class="text-sm font-semibold text-green-600">${this.formatCurrency(rangeData.price)}</p>
+                        </div>
+                        <button type="button" onclick="PricingManager.removeRangePrice(${index})"
+                                class="text-red-600 hover:text-red-800">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    `;
+                    this.rangePriceItems.appendChild(itemDiv);
+                },
+
+                renderSpecialRangeItem(rangeData, index) {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className =
+                        'bg-green-50 p-3 rounded-lg border border-green-200 flex justify-between items-center';
+                    itemDiv.innerHTML = `
+                        <div>
+                            <p class="font-medium text-gray-900">${this.formatDate(rangeData.start_date)} - ${this.formatDate(rangeData.end_date)}</p>
+                            <p class="text-sm text-gray-600">${rangeData.description}</p>
+                            <p class="text-sm font-semibold text-green-600">${this.formatCurrency(rangeData.price)}</p>
+                        </div>
+                        <button type="button" onclick="PricingManager.removeSpecialRange(${index})"
+                                class="text-red-600 hover:text-red-800">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    `;
+                    this.specialRangeItems.appendChild(itemDiv);
+                },
+
+                removeRangePrice(index) {
+                    this.rangePrices.splice(index, 1);
+                    this.refreshRangePriceList();
+                    this.updateHiddenInputs('range_date_prices[]', this.rangePrices);
+                },
+
+                removeSpecialRange(index) {
+                    this.specialRanges.splice(index, 1);
+                    this.refreshSpecialRangeList();
+                    this.updateHiddenInputs('special_price_ranges[]', this.specialRanges);
+                },
+
+                refreshRangePriceList() {
+                    this.rangePriceItems.innerHTML = '';
+                    this.rangePrices.forEach((range, index) => {
+                        this.renderRangePriceItem(range, index);
+                    });
+
+                    if (this.rangePrices.length === 0) {
+                        this.rangePriceList.classList.add('hidden');
+                    }
+                },
+
+                refreshSpecialRangeList() {
+                    this.specialRangeItems.innerHTML = '';
+                    this.specialRanges.forEach((range, index) => {
+                        this.renderSpecialRangeItem(range, index);
+                    });
+
+                    if (this.specialRanges.length === 0) {
+                        this.specialRangeList.classList.add('hidden');
+                    }
+                },
+
+                addHiddenInput(name, value) {
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = name;
+                    hiddenInput.value = value;
+                    document.getElementById('villa-pricing-form').appendChild(hiddenInput);
+                },
+
+                updateHiddenInputs(name, dataArray) {
+                    // Remove existing hidden inputs
+                    const existingInputs = document.querySelectorAll(`input[name="${name}"]`);
+                    existingInputs.forEach(input => input.remove());
+
+                    // Add new hidden inputs
+                    dataArray.forEach(data => {
+                        this.addHiddenInput(name, JSON.stringify(data));
+                    });
+                },
+
+                clearRangeInputs() {
+                    document.getElementById('range_start_date').value = '';
+                    document.getElementById('range_end_date').value = '';
+                    document.getElementById('range_price').value = '';
+                },
+
+                clearSpecialInputs() {
+                    document.getElementById('special_start_date').value = '';
+                    document.getElementById('special_end_date').value = '';
+                    document.getElementById('special_range_price').value = '';
+                },
+
+                showRangePriceList() {
+                    this.rangePriceList.classList.remove('hidden');
+                },
+
+                showSpecialRangeList() {
+                    this.specialRangeList.classList.remove('hidden');
+                },
+
+                hideAllSections() {
+                    this.seasonInfo.classList.add('hidden');
+                    this.dailyPricingSection.classList.add('hidden');
+                    this.currentSeason = null;
+                },
+
+                formatDate(dateString) {
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('id-ID', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    });
+                },
+
+                formatCurrency(amount) {
+                    return new Intl.NumberFormat('id-ID', {
+                        style: 'currency',
+                        currency: 'IDR',
+                        minimumFractionDigits: 0
+                    }).format(amount);
+                },
+
+                getOldValue(fieldName) {
+                    @if (old())
+                        const oldValues = @json(old());
+                        return oldValues['{{ $fieldName }}'] || '';
+                    @else
+                        return '';
+                    @endif
+                },
+
+                getErrorMessage(fieldName) {
+                    @if ($errors->any())
+                        const errors = @json($errors->getMessages());
+                        if (errors[fieldName]) {
+                            return `<span class="text-sm text-red-600">${errors[fieldName][0]}</span>`;
                         }
                     @endif
+                    return '';
+                },
 
-                    wrapper.appendChild(label);
-                    wrapper.appendChild(input);
-                    containerFields.appendChild(wrapper);
-                });
-            }
-
-            // Event: saat season_id berubah
-            selectSeason.addEventListener('change', function() {
-                const selectedId = this.value;
-                const daysArray = getDaysBySeasonId(selectedId);
-
-                if (daysArray.length > 0) {
-                    containerSamakan.style.display = 'flex';
-                    checkboxSemua.checked = false;
-                    containerHargaAll.style.display = 'none';
-                    inputHargaAll.value = '';
-                    renderPricingFields(daysArray);
-                } else {
-                    // Jika season tidak punya days_of_week → sembunyikan
-                    containerSamakan.style.display = 'none';
-                    containerHargaAll.style.display = 'none';
-                    clearPricingFields();
-                }
-            });
-
-            // Event: checkbox "Samakan Semua Hari"
-            checkboxSemua.addEventListener('change', function() {
-                if (checkboxSemua.checked) {
-                    containerHargaAll.style.display = 'block';
-                    inputHargaAll.addEventListener('input', function() {
-                        const valAll = inputHargaAll.value || '';
-                        containerFields.querySelectorAll('input[type="number"]').forEach(el => {
-                            el.value = valAll;
-                        });
-                    });
-                } else {
-                    containerHargaAll.style.display = 'none';
-                    inputHargaAll.value = '';
-                }
-            });
-
-            // Event: checkbox "Special Price Global"
-            checkboxSpecialPrice.addEventListener('change', function() {
-                if (checkboxSpecialPrice.checked) {
-                    containerSpecialPriceGlobal.style.display = 'block';
-                } else {
-                    containerSpecialPriceGlobal.style.display = 'none';
-                    document.getElementById('special_price').value = '';
-                    document.getElementById('special_price_description').value = '';
-                }
-            });
-
-            // Event: checkbox "Special Price Range"
-            checkboxSpecialPriceRange.addEventListener('change', function() {
-                if (checkboxSpecialPriceRange.checked) {
-                    containerSpecialPriceRange.style.display = 'block';
-                } else {
-                    containerSpecialPriceRange.style.display = 'none';
-                    document.getElementById('special_price_start_date').value = '';
-                    document.getElementById('special_price_end_date').value = '';
-                    document.getElementById('special_price_range').value = '';
-                }
-            });
-
-            // Inisialisasi untuk checkbox yang sudah checked saat page load
-            if (checkboxSpecialPrice.checked) {
-                containerSpecialPriceGlobal.style.display = 'block';
-            }
-
-            if (checkboxSpecialPriceRange.checked) {
-                containerSpecialPriceRange.style.display = 'block';
-            }
-
-            // Jika validasi gagal (ada old('season_id')), re-trigger event change
-            @if (old('season_id'))
-                selectSeason.value = '{{ old('season_id') }}';
-                selectSeason.dispatchEvent(new Event('change'));
-            @endif
-
-            // Event: Tambah Range Date Price
-            const btnAddRangeDatePrice = document.getElementById('btn-add-range-date-price');
-
-            const addedRangeDatePrices = document.getElementById('added-range-date-prices');
-            const rangeDatePriceList = document.getElementById('range-date-price-list');
-
-            if (btnAddRangeDatePrice) {
-                btnAddRangeDatePrice.addEventListener('click', function() {
-                    const startDate = document.getElementById('start_date').value;
-                    const endDate = document.getElementById('end_date').value;
-                    const price = document.getElementById('range_date_price_value').value;
-
-                    // Validasi
-                    if (!startDate || !endDate || !price) {
-                        alert('Semua field harus diisi!');
-                        return;
+                restoreFormState() {
+                    // Restore special price state
+                    if (this.useSpecialPrice.checked) {
+                        this.specialPriceFields.classList.remove('hidden');
                     }
 
-                    // Tampilkan di container
-                    addedRangeDatePrices.style.display = 'block';
+                    // Trigger season change if there's an old value
+                    @if (old('season_id'))
+                        this.seasonSelect.value = '{{ old('season_id') }}';
+                        this.handleSeasonChange();
+                    @endif
+                }
+            };
 
-                    // Buat elemen untuk menampilkan range date price
-                    const newItem = document.createElement('div');
-                    newItem.classList.add('bg-gray-50', 'p-3', 'rounded-lg', 'border', 'border-gray-200');
+            // Initialize the pricing manager
+            PricingManager.init();
 
-                    newItem.innerHTML = `
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <p class="font-medium">${startDate} - ${endDate}</p>
-                                <p class="text-sm font-semibold text-green-600">Rp ${parseInt(price).toLocaleString('id-ID')}</p>
-                            </div>
-                        </div>
-                    `;
-
-                    rangeDatePriceList.appendChild(newItem);
-
-                    // Tambahkan hidden input untuk menyimpan data
-                    const hiddenInput = document.createElement('input');
-                    hiddenInput.type = 'hidden';
-                    hiddenInput.name = 'range_date_prices[]';
-                    hiddenInput.value = JSON.stringify({
-                        start_date: startDate,
-                        end_date: endDate,
-                        price: price
-                    });
-
-                    document.getElementById('form-create-pricing').appendChild(hiddenInput);
-
-                    // Reset form
-                    document.getElementById('start_date').value = '';
-                    document.getElementById('end_date').value = '';
-                    document.getElementById('range_date_price_value').value = '';
-                });
-            }
-
-            // Event: Tambah Special Price Range
-            const btnAddSpecialPriceRange = document.getElementById('btn-add-special-price-range');
-
-            const addedSpecialPriceRanges = document.getElementById('added-special-price-ranges');
-            const specialPriceRangeList = document.getElementById('special-price-range-list');
-
-            if (btnAddSpecialPriceRange) {
-                btnAddSpecialPriceRange.addEventListener('click', function() {
-                    const startDate = document.getElementById('special_price_start_date').value;
-                    const endDate = document.getElementById('special_price_end_date').value;
-                    const price = document.getElementById('special_price_range').value;
-
-                    // Validasi
-                    if (!startDate || !endDate || !price) {
-                        alert('Semua field harus diisi!');
-                        return;
-                    }
-
-                    // Pastikan checkbox special price range dicentang
-                    document.getElementById('use_special_price_for_range').checked = true;
-                    containerSpecialPriceRange.style.display = 'block';
-
-                    // Tampilkan di container
-                    addedSpecialPriceRanges.style.display = 'block';
-
-                    // Buat elemen untuk menampilkan special price range
-                    const newItem = document.createElement('div');
-                    newItem.classList.add('bg-gray-50', 'p-3', 'rounded-lg', 'border', 'border-gray-200');
-
-                    newItem.innerHTML = `
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <p class="font-medium">${startDate} - ${endDate}</p>
-                                <p class="text-sm font-semibold text-green-600">Rp ${parseInt(price).toLocaleString('id-ID')}</p>
-                            </div>
-                        </div>
-                    `;
-
-                    specialPriceRangeList.appendChild(newItem);
-
-                    // Tambahkan hidden input untuk menyimpan data
-                    const hiddenInput = document.createElement('input');
-                    hiddenInput.type = 'hidden';
-                    hiddenInput.name = 'special_price_ranges[]';
-                    hiddenInput.value = JSON.stringify({
-                        start_date: startDate,
-                        end_date: endDate,
-                        price: price
-                    });
-
-                    document.getElementById('form-create-pricing').appendChild(hiddenInput);
-
-                    // Reset form
-                    document.getElementById('special_price_start_date').value = '';
-                    document.getElementById('special_price_end_date').value = '';
-                    document.getElementById('special_price_range').value = '';
-                });
-            }
+            // Make it globally accessible for button onclick handlers
+            window.PricingManager = PricingManager;
         });
     </script>
 </x-app-layout>

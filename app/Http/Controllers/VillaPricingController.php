@@ -72,6 +72,30 @@ class VillaPricingController extends Controller
                            ->withInput();
         }
 
+        // Ambil data season
+        $season = Season::findOrFail($validated['season_id']);
+
+        // Validasi bahwa harga per hari hanya diisi untuk hari yang ada di days_of_week season
+        if ($season->repeat_weekly) {
+            $dayMapping = [
+                0 => 'sunday_pricing',
+                1 => 'monday_pricing',
+                2 => 'tuesday_pricing',
+                3 => 'wednesday_pricing',
+                4 => 'thursday_pricing',
+                5 => 'friday_pricing',
+                6 => 'saturday_pricing'
+            ];
+
+            foreach ($dayMapping as $dayIndex => $pricingField) {
+                if (!in_array($dayIndex, $season->days_of_week) && !empty($validated[$pricingField])) {
+                    return redirect()->back()
+                        ->withErrors([$pricingField => 'Harga untuk hari ini tidak dapat diisi karena tidak termasuk dalam days_of_week season.'])
+                        ->withInput();
+                }
+            }
+        }
+
         // Handle range_date_price (untuk override harga reguler pada tanggal tertentu)
         $rangeDatePrices = [];
 
@@ -84,11 +108,32 @@ class VillaPricingController extends Controller
                     $startDate = Carbon::parse($rangeDatePriceData['start_date']);
                     $endDate = Carbon::parse($rangeDatePriceData['end_date']);
 
+                    // Validasi range tanggal sesuai dengan season
+                    if (!$season->repeat_weekly) {
+                        // Jika season tidak repeat_weekly, pastikan range tanggal berada dalam range tanggal season
+                        if ($startDate->lt($season->tgl_mulai_season) || $endDate->gt($season->tgl_akhir_season)) {
+                            return redirect()->back()
+                                ->withErrors(['range_date_price' => 'Range tanggal harus berada dalam range tanggal season.'])
+                                ->withInput();
+                        }
+                    }
+
                     $dates = [];
                     $currentDate = $startDate->copy();
                     while ($currentDate->lte($endDate)) {
+                        // Jika season repeat_weekly, pastikan hanya hari yang ada di days_of_week yang digunakan
+                        if ($season->repeat_weekly && !in_array($currentDate->dayOfWeek, $season->days_of_week)) {
+                            $currentDate->addDay();
+                            continue;
+                        }
+
                         $dates[] = $currentDate->format('Y-m-d');
                         $currentDate->addDay();
+                    }
+
+                    // Jika tidak ada tanggal yang valid, skip
+                    if (empty($dates)) {
+                        continue;
                     }
 
                     $rangeDatePrices[] = [
@@ -107,20 +152,39 @@ class VillaPricingController extends Controller
             $startDate = Carbon::parse($validated['start_date']);
             $endDate = Carbon::parse($validated['end_date']);
 
+            // Validasi range tanggal sesuai dengan season
+            if (!$season->repeat_weekly) {
+                // Jika season tidak repeat_weekly, pastikan range tanggal berada dalam range tanggal season
+                if ($startDate->lt($season->tgl_mulai_season) || $endDate->gt($season->tgl_akhir_season)) {
+                    return redirect()->back()
+                        ->withErrors(['range_date_price' => 'Range tanggal harus berada dalam range tanggal season.'])
+                        ->withInput();
+                }
+            }
+
             $dates = [];
             $currentDate = $startDate->copy();
             while ($currentDate->lte($endDate)) {
+                // Jika season repeat_weekly, pastikan hanya hari yang ada di days_of_week yang digunakan
+                if ($season->repeat_weekly && !in_array($currentDate->dayOfWeek, $season->days_of_week)) {
+                    $currentDate->addDay();
+                    continue;
+                }
+
                 $dates[] = $currentDate->format('Y-m-d');
                 $currentDate->addDay();
             }
 
-            $rangeDatePrices[] = [
-                'start_date' => $validated['start_date'],
-                'end_date' => $validated['end_date'],
-                'dates' => $dates,
-                'price' => $validated['range_date_price_value'],
-                'description' => $validated['special_price_description'] ?? 'Harga khusus untuk periode tertentu'
-            ];
+            // Jika tidak ada tanggal yang valid, skip
+            if (!empty($dates)) {
+                $rangeDatePrices[] = [
+                    'start_date' => $validated['start_date'],
+                    'end_date' => $validated['end_date'],
+                    'dates' => $dates,
+                    'price' => $validated['range_date_price_value'],
+                    'description' => $validated['special_price_description'] ?? 'Harga khusus untuk periode tertentu'
+                ];
+            }
         }
 
         // Handle special_price_range (untuk special price pada tanggal tertentu)
@@ -135,11 +199,32 @@ class VillaPricingController extends Controller
                     $startDate = Carbon::parse($specialPriceRangeData['start_date']);
                     $endDate = Carbon::parse($specialPriceRangeData['end_date']);
 
+                    // Validasi range tanggal sesuai dengan season
+                    if (!$season->repeat_weekly) {
+                        // Jika season tidak repeat_weekly, pastikan range tanggal berada dalam range tanggal season
+                        if ($startDate->lt($season->tgl_mulai_season) || $endDate->gt($season->tgl_akhir_season)) {
+                            return redirect()->back()
+                                ->withErrors(['special_price_range' => 'Range tanggal harus berada dalam range tanggal season.'])
+                                ->withInput();
+                        }
+                    }
+
                     $dates = [];
                     $currentDate = $startDate->copy();
                     while ($currentDate->lte($endDate)) {
+                        // Jika season repeat_weekly, pastikan hanya hari yang ada di days_of_week yang digunakan
+                        if ($season->repeat_weekly && !in_array($currentDate->dayOfWeek, $season->days_of_week)) {
+                            $currentDate->addDay();
+                            continue;
+                        }
+
                         $dates[] = $currentDate->format('Y-m-d');
                         $currentDate->addDay();
+                    }
+
+                    // Jika tidak ada tanggal yang valid, skip
+                    if (empty($dates)) {
+                        continue;
                     }
 
                     $specialPriceRanges[] = [
@@ -162,20 +247,39 @@ class VillaPricingController extends Controller
             $spStartDate = Carbon::parse($validated['special_price_start_date']);
             $spEndDate = Carbon::parse($validated['special_price_end_date']);
 
+            // Validasi range tanggal sesuai dengan season
+            if (!$season->repeat_weekly) {
+                // Jika season tidak repeat_weekly, pastikan range tanggal berada dalam range tanggal season
+                if ($spStartDate->lt($season->tgl_mulai_season) || $spEndDate->gt($season->tgl_akhir_season)) {
+                    return redirect()->back()
+                        ->withErrors(['special_price_range' => 'Range tanggal harus berada dalam range tanggal season.'])
+                        ->withInput();
+                }
+            }
+
             $spDates = [];
             $currentDate = $spStartDate->copy();
             while ($currentDate->lte($spEndDate)) {
+                // Jika season repeat_weekly, pastikan hanya hari yang ada di days_of_week yang digunakan
+                if ($season->repeat_weekly && !in_array($currentDate->dayOfWeek, $season->days_of_week)) {
+                    $currentDate->addDay();
+                    continue;
+                }
+
                 $spDates[] = $currentDate->format('Y-m-d');
                 $currentDate->addDay();
             }
 
-            $specialPriceRanges[] = [
-                'start_date' => $validated['special_price_start_date'],
-                'end_date' => $validated['special_price_end_date'],
-                'dates' => $spDates,
-                'price' => $validated['special_price_range'],
-                'description' => $validated['special_price_description'] ?? 'Special price untuk tanggal tertentu'
-            ];
+            // Jika tidak ada tanggal yang valid, skip
+            if (!empty($spDates)) {
+                $specialPriceRanges[] = [
+                    'start_date' => $validated['special_price_start_date'],
+                    'end_date' => $validated['special_price_end_date'],
+                    'dates' => $spDates,
+                    'price' => $validated['special_price_range'],
+                    'description' => $validated['special_price_description'] ?? 'Special price untuk tanggal tertentu'
+                ];
+            }
         }
 
         // Remove fields yang tidak ada di model
@@ -264,6 +368,30 @@ class VillaPricingController extends Controller
                            ->withInput();
         }
 
+        // Ambil data season
+        $season = Season::findOrFail($validated['season_id']);
+
+        // Validasi bahwa harga per hari hanya diisi untuk hari yang ada di days_of_week season
+        if ($season->repeat_weekly) {
+            $dayMapping = [
+                0 => 'sunday_pricing',
+                1 => 'monday_pricing',
+                2 => 'tuesday_pricing',
+                3 => 'wednesday_pricing',
+                4 => 'thursday_pricing',
+                5 => 'friday_pricing',
+                6 => 'saturday_pricing'
+            ];
+
+            foreach ($dayMapping as $dayIndex => $pricingField) {
+                if (!in_array($dayIndex, $season->days_of_week) && !empty($validated[$pricingField])) {
+                    return redirect()->back()
+                        ->withErrors([$pricingField => 'Harga untuk hari ini tidak dapat diisi karena tidak termasuk dalam days_of_week season.'])
+                        ->withInput();
+                }
+            }
+        }
+
         // Get existing range_date_price and special_price_range
         $existingRangeDatePrices = [];
         if ($pricing->range_date_price) {
@@ -292,23 +420,42 @@ class VillaPricingController extends Controller
             $startDate = Carbon::parse($validated['start_date']);
             $endDate = Carbon::parse($validated['end_date']);
 
+            // Validasi range tanggal sesuai dengan season
+            if (!$season->repeat_weekly) {
+                // Jika season tidak repeat_weekly, pastikan range tanggal berada dalam range tanggal season
+                if ($startDate->lt($season->tgl_mulai_season) || $endDate->gt($season->tgl_akhir_season)) {
+                    return redirect()->back()
+                        ->withErrors(['range_date_price' => 'Range tanggal harus berada dalam range tanggal season.'])
+                        ->withInput();
+                }
+            }
+
             $dates = [];
             $currentDate = $startDate->copy();
             while ($currentDate->lte($endDate)) {
+                // Jika season repeat_weekly, pastikan hanya hari yang ada di days_of_week yang digunakan
+                if ($season->repeat_weekly && !in_array($currentDate->dayOfWeek, $season->days_of_week)) {
+                    $currentDate->addDay();
+                    continue;
+                }
+
                 $dates[] = $currentDate->format('Y-m-d');
                 $currentDate->addDay();
             }
 
-            $rangeDatePrice = [
-                'start_date' => $validated['start_date'],
-                'end_date' => $validated['end_date'],
-                'dates' => $dates,
-                'price' => $validated['range_date_price_value'],
-                'description' => $validated['special_price_description'] ?? 'Harga khusus untuk periode tertentu'
-            ];
+            // Jika tidak ada tanggal yang valid, skip
+            if (!empty($dates)) {
+                $rangeDatePrice = [
+                    'start_date' => $validated['start_date'],
+                    'end_date' => $validated['end_date'],
+                    'dates' => $dates,
+                    'price' => $validated['range_date_price_value'],
+                    'description' => $validated['special_price_description'] ?? 'Harga khusus untuk periode tertentu'
+                ];
 
-            // Tambahkan ke array yang sudah ada
-            $existingRangeDatePrices[] = $rangeDatePrice;
+                // Tambahkan ke array yang sudah ada
+                $existingRangeDatePrices[] = $rangeDatePrice;
+            }
         }
 
         // Handle special_price_range (untuk special price pada tanggal tertentu)
@@ -320,23 +467,42 @@ class VillaPricingController extends Controller
             $spStartDate = Carbon::parse($validated['special_price_start_date']);
             $spEndDate = Carbon::parse($validated['special_price_end_date']);
 
+            // Validasi range tanggal sesuai dengan season
+            if (!$season->repeat_weekly) {
+                // Jika season tidak repeat_weekly, pastikan range tanggal berada dalam range tanggal season
+                if ($spStartDate->lt($season->tgl_mulai_season) || $spEndDate->gt($season->tgl_akhir_season)) {
+                    return redirect()->back()
+                        ->withErrors(['special_price_range' => 'Range tanggal harus berada dalam range tanggal season.'])
+                        ->withInput();
+                }
+            }
+
             $spDates = [];
             $currentDate = $spStartDate->copy();
             while ($currentDate->lte($spEndDate)) {
+                // Jika season repeat_weekly, pastikan hanya hari yang ada di days_of_week yang digunakan
+                if ($season->repeat_weekly && !in_array($currentDate->dayOfWeek, $season->days_of_week)) {
+                    $currentDate->addDay();
+                    continue;
+                }
+
                 $spDates[] = $currentDate->format('Y-m-d');
                 $currentDate->addDay();
             }
 
-            $specialPriceRange = [
-                'start_date' => $validated['special_price_start_date'],
-                'end_date' => $validated['special_price_end_date'],
-                'dates' => $spDates,
-                'price' => $validated['special_price_range'],
-                'description' => $validated['special_price_description'] ?? 'Special price untuk tanggal tertentu'
-            ];
+            // Jika tidak ada tanggal yang valid, skip
+            if (!empty($spDates)) {
+                $specialPriceRange = [
+                    'start_date' => $validated['special_price_start_date'],
+                    'end_date' => $validated['special_price_end_date'],
+                    'dates' => $spDates,
+                    'price' => $validated['special_price_range'],
+                    'description' => $validated['special_price_description'] ?? 'Special price untuk tanggal tertentu'
+                ];
 
-            // Tambahkan ke array yang sudah ada
-            $existingSpecialPriceRanges[] = $specialPriceRange;
+                // Tambahkan ke array yang sudah ada
+                $existingSpecialPriceRanges[] = $specialPriceRange;
+            }
         }
 
         // Remove fields yang tidak ada di model
@@ -579,6 +745,7 @@ class VillaPricingController extends Controller
     {
         try {
             $pricing = VillaPricing::findOrFail($id_villa_pricing);
+            $season = Season::findOrFail($pricing->season_id);
 
             $validated = $request->validate([
                 'start_date' => 'required|date',
@@ -587,15 +754,40 @@ class VillaPricingController extends Controller
                 'description' => 'nullable|string|max:255',
             ]);
 
-            // Generate dates array
+            // Validasi range tanggal sesuai dengan season
             $startDate = Carbon::parse($validated['start_date']);
             $endDate = Carbon::parse($validated['end_date']);
 
+            if (!$season->repeat_weekly) {
+                // Jika season tidak repeat_weekly, pastikan range tanggal berada dalam range tanggal season
+                if ($startDate->lt($season->tgl_mulai_season) || $endDate->gt($season->tgl_akhir_season)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Range tanggal harus berada dalam range tanggal season.'
+                    ], 400);
+                }
+            }
+
+            // Generate dates array
             $dates = [];
             $currentDate = $startDate->copy();
             while ($currentDate->lte($endDate)) {
+                // Jika season repeat_weekly, pastikan hanya hari yang ada di days_of_week yang digunakan
+                if ($season->repeat_weekly && !in_array($currentDate->dayOfWeek, $season->days_of_week)) {
+                    $currentDate->addDay();
+                    continue;
+                }
+
                 $dates[] = $currentDate->format('Y-m-d');
                 $currentDate->addDay();
+            }
+
+            // Jika tidak ada tanggal yang valid, return error
+            if (empty($dates)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada tanggal yang valid dalam range yang dipilih.'
+                ], 400);
             }
 
             $rangeDatePrice = [
@@ -631,6 +823,7 @@ class VillaPricingController extends Controller
     {
         try {
             $pricing = VillaPricing::findOrFail($id_villa_pricing);
+            $season = Season::findOrFail($pricing->season_id);
 
             $validated = $request->validate([
                 'start_date' => 'required|date',
@@ -639,15 +832,40 @@ class VillaPricingController extends Controller
                 'description' => 'nullable|string|max:255',
             ]);
 
-            // Generate dates array
+            // Validasi range tanggal sesuai dengan season
             $startDate = Carbon::parse($validated['start_date']);
             $endDate = Carbon::parse($validated['end_date']);
 
+            if (!$season->repeat_weekly) {
+                // Jika season tidak repeat_weekly, pastikan range tanggal berada dalam range tanggal season
+                if ($startDate->lt($season->tgl_mulai_season) || $endDate->gt($season->tgl_akhir_season)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Range tanggal harus berada dalam range tanggal season.'
+                    ], 400);
+                }
+            }
+
+            // Generate dates array
             $dates = [];
             $currentDate = $startDate->copy();
             while ($currentDate->lte($endDate)) {
+                // Jika season repeat_weekly, pastikan hanya hari yang ada di days_of_week yang digunakan
+                if ($season->repeat_weekly && !in_array($currentDate->dayOfWeek, $season->days_of_week)) {
+                    $currentDate->addDay();
+                    continue;
+                }
+
                 $dates[] = $currentDate->format('Y-m-d');
                 $currentDate->addDay();
+            }
+
+            // Jika tidak ada tanggal yang valid, return error
+            if (empty($dates)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada tanggal yang valid dalam range yang dipilih.'
+                ], 400);
             }
 
             $specialPriceRange = [

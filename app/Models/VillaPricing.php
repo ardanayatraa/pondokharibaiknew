@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class VillaPricing extends Model
 {
@@ -28,41 +29,16 @@ class VillaPricing extends Model
         'use_special_price',
         'special_price_description',
         'range_date_price',
-        'special_price_range', // New field untuk special price dengan range tanggal tertentu
+        'special_price_range',
     ];
 
     protected $casts = [
         'range_date_price' => 'array',
-        'special_price_range' => 'array', // New cast untuk special price range
+        'special_price_range' => 'array',
         'use_special_price' => 'boolean',
     ];
 
-    /**
-     * Struktur data range_date_price:
-     * [
-     *   {
-     *     'start_date': 'Y-m-d',
-     *     'end_date': 'Y-m-d',
-     *     'dates': ['Y-m-d', 'Y-m-d', ...],
-     *     'price': 100000,
-     *     'description': 'Deskripsi harga'
-     *   },
-     *   ...
-     * ]
-     *
-     * Struktur data special_price_range:
-     * [
-     *   {
-     *     'start_date': 'Y-m-d',
-     *     'end_date': 'Y-m-d',
-     *     'dates': ['Y-m-d', 'Y-m-d', ...],
-     *     'price': 100000,
-     *     'description': 'Deskripsi harga'
-     *   },
-     *   ...
-     * ]
-     */
-
+    // Relationships
     public function villa()
     {
         return $this->belongsTo(Villa::class, 'villa_id', 'id_villa');
@@ -74,52 +50,80 @@ class VillaPricing extends Model
     }
 
     /**
-     * Get price for a specific date
-     *
-     * @param string $date Format: Y-m-d
-     * @return array|null
+     * Get complete pricing information for a specific date
      */
     public function getPriceForDate($date)
     {
-        $targetDate = \Carbon\Carbon::parse($date);
+        $targetDate = Carbon::parse($date);
         $dayOfWeek = $targetDate->dayOfWeek;
         $dateString = $targetDate->format('Y-m-d');
 
-        // Priority pricing:
-        // 1. Special Price Range
-        // 2. Range Date Price
-        // 3. Global Special Price
-        // 4. Day of week pricing
+        // Priority-based pricing system
+        $priceData = $this->getSpecialPriceRangeForDate($dateString) ?:
+                    $this->getRangeDatePriceForDate($dateString) ?:
+                    $this->getGlobalSpecialPrice() ?:
+                    $this->getDayOfWeekPrice($dayOfWeek);
 
-        // 1. Check Special Price Range
-        if ($this->special_price_range &&
-            isset($this->special_price_range['dates']) &&
-            in_array($dateString, $this->special_price_range['dates']) &&
-            isset($this->special_price_range['price']) &&
-            $this->special_price_range['price'] > 0) {
+        return $priceData;
+    }
 
-            return [
-                'price' => $this->special_price_range['price'],
-                'source' => 'special_price_range',
-                'description' => $this->special_price_range['description'] ?? 'Special price untuk tanggal tertentu'
-            ];
+    /**
+     * Get special price range for a specific date
+     */
+    public function getSpecialPriceRangeForDate($date)
+    {
+        if (!$this->special_price_range) {
+            return null;
         }
 
-        // 2. Check Range Date Price
-        if ($this->range_date_price &&
-            isset($this->range_date_price['dates']) &&
-            in_array($dateString, $this->range_date_price['dates']) &&
-            isset($this->range_date_price['price']) &&
-            $this->range_date_price['price'] > 0) {
+        $ranges = $this->normalizeRangeArray($this->special_price_range);
 
-            return [
-                'price' => $this->range_date_price['price'],
-                'source' => 'range_date_price',
-                'description' => $this->range_date_price['description'] ?? 'Harga khusus untuk periode tertentu'
-            ];
+        foreach ($ranges as $range) {
+            if (isset($range['dates']) && in_array($date, $range['dates']) &&
+                isset($range['price']) && $range['price'] > 0) {
+                return [
+                    'price' => $range['price'],
+                    'source' => 'special_price_range',
+                    'description' => $range['description'] ?? 'Special price untuk tanggal tertentu',
+                    'range_info' => $range
+                ];
+            }
         }
 
-        // 3. Check Global Special Price
+        return null;
+    }
+
+    /**
+     * Get range date price for a specific date
+     */
+    public function getRangeDatePriceForDate($date)
+    {
+        if (!$this->range_date_price) {
+            return null;
+        }
+
+        $ranges = $this->normalizeRangeArray($this->range_date_price);
+
+        foreach ($ranges as $range) {
+            if (isset($range['dates']) && in_array($date, $range['dates']) &&
+                isset($range['price']) && $range['price'] > 0) {
+                return [
+                    'price' => $range['price'],
+                    'source' => 'range_date_price',
+                    'description' => $range['description'] ?? 'Harga khusus untuk periode tertentu',
+                    'range_info' => $range
+                ];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get global special price if active
+     */
+    public function getGlobalSpecialPrice()
+    {
         if ($this->use_special_price && $this->special_price > 0) {
             return [
                 'price' => $this->special_price,
@@ -128,7 +132,14 @@ class VillaPricing extends Model
             ];
         }
 
-        // 4. Day of week pricing
+        return null;
+    }
+
+    /**
+     * Get day of week pricing
+     */
+    public function getDayOfWeekPrice($dayOfWeek)
+    {
         $dayMapping = [
             0 => 'sunday_pricing',
             1 => 'monday_pricing',
@@ -139,12 +150,11 @@ class VillaPricing extends Model
             6 => 'saturday_pricing'
         ];
 
-        $pricingField = $dayMapping[$dayOfWeek];
-        $price = $this->$pricingField;
+        $pricingField = $dayMapping[$dayOfWeek] ?? null;
 
-        if ($price > 0) {
+        if ($pricingField && $this->$pricingField > 0) {
             return [
-                'price' => $price,
+                'price' => $this->$pricingField,
                 'source' => 'day_of_week',
                 'description' => 'Harga reguler'
             ];
@@ -155,114 +165,56 @@ class VillaPricing extends Model
 
     /**
      * Check if date is in special price range
-     *
-     * @param string $date Format: Y-m-d
-     * @return bool
      */
     public function isSpecialPriceDate($date)
     {
-        if (!$this->special_price_range) {
-            return false;
-        }
-
-        // Handle both single object and array of objects
-        if (isset($this->special_price_range['dates'])) {
-            // Single object format
-            return in_array($date, $this->special_price_range['dates']);
-        } else {
-            // Array of objects format
-            foreach ($this->special_price_range as $range) {
-                if (isset($range['dates']) && in_array($date, $range['dates'])) {
-                    return true;
-                }
-            }
-            return false;
-        }
+        return $this->getSpecialPriceRangeForDate($date) !== null;
     }
 
     /**
      * Check if date is in range date price
-     *
-     * @param string $date Format: Y-m-d
-     * @return bool
      */
     public function isRangeDatePrice($date)
     {
-        if (!$this->range_date_price) {
-            return false;
-        }
-
-        // Handle both single object and array of objects
-        if (isset($this->range_date_price['dates'])) {
-            // Single object format
-            return in_array($date, $this->range_date_price['dates']);
-        } else {
-            // Array of objects format
-            foreach ($this->range_date_price as $range) {
-                if (isset($range['dates']) && in_array($date, $range['dates'])) {
-                    return true;
-                }
-            }
-            return false;
-        }
+        return $this->getRangeDatePriceForDate($date) !== null;
     }
 
     /**
-     * Get all special dates (both special_price_range and range_date_price)
-     *
-     * @return array
+     * Get all special dates with their pricing info
      */
     public function getSpecialDates()
     {
         $specialDates = [];
 
-        // Handle special_price_range
+        // Add special price range dates
         if ($this->special_price_range) {
-            if (isset($this->special_price_range['dates'])) {
-                // Single object format
-                foreach ($this->special_price_range['dates'] as $date) {
-                    $specialDates[$date] = [
-                        'type' => 'special_price_range',
-                        'price' => $this->special_price_range['price'] ?? null,
-                        'description' => $this->special_price_range['description'] ?? 'Special price'
-                    ];
-                }
-            } else {
-                // Array of objects format
-                foreach ($this->special_price_range as $range) {
-                    if (isset($range['dates'])) {
-                        foreach ($range['dates'] as $date) {
-                            $specialDates[$date] = [
-                                'type' => 'special_price_range',
-                                'price' => $range['price'] ?? null,
-                                'description' => $range['description'] ?? 'Special price'
-                            ];
-                        }
+            $ranges = $this->normalizeRangeArray($this->special_price_range);
+            foreach ($ranges as $range) {
+                if (isset($range['dates'])) {
+                    foreach ($range['dates'] as $date) {
+                        $specialDates[$date] = [
+                            'type' => 'special_price_range',
+                            'price' => $range['price'] ?? null,
+                            'description' => $range['description'] ?? 'Special price',
+                            'range_info' => $range
+                        ];
                     }
                 }
             }
         }
 
-        // Handle range_date_price
+        // Add range date price dates (lower priority, won't override special price range)
         if ($this->range_date_price) {
-            if (isset($this->range_date_price['dates'])) {
-                // Single object format
-                foreach ($this->range_date_price['dates'] as $date) {
-                    $specialDates[$date] = [
-                        'type' => 'range_date_price',
-                        'price' => $this->range_date_price['price'] ?? null,
-                        'description' => $this->range_date_price['description'] ?? 'Harga khusus'
-                    ];
-                }
-            } else {
-                // Array of objects format
-                foreach ($this->range_date_price as $range) {
-                    if (isset($range['dates'])) {
-                        foreach ($range['dates'] as $date) {
+            $ranges = $this->normalizeRangeArray($this->range_date_price);
+            foreach ($ranges as $range) {
+                if (isset($range['dates'])) {
+                    foreach ($range['dates'] as $date) {
+                        if (!isset($specialDates[$date])) { // Only add if not already set by special price range
                             $specialDates[$date] = [
                                 'type' => 'range_date_price',
                                 'price' => $range['price'] ?? null,
-                                'description' => $range['description'] ?? 'Harga khusus'
+                                'description' => $range['description'] ?? 'Harga khusus',
+                                'range_info' => $range
                             ];
                         }
                     }
@@ -274,155 +226,55 @@ class VillaPricing extends Model
     }
 
     /**
-     * Get special price range for a specific date
-     *
-     * @param string $date Format: Y-m-d
-     * @return array|null
-     */
-    public function getSpecialPriceRangeForDate($date)
-    {
-        if (!$this->special_price_range) {
-            return null;
-        }
-
-        // Handle both single object and array of objects
-        if (isset($this->special_price_range['dates'])) {
-            // Single object format
-            if (in_array($date, $this->special_price_range['dates'])) {
-                return $this->special_price_range;
-            }
-        } else {
-            // Array of objects format
-            foreach ($this->special_price_range as $range) {
-                if (isset($range['dates']) && in_array($date, $range['dates'])) {
-                    return $range;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Get range date price for a specific date
-     *
-     * @param string $date Format: Y-m-d
-     * @return array|null
-     */
-    public function getRangeDatePriceForDate($date)
-    {
-        if (!$this->range_date_price) {
-            return null;
-        }
-
-        // Handle both single object and array of objects
-        if (isset($this->range_date_price['dates'])) {
-            // Single object format
-            if (in_array($date, $this->range_date_price['dates'])) {
-                return $this->range_date_price;
-            }
-        } else {
-            // Array of objects format
-            foreach ($this->range_date_price as $range) {
-                if (isset($range['dates']) && in_array($date, $range['dates'])) {
-                    return $range;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Add a new range date price
-     *
-     * @param array $rangeDatePrice
-     * @return $this
      */
     public function addRangeDatePrice(array $rangeDatePrice)
     {
-        if (!isset($rangeDatePrice['start_date']) || !isset($rangeDatePrice['end_date']) || !isset($rangeDatePrice['price'])) {
-            throw new \InvalidArgumentException('Range date price must have start_date, end_date, and price');
-        }
+        $this->validateRangeData($rangeDatePrice);
 
-        // Generate dates array if not provided
+        // Ensure dates array is generated
         if (!isset($rangeDatePrice['dates'])) {
-            $startDate = \Carbon\Carbon::parse($rangeDatePrice['start_date']);
-            $endDate = \Carbon\Carbon::parse($rangeDatePrice['end_date']);
-
-            $dates = [];
-            $currentDate = $startDate->copy();
-            while ($currentDate->lte($endDate)) {
-                $dates[] = $currentDate->format('Y-m-d');
-                $currentDate->addDay();
-            }
-
-            $rangeDatePrice['dates'] = $dates;
+            $rangeDatePrice['dates'] = $this->generateDatesArray(
+                $rangeDatePrice['start_date'],
+                $rangeDatePrice['end_date']
+            );
         }
 
-        // Convert to array of objects format if currently single object
-        if ($this->range_date_price && isset($this->range_date_price['dates'])) {
-            $this->range_date_price = [$this->range_date_price];
-        }
+        // Convert existing data to array format
+        $existingRanges = $this->getAllRangeDatePrices();
+        $existingRanges[] = $rangeDatePrice;
 
-        // Initialize if null
-        if (!$this->range_date_price) {
-            $this->range_date_price = [];
-        }
-
-        // Add new range
-        $this->range_date_price[] = $rangeDatePrice;
+        $this->range_date_price = count($existingRanges) === 1 ? $existingRanges[0] : $existingRanges;
 
         return $this;
     }
 
     /**
      * Add a new special price range
-     *
-     * @param array $specialPriceRange
-     * @return $this
      */
     public function addSpecialPriceRange(array $specialPriceRange)
     {
-        if (!isset($specialPriceRange['start_date']) || !isset($specialPriceRange['end_date']) || !isset($specialPriceRange['price'])) {
-            throw new \InvalidArgumentException('Special price range must have start_date, end_date, and price');
-        }
+        $this->validateRangeData($specialPriceRange);
 
-        // Generate dates array if not provided
+        // Ensure dates array is generated
         if (!isset($specialPriceRange['dates'])) {
-            $startDate = \Carbon\Carbon::parse($specialPriceRange['start_date']);
-            $endDate = \Carbon\Carbon::parse($specialPriceRange['end_date']);
-
-            $dates = [];
-            $currentDate = $startDate->copy();
-            while ($currentDate->lte($endDate)) {
-                $dates[] = $currentDate->format('Y-m-d');
-                $currentDate->addDay();
-            }
-
-            $specialPriceRange['dates'] = $dates;
+            $specialPriceRange['dates'] = $this->generateDatesArray(
+                $specialPriceRange['start_date'],
+                $specialPriceRange['end_date']
+            );
         }
 
-        // Convert to array of objects format if currently single object
-        if ($this->special_price_range && isset($this->special_price_range['dates'])) {
-            $this->special_price_range = [$this->special_price_range];
-        }
+        // Convert existing data to array format
+        $existingRanges = $this->getAllSpecialPriceRanges();
+        $existingRanges[] = $specialPriceRange;
 
-        // Initialize if null
-        if (!$this->special_price_range) {
-            $this->special_price_range = [];
-        }
-
-        // Add new range
-        $this->special_price_range[] = $specialPriceRange;
+        $this->special_price_range = count($existingRanges) === 1 ? $existingRanges[0] : $existingRanges;
 
         return $this;
     }
 
     /**
-     * Get all range date prices
-     *
-     * @return array
+     * Get all range date prices as array
      */
     public function getAllRangeDatePrices()
     {
@@ -430,20 +282,11 @@ class VillaPricing extends Model
             return [];
         }
 
-        // Handle both single object and array of objects
-        if (isset($this->range_date_price['dates'])) {
-            // Single object format
-            return [$this->range_date_price];
-        } else {
-            // Array of objects format
-            return $this->range_date_price;
-        }
+        return $this->normalizeRangeArray($this->range_date_price);
     }
 
     /**
-     * Get all special price ranges
-     *
-     * @return array
+     * Get all special price ranges as array
      */
     public function getAllSpecialPriceRanges()
     {
@@ -451,13 +294,310 @@ class VillaPricing extends Model
             return [];
         }
 
-        // Handle both single object and array of objects
-        if (isset($this->special_price_range['dates'])) {
-            // Single object format
-            return [$this->special_price_range];
-        } else {
-            // Array of objects format
-            return $this->special_price_range;
+        return $this->normalizeRangeArray($this->special_price_range);
+    }
+
+    /**
+     * Remove a range date price by index
+     */
+    public function removeRangeDatePrice($index)
+    {
+        $ranges = $this->getAllRangeDatePrices();
+
+        if (isset($ranges[$index])) {
+            unset($ranges[$index]);
+            $ranges = array_values($ranges); // Reindex array
+
+            $this->range_date_price = empty($ranges) ? null :
+                (count($ranges) === 1 ? $ranges[0] : $ranges);
         }
+
+        return $this;
+    }
+
+    /**
+     * Remove a special price range by index
+     */
+    public function removeSpecialPriceRange($index)
+    {
+        $ranges = $this->getAllSpecialPriceRanges();
+
+        if (isset($ranges[$index])) {
+            unset($ranges[$index]);
+            $ranges = array_values($ranges); // Reindex array
+
+            $this->special_price_range = empty($ranges) ? null :
+                (count($ranges) === 1 ? $ranges[0] : $ranges);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get pricing summary for a date range
+     */
+    public function getPricingSummaryForDateRange($startDate, $endDate)
+    {
+        $start = Carbon::parse($startDate);
+        $end = Carbon::parse($endDate);
+        $summary = [
+            'total_days' => 0,
+            'available_days' => 0,
+            'total_price' => 0,
+            'pricing_breakdown' => [],
+            'daily_prices' => []
+        ];
+
+        $currentDate = $start->copy();
+        while ($currentDate->lte($end)) {
+            $dateString = $currentDate->format('Y-m-d');
+            $summary['total_days']++;
+
+            $priceData = $this->getPriceForDate($dateString);
+
+            if ($priceData && $priceData['price'] > 0) {
+                $summary['available_days']++;
+                $summary['total_price'] += $priceData['price'];
+
+                // Count pricing sources
+                $source = $priceData['source'];
+                $summary['pricing_breakdown'][$source] = ($summary['pricing_breakdown'][$source] ?? 0) + 1;
+
+                $summary['daily_prices'][] = [
+                    'date' => $dateString,
+                    'price' => $priceData['price'],
+                    'source' => $source,
+                    'description' => $priceData['description']
+                ];
+            } else {
+                $summary['daily_prices'][] = [
+                    'date' => $dateString,
+                    'price' => null,
+                    'available' => false,
+                    'reason' => 'Tidak ada harga tersedia'
+                ];
+            }
+
+            $currentDate->addDay();
+        }
+
+        return $summary;
+    }
+
+    /**
+     * Check if pricing is available for a specific date
+     */
+    public function isAvailableForDate($date)
+    {
+        $priceData = $this->getPriceForDate($date);
+        return $priceData && $priceData['price'] > 0;
+    }
+
+    /**
+     * Get the lowest price in a date range
+     */
+    public function getLowestPriceInRange($startDate, $endDate)
+    {
+        $summary = $this->getPricingSummaryForDateRange($startDate, $endDate);
+        $prices = array_filter(array_column($summary['daily_prices'], 'price'));
+
+        return empty($prices) ? null : min($prices);
+    }
+
+    /**
+     * Get the highest price in a date range
+     */
+    public function getHighestPriceInRange($startDate, $endDate)
+    {
+        $summary = $this->getPricingSummaryForDateRange($startDate, $endDate);
+        $prices = array_filter(array_column($summary['daily_prices'], 'price'));
+
+        return empty($prices) ? null : max($prices);
+    }
+
+    /**
+     * Get average price in a date range
+     */
+    public function getAveragePriceInRange($startDate, $endDate)
+    {
+        $summary = $this->getPricingSummaryForDateRange($startDate, $endDate);
+        $prices = array_filter(array_column($summary['daily_prices'], 'price'));
+
+        return empty($prices) ? null : array_sum($prices) / count($prices);
+    }
+
+    // Private Helper Methods
+
+    /**
+     * Normalize range data to always be an array of ranges
+     */
+    private function normalizeRangeArray($data)
+    {
+        if (!$data) {
+            return [];
+        }
+
+        // If it's a single range (has 'dates' key), wrap it in an array
+        if (isset($data['dates'])) {
+            return [$data];
+        }
+
+        // If it's already an array of ranges, return as is
+        if (is_array($data) && !empty($data)) {
+            return $data;
+        }
+
+        return [];
+    }
+
+    /**
+     * Validate range data structure
+     */
+    private function validateRangeData(array $rangeData)
+    {
+        if (!isset($rangeData['start_date']) || !isset($rangeData['end_date']) || !isset($rangeData['price'])) {
+            throw new \InvalidArgumentException(
+                'Range data must have start_date, end_date, and price'
+            );
+        }
+
+        if ($rangeData['price'] < 0) {
+            throw new \InvalidArgumentException('Price cannot be negative');
+        }
+
+        $startDate = Carbon::parse($rangeData['start_date']);
+        $endDate = Carbon::parse($rangeData['end_date']);
+
+        if ($startDate->gt($endDate)) {
+            throw new \InvalidArgumentException('Start date cannot be after end date');
+        }
+    }
+
+    /**
+     * Generate array of dates between start and end date
+     */
+    private function generateDatesArray($startDate, $endDate)
+    {
+        $start = Carbon::parse($startDate);
+        $end = Carbon::parse($endDate);
+        $dates = [];
+
+        $currentDate = $start->copy();
+        while ($currentDate->lte($end)) {
+            $dates[] = $currentDate->format('Y-m-d');
+            $currentDate->addDay();
+        }
+
+        return $dates;
+    }
+
+    /**
+     * Filter dates based on season configuration
+     */
+    private function filterDatesBySeason(array $dates, Season $season)
+    {
+        if (!$season->repeat_weekly) {
+            // For date range seasons, filter dates within season range
+            return array_filter($dates, function($date) use ($season) {
+                $dateCarbon = Carbon::parse($date);
+                return $dateCarbon->gte($season->tgl_mulai_season) &&
+                       $dateCarbon->lte($season->tgl_akhir_season);
+            });
+        } else {
+            // For weekly seasons, filter by days of week
+            return array_filter($dates, function($date) use ($season) {
+                $dayOfWeek = Carbon::parse($date)->dayOfWeek;
+                return in_array($dayOfWeek, $season->days_of_week);
+            });
+        }
+    }
+
+    /**
+     * Get formatted price display
+     */
+    public function getFormattedPrice($price)
+    {
+        return 'Rp ' . number_format($price, 0, ',', '.');
+    }
+
+    /**
+     * Check if there are any conflicts between ranges
+     */
+    public function hasRangeConflicts()
+    {
+        $allDates = [];
+
+        // Collect all dates from special price ranges
+        foreach ($this->getAllSpecialPriceRanges() as $range) {
+            if (isset($range['dates'])) {
+                foreach ($range['dates'] as $date) {
+                    if (isset($allDates[$date])) {
+                        return true; // Conflict found
+                    }
+                    $allDates[$date] = 'special_price_range';
+                }
+            }
+        }
+
+        // Check range date prices for conflicts with special price ranges
+        foreach ($this->getAllRangeDatePrices() as $range) {
+            if (isset($range['dates'])) {
+                foreach ($range['dates'] as $date) {
+                    if (isset($allDates[$date]) && $allDates[$date] === 'special_price_range') {
+                        // This is not a conflict since special price has higher priority
+                        continue;
+                    }
+                    if (isset($allDates[$date])) {
+                        return true; // Conflict found
+                    }
+                    $allDates[$date] = 'range_date_price';
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get range conflicts details
+     */
+    public function getRangeConflicts()
+    {
+        $conflicts = [];
+        $dateTracker = [];
+
+        // Track special price ranges
+        foreach ($this->getAllSpecialPriceRanges() as $index => $range) {
+            if (isset($range['dates'])) {
+                foreach ($range['dates'] as $date) {
+                    if (isset($dateTracker[$date])) {
+                        $conflicts[] = [
+                            'date' => $date,
+                            'ranges' => [$dateTracker[$date], ['type' => 'special_price_range', 'index' => $index]]
+                        ];
+                    } else {
+                        $dateTracker[$date] = ['type' => 'special_price_range', 'index' => $index];
+                    }
+                }
+            }
+        }
+
+        // Track range date prices
+        foreach ($this->getAllRangeDatePrices() as $index => $range) {
+            if (isset($range['dates'])) {
+                foreach ($range['dates'] as $date) {
+                    if (isset($dateTracker[$date])) {
+                        $conflicts[] = [
+                            'date' => $date,
+                            'ranges' => [$dateTracker[$date], ['type' => 'range_date_price', 'index' => $index]]
+                        ];
+                    } else {
+                        $dateTracker[$date] = ['type' => 'range_date_price', 'index' => $index];
+                    }
+                }
+            }
+        }
+
+        return $conflicts;
     }
 }
