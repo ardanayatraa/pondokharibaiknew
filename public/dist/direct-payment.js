@@ -123,16 +123,26 @@ document.addEventListener("DOMContentLoaded", () => {
     // Get CSRF token
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
+    // Jika reservationId tidak diberikan, coba ambil dari sessionStorage
+    if (!reservationId) {
+      // Ambil ID reservasi dari session storage
+      const sessionReservationId = sessionStorage.getItem('current_reservation_id');
+      if (sessionReservationId) {
+        reservationId = sessionReservationId;
+        console.log('Using reservation ID from sessionStorage:', reservationId);
+      }
+    }
+
     // Validasi reservationId
     if (!reservationId) {
       console.error('Reservation ID is missing or invalid:', reservationId);
-      return;
+      return Promise.reject(new Error('Reservation ID not found'));
     }
 
     console.log('Updating payment status for reservation:', reservationId, 'Status:', status);
 
     // Send request to update payment status
-    return fetch('api/payment/update-status', {
+    return fetch('/api/payment/update-status', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

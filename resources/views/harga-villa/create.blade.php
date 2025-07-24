@@ -110,6 +110,150 @@
                                 @endforeach
                             @endif
                         </div>
+
+                        {{-- 6) Special Price Global --}}
+                        <div class="border-t pt-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Special Price (Global)</h3>
+
+                            <div class="flex items-center space-x-2 mb-4">
+                                <input type="checkbox" id="use_special_price" name="use_special_price" value="1"
+                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                                    {{ old('use_special_price') ? 'checked' : '' }} />
+                                <label for="use_special_price" class="font-medium text-gray-700">
+                                    Gunakan Special Price Global (untuk semua hari dalam season)
+                                </label>
+                            </div>
+
+                            <div id="container-special-price-global" style="display: none;">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <x-label for="special_price" value="Special Price" />
+                                        <x-input id="special_price" name="special_price" type="number" min="0"
+                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                            value="{{ old('special_price') }}" placeholder="Masukkan special price" />
+                                        @error('special_price')
+                                            <span class="text-sm text-red-600">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                    <div>
+                                        <x-label for="special_price_description" value="Deskripsi Special Price" />
+                                        <x-input id="special_price_description" name="special_price_description"
+                                            type="text"
+                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                            value="{{ old('special_price_description') }}"
+                                            placeholder="Contoh: Promo Akhir Tahun" />
+                                        @error('special_price_description')
+                                            <span class="text-sm text-red-600">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- 7) Range Date Price Override --}}
+                        <div class="border-t pt-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Override Harga untuk Periode Tertentu
+                            </h3>
+                            <p class="text-sm text-gray-600 mb-4">
+                                Gunakan untuk override harga reguler atau special price pada tanggal tertentu
+                            </p>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <x-label for="start_date" value="Tanggal Mulai" />
+                                    <x-input id="start_date" name="start_date" type="date"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        value="{{ old('start_date') }}" />
+                                    @error('start_date')
+                                        <span class="text-sm text-red-600">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <x-label for="end_date" value="Tanggal Selesai" />
+                                    <x-input id="end_date" name="end_date" type="date"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        value="{{ old('end_date') }}" />
+                                    @error('end_date')
+                                        <span class="text-sm text-red-600">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <x-label for="range_date_price_value" value="Harga Override" />
+                                    <x-input id="range_date_price_value" name="range_date_price_value" type="number"
+                                        min="0"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        placeholder="Harga untuk periode ini" />
+                                    <span class="text-sm text-gray-500">Kosongkan jika tidak ingin override</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- 8) Special Price untuk Range Date Tertentu --}}
+                        <div class="border-t pt-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Special Price untuk Tanggal Tertentu
+                            </h3>
+                            <p class="text-sm text-gray-600 mb-4">
+                                Gunakan untuk memberikan special price pada tanggal/periode tertentu (prioritas
+                                tertinggi)
+                            </p>
+
+                            <div class="flex items-center space-x-2 mb-4">
+                                <input type="checkbox" id="use_special_price_for_range"
+                                    name="use_special_price_for_range" value="1"
+                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                                    {{ old('use_special_price_for_range') ? 'checked' : '' }} />
+                                <label for="use_special_price_for_range" class="font-medium text-gray-700">
+                                    Aktifkan Special Price untuk Tanggal Tertentu
+                                </label>
+                            </div>
+
+                            <div id="container-special-price-range" style="display: none;">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <x-label for="special_price_start_date" value="Tanggal Mulai Special Price" />
+                                        <x-input id="special_price_start_date" name="special_price_start_date"
+                                            type="date"
+                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                            value="{{ old('special_price_start_date') }}" />
+                                        @error('special_price_start_date')
+                                            <span class="text-sm text-red-600">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                    <div>
+                                        <x-label for="special_price_end_date" value="Tanggal Selesai Special Price" />
+                                        <x-input id="special_price_end_date" name="special_price_end_date"
+                                            type="date"
+                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                            value="{{ old('special_price_end_date') }}" />
+                                        @error('special_price_end_date')
+                                            <span class="text-sm text-red-600">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                    <div>
+                                        <x-label for="special_price_range" value="Harga Special" />
+                                        <x-input id="special_price_range" name="special_price_range" type="number"
+                                            min="0"
+                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                            value="{{ old('special_price_range') }}"
+                                            placeholder="Masukkan harga special" />
+                                        @error('special_price_range')
+                                            <span class="text-sm text-red-600">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- 9) Informasi Prioritas Pricing --}}
+                        <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
+                            <h4 class="font-medium text-blue-900 mb-2">Prioritas Penggunaan Harga:</h4>
+                            <ol class="list-decimal list-inside text-sm text-blue-800 space-y-1">
+                                <li><strong>Special Price untuk Tanggal Tertentu</strong> - Prioritas tertinggi</li>
+                                <li><strong>Override Harga untuk Periode Tertentu</strong> - Prioritas kedua</li>
+                                <li><strong>Special Price Global</strong> - Prioritas ketiga</li>
+                                <li><strong>Harga per Hari</strong> - Prioritas terendah (default)</li>
+                            </ol>
+                        </div>
                     </div>
 
                     {{-- Tombol Simpan / Batal --}}
@@ -127,9 +271,7 @@
         </div>
     </div>
 
-    {{-- ---------------------------------------------
-         SCRIPT: Generate/Render Input Harga Berdasarkan season_id
-        --------------------------------------------- --}}
+    {{-- JavaScript --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Mapping index hari → nama field
@@ -148,6 +290,14 @@
             const containerSamakan = document.getElementById('container-samakan-semua');
             const containerHargaAll = document.getElementById('container-harga-semua');
             const inputHargaAll = document.getElementById('harga_semua');
+
+            // Special Price Global
+            const checkboxSpecialPrice = document.getElementById('use_special_price');
+            const containerSpecialPriceGlobal = document.getElementById('container-special-price-global');
+
+            // Special Price Range
+            const checkboxSpecialPriceRange = document.getElementById('use_special_price_for_range');
+            const containerSpecialPriceRange = document.getElementById('container-special-price-range');
 
             // Hapus semua elemen child di container-pricing-fields
             function clearPricingFields() {
@@ -227,7 +377,7 @@
                 }
             });
 
-            // Event: checkbox “Samakan Semua Hari”
+            // Event: checkbox "Samakan Semua Hari"
             checkboxSemua.addEventListener('change', function() {
                 if (checkboxSemua.checked) {
                     containerHargaAll.style.display = 'block';
@@ -242,6 +392,38 @@
                     inputHargaAll.value = '';
                 }
             });
+
+            // Event: checkbox "Special Price Global"
+            checkboxSpecialPrice.addEventListener('change', function() {
+                if (checkboxSpecialPrice.checked) {
+                    containerSpecialPriceGlobal.style.display = 'block';
+                } else {
+                    containerSpecialPriceGlobal.style.display = 'none';
+                    document.getElementById('special_price').value = '';
+                    document.getElementById('special_price_description').value = '';
+                }
+            });
+
+            // Event: checkbox "Special Price Range"
+            checkboxSpecialPriceRange.addEventListener('change', function() {
+                if (checkboxSpecialPriceRange.checked) {
+                    containerSpecialPriceRange.style.display = 'block';
+                } else {
+                    containerSpecialPriceRange.style.display = 'none';
+                    document.getElementById('special_price_start_date').value = '';
+                    document.getElementById('special_price_end_date').value = '';
+                    document.getElementById('special_price_range').value = '';
+                }
+            });
+
+            // Inisialisasi untuk checkbox yang sudah checked saat page load
+            if (checkboxSpecialPrice.checked) {
+                containerSpecialPriceGlobal.style.display = 'block';
+            }
+
+            if (checkboxSpecialPriceRange.checked) {
+                containerSpecialPriceRange.style.display = 'block';
+            }
 
             // Jika validasi gagal (ada old('season_id')), re-trigger event change
             @if (old('season_id'))

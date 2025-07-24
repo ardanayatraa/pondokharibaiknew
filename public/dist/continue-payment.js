@@ -94,12 +94,24 @@ document.addEventListener("DOMContentLoaded", () => {
     // Get CSRF token
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-    // Get reservation ID from URL
-    const urlParts = window.location.pathname.split('/');
-    const reservationId = urlParts[urlParts.indexOf('reservation') + 1];
+    // Ambil ID reservasi dari session storage yang disimpan saat membuat reservasi
+    // Ini lebih reliable daripada mencoba mengekstrak dari URL atau order_id
+    const sessionReservationId = sessionStorage.getItem('current_reservation_id');
+
+    // Fallback ke ekstraksi dari URL jika tidak ada di session
+    let reservationId = sessionReservationId;
 
     if (!reservationId) {
-      console.error('Reservation ID not found in URL');
+      // Coba ambil dari URL
+      const urlParts = window.location.pathname.split('/');
+      if (urlParts.indexOf('reservation') !== -1) {
+        reservationId = urlParts[urlParts.indexOf('reservation') + 1];
+        console.log('Extracted reservation ID from URL:', reservationId);
+      }
+    }
+
+    if (!reservationId) {
+      console.error('Reservation ID not found in sessionStorage or URL');
       return Promise.reject(new Error('Reservation ID not found'));
     }
 

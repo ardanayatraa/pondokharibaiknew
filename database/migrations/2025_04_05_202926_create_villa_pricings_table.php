@@ -22,6 +22,7 @@ return new class extends Migration
     $table->decimal('thursday_pricing',  10, 2)->default(0);
     $table->decimal('friday_pricing',    10, 2)->default(0);
     $table->decimal('saturday_pricing',  10, 2)->default(0);
+    $table->json('special_price_range')->nullable()->after('range_date_price');
             $table->timestamps();
         });
     }
