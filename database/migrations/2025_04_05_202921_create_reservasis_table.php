@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('tbl_reservasi', function (Blueprint $table) {
             $table->id('id_reservation');
-            $table->foreignId('guest_id');
+            $table->foreignId('guest_id')->nullable();
             $table->foreignId('villa_id');
             $table->foreignId('cek_ketersediaan_id')->nullable();
             $table->foreignId('villa_pricing_id')->nullable();

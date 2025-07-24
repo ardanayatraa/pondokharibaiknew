@@ -8,7 +8,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('tbl_pembayaran', function (Blueprint $table) {
-            $table->string('order_id');
+            $table->string('order_id')->nullable();
         });
     }
 
