@@ -193,9 +193,9 @@
                     <span class="ml-3">Season</span>
                 </a>
 
-                <a href="{{ route('harga-villa.index') }}"
-                    class="flex items-center px-4 py-3 {{ request()->routeIs('harga-villa.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200"
-                    aria-current="{{ request()->routeIs('harga-villa.*') ? 'page' : 'false' }}">
+                <a href="{{ route('villa-pricing.index') }}"
+                    class="flex items-center px-4 py-3 {{ request()->routeIs('villa-pricing.*') ? 'text-elegant-gold bg-elegant-white/5 border-l-4 border-elegant-gold' : 'text-elegant-white/70 hover:bg-elegant-white/5 hover:text-elegant-white' }} transition-colors duration-200"
+                    aria-current="{{ request()->routeIs('villa-pricing.*') ? 'page' : 'false' }}">
                     <i class="fas fa-tags w-5 text-center" aria-hidden="true"></i>
                     <span class="ml-3">Harga Villa</span>
                 </a>
