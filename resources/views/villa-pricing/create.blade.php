@@ -6,30 +6,31 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
+        <div class="w-full mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-lg font-semibold">Tambah Villa Pricing</h3>
                         <a href="{{ route('villa-pricing.index') }}"
-                           class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
                             <i class="fas fa-arrow-left"></i> Kembali
                         </a>
                     </div>
 
-                    @if($errors->any())
+                    @if ($errors->any())
                         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
                             <strong>Whoops!</strong> Ada beberapa masalah dengan input Anda.<br><br>
                             <ul class="list-disc list-inside">
-                                @foreach($errors->all() as $error)
+                                @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
                                 @endforeach
                             </ul>
                         </div>
                     @endif
 
-                    @if(session('error'))
-                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                    @if (session('error'))
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+                            role="alert">
                             <span class="block sm:inline">{{ session('error') }}</span>
                         </div>
                     @endif
@@ -40,13 +41,15 @@
                         <!-- Villa & Season Selection -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <div>
-                                <label for="villa_id" class="block text-sm font-medium text-gray-700 mb-2">Villa <span class="text-red-500">*</span></label>
+                                <label for="villa_id" class="block text-sm font-medium text-gray-700 mb-2">Villa <span
+                                        class="text-red-500">*</span></label>
                                 <select name="villa_id" id="villa_id"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                        required>
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                    required>
                                     <option value="">Pilih Villa</option>
-                                    @foreach($villas as $villa)
-                                        <option value="{{ $villa->id_villa }}" {{ old('villa_id') == $villa->id_villa ? 'selected' : '' }}>
+                                    @foreach ($villas as $villa)
+                                        <option value="{{ $villa->id_villa }}"
+                                            {{ old('villa_id') == $villa->id_villa ? 'selected' : '' }}>
                                             {{ $villa->name }}
                                         </option>
                                     @endforeach
@@ -54,17 +57,18 @@
                             </div>
 
                             <div>
-                                <label for="season_id" class="block text-sm font-medium text-gray-700 mb-2">Season <span class="text-red-500">*</span></label>
+                                <label for="season_id" class="block text-sm font-medium text-gray-700 mb-2">Season <span
+                                        class="text-red-500">*</span></label>
                                 <select name="season_id" id="season_id"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                        required onchange="handleSeasonChange()">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                    required onchange="handleSeasonChange()">
                                     <option value="">Pilih Season</option>
-                                    @foreach($seasons as $season)
+                                    @foreach ($seasons as $season)
                                         <option value="{{ $season->id_season }}"
-                                                data-repeat-weekly="{{ $season->repeat_weekly ? '1' : '0' }}"
-                                                data-days-of-week="{{ json_encode($season->days_of_week) }}"
-                                                data-periode="{{ $season->periode_label }}"
-                                                {{ old('season_id') == $season->id_season ? 'selected' : '' }}>
+                                            data-repeat-weekly="{{ $season->repeat_weekly ? '1' : '0' }}"
+                                            data-days-of-week="{{ json_encode($season->days_of_week) }}"
+                                            data-periode="{{ $season->periode_label }}"
+                                            {{ old('season_id') == $season->id_season ? 'selected' : '' }}>
                                             {{ $season->nama_season }} ({{ $season->periode_label }})
                                         </option>
                                     @endforeach
@@ -97,10 +101,9 @@
                                         <span class="day-status text-xs"></span>
                                     </label>
                                     <input type="number" name="sunday_pricing" id="sunday_pricing"
-                                           value="{{ old('sunday_pricing') }}"
-                                           min="0" step="1000"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                           placeholder="0">
+                                        value="{{ old('sunday_pricing') }}" min="0" step="1000"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="0">
                                 </div>
 
                                 <div class="pricing-day" data-day="1">
@@ -109,10 +112,9 @@
                                         <span class="day-status text-xs"></span>
                                     </label>
                                     <input type="number" name="monday_pricing" id="monday_pricing"
-                                           value="{{ old('monday_pricing') }}"
-                                           min="0" step="1000"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                           placeholder="0">
+                                        value="{{ old('monday_pricing') }}" min="0" step="1000"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="0">
                                 </div>
 
                                 <div class="pricing-day" data-day="2">
@@ -121,10 +123,9 @@
                                         <span class="day-status text-xs"></span>
                                     </label>
                                     <input type="number" name="tuesday_pricing" id="tuesday_pricing"
-                                           value="{{ old('tuesday_pricing') }}"
-                                           min="0" step="1000"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                           placeholder="0">
+                                        value="{{ old('tuesday_pricing') }}" min="0" step="1000"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="0">
                                 </div>
 
                                 <div class="pricing-day" data-day="3">
@@ -133,22 +134,21 @@
                                         <span class="day-status text-xs"></span>
                                     </label>
                                     <input type="number" name="wednesday_pricing" id="wednesday_pricing"
-                                           value="{{ old('wednesday_pricing') }}"
-                                           min="0" step="1000"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                           placeholder="0">
+                                        value="{{ old('wednesday_pricing') }}" min="0" step="1000"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="0">
                                 </div>
 
                                 <div class="pricing-day" data-day="4">
-                                    <label for="thursday_pricing" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="thursday_pricing"
+                                        class="block text-sm font-medium text-gray-700 mb-2">
                                         <span class="day-name">Kamis</span>
                                         <span class="day-status text-xs"></span>
                                     </label>
                                     <input type="number" name="thursday_pricing" id="thursday_pricing"
-                                           value="{{ old('thursday_pricing') }}"
-                                           min="0" step="1000"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                           placeholder="0">
+                                        value="{{ old('thursday_pricing') }}" min="0" step="1000"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="0">
                                 </div>
 
                                 <div class="pricing-day" data-day="5">
@@ -157,22 +157,21 @@
                                         <span class="day-status text-xs"></span>
                                     </label>
                                     <input type="number" name="friday_pricing" id="friday_pricing"
-                                           value="{{ old('friday_pricing') }}"
-                                           min="0" step="1000"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                           placeholder="0">
+                                        value="{{ old('friday_pricing') }}" min="0" step="1000"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="0">
                                 </div>
 
                                 <div class="pricing-day" data-day="6">
-                                    <label for="saturday_pricing" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="saturday_pricing"
+                                        class="block text-sm font-medium text-gray-700 mb-2">
                                         <span class="day-name">Sabtu</span>
                                         <span class="day-status text-xs"></span>
                                     </label>
                                     <input type="number" name="saturday_pricing" id="saturday_pricing"
-                                           value="{{ old('saturday_pricing') }}"
-                                           min="0" step="1000"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                           placeholder="0">
+                                        value="{{ old('saturday_pricing') }}" min="0" step="1000"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="0">
                                 </div>
                             </div>
 
@@ -181,7 +180,8 @@
                                 <div class="bg-gray-50 p-4 rounded-lg">
                                     <p class="text-sm text-gray-600 mb-2">
                                         <i class="fas fa-info-circle"></i>
-                                        Season ini menggunakan rentang tanggal tertentu. Anda tetap bisa mengatur harga per hari yang akan diterapkan pada rentang tanggal tersebut.
+                                        Season ini menggunakan rentang tanggal tertentu. Anda tetap bisa mengatur harga
+                                        per hari yang akan diterapkan pada rentang tanggal tersebut.
                                     </p>
                                     <p class="text-sm text-gray-500">
                                         Rentang tanggal akan diambil dari pengaturan season yang dipilih.
@@ -197,28 +197,31 @@
                             <div class="mb-4">
                                 <label class="inline-flex items-center">
                                     <input type="checkbox" name="use_special_price" id="use_special_price"
-                                           value="1" {{ old('use_special_price') ? 'checked' : '' }}
-                                           class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                        value="1" {{ old('use_special_price') ? 'checked' : '' }}
+                                        class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                                     <span class="ml-2 text-sm text-gray-700">Gunakan Special Price</span>
                                 </label>
                             </div>
 
-                            <div id="special-price-section" class="grid grid-cols-1 md:grid-cols-2 gap-4" style="display: none;">
+                            <div id="special-price-section" class="grid grid-cols-1 md:grid-cols-2 gap-4"
+                                style="display: none;">
                                 <div>
-                                    <label for="special_price" class="block text-sm font-medium text-gray-700 mb-2">Special Price</label>
+                                    <label for="special_price"
+                                        class="block text-sm font-medium text-gray-700 mb-2">Special Price</label>
                                     <input type="number" name="special_price" id="special_price"
-                                           value="{{ old('special_price') }}"
-                                           min="0" step="1000"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                           placeholder="0">
+                                        value="{{ old('special_price') }}" min="0" step="1000"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="0">
                                 </div>
 
                                 <div>
-                                    <label for="special_price_description" class="block text-sm font-medium text-gray-700 mb-2">Deskripsi Special Price</label>
-                                    <input type="text" name="special_price_description" id="special_price_description"
-                                           value="{{ old('special_price_description') }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                           placeholder="Contoh: Weekend Special">
+                                    <label for="special_price_description"
+                                        class="block text-sm font-medium text-gray-700 mb-2">Deskripsi Special
+                                        Price</label>
+                                    <input type="text" name="special_price_description"
+                                        id="special_price_description" value="{{ old('special_price_description') }}"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="Contoh: Weekend Special">
                                 </div>
                             </div>
                         </div>
@@ -226,11 +229,11 @@
                         <!-- Submit Button -->
                         <div class="flex justify-end space-x-4">
                             <a href="{{ route('villa-pricing.index') }}"
-                               class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                                class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
                                 Batal
                             </a>
                             <button type="submit"
-                                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                                 <i class="fas fa-save"></i> Simpan
                             </button>
                         </div>
