@@ -12,10 +12,7 @@
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-lg font-semibold">Edit Villa Pricing</h3>
                         <div class="flex space-x-2">
-                            <a href="{{ route('villa-pricing.show', $villaPricing->id_villa_pricing) }}"
-                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                <i class="fas fa-eye"></i> View
-                            </a>
+
                             <a href="{{ route('villa-pricing.index') }}"
                                 class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
                                 <i class="fas fa-arrow-left"></i> Kembali
@@ -331,10 +328,7 @@
                                     class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
                                     <i class="fas fa-times mr-1"></i>Batal
                                 </a>
-                                <a href="{{ route('villa-pricing.show', $villaPricing->id_villa_pricing) }}"
-                                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                    <i class="fas fa-eye mr-1"></i>View Detail
-                                </a>
+
                             </div>
                             <button type="submit"
                                 class="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded">
