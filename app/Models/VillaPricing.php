@@ -24,6 +24,15 @@ class VillaPricing extends Model
         'thursday_pricing',
         'friday_pricing',
         'saturday_pricing',
+        'special_price',
+        'use_special_price',
+        'special_price_description',
+        'range_date_price',
+    ];
+
+    protected $casts = [
+        'range_date_price' => 'array',
+        'use_special_price' => 'boolean',
     ];
 
     public function villa()
