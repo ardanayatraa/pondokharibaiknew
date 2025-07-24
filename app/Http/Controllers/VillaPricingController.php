@@ -71,10 +71,6 @@ class VillaPricingController extends Controller
             'thursday_pricing' => 'nullable|numeric|min:0',
             'friday_pricing' => 'nullable|numeric|min:0',
             'saturday_pricing' => 'nullable|numeric|min:0',
-            'special_price' => 'nullable|numeric|min:0',
-            'use_special_price' => 'boolean',
-            'special_price_description' => 'nullable|string|max:255',
-            'special_price_range' => 'nullable|array',
         ]);
 
         if ($validator->fails()) {
@@ -94,10 +90,7 @@ class VillaPricingController extends Controller
                 ->withInput();
         }
 
-        $data = $request->all();
-        $data['use_special_price'] = $request->has('use_special_price');
-
-        VillaPricing::create($data);
+        VillaPricing::create($request->all());
 
         return redirect()->route('villa-pricing.index')
             ->with('success', 'Villa pricing berhasil ditambahkan!');
@@ -138,10 +131,6 @@ class VillaPricingController extends Controller
             'thursday_pricing' => 'nullable|numeric|min:0',
             'friday_pricing' => 'nullable|numeric|min:0',
             'saturday_pricing' => 'nullable|numeric|min:0',
-            'special_price' => 'nullable|numeric|min:0',
-            'use_special_price' => 'boolean',
-            'special_price_description' => 'nullable|string|max:255',
-            'special_price_range' => 'nullable|array',
         ]);
 
         if ($validator->fails()) {
@@ -162,10 +151,7 @@ class VillaPricingController extends Controller
                 ->withInput();
         }
 
-        $data = $request->all();
-        $data['use_special_price'] = $request->has('use_special_price');
-
-        $villaPricing->update($data);
+        $villaPricing->update($request->all());
 
         return redirect()->route('villa-pricing.index')
             ->with('success', 'Villa pricing berhasil diupdate!');
@@ -236,10 +222,6 @@ class VillaPricingController extends Controller
                     'thursday_pricing' => $pricing->thursday_pricing,
                     'friday_pricing' => $pricing->friday_pricing,
                     'saturday_pricing' => $pricing->saturday_pricing,
-                    'special_price' => $pricing->special_price,
-                    'use_special_price' => $pricing->use_special_price,
-                    'special_price_description' => $pricing->special_price_description,
-                    'special_price_range' => $pricing->special_price_range,
                 ]);
                 $copiedCount++;
             }

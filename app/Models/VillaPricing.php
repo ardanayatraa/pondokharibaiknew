@@ -25,15 +25,6 @@ class VillaPricing extends Model
         'thursday_pricing',
         'friday_pricing',
         'saturday_pricing',
-        'special_price',
-        'use_special_price',
-        'special_price_description',
-        'special_price_range',
-    ];
-
-    protected $casts = [
-        'special_price_range' => 'array',
-        'use_special_price' => 'boolean',
     ];
 
     // Relationships
@@ -119,7 +110,6 @@ class VillaPricing extends Model
 
     /**
      * Get effective price for a specific date
-     * Considers special price if active
      */
     public function getEffectivePriceForDate($date)
     {
@@ -127,12 +117,7 @@ class VillaPricing extends Model
             return null;
         }
 
-        // If special price is active, return special price
-        if ($this->use_special_price && $this->special_price) {
-            return $this->special_price;
-        }
-
-        // Otherwise return day-specific price
+        // Return day-specific price
         $carbon = Carbon::parse($date);
         $dayOfWeek = $carbon->dayOfWeek;
 
@@ -155,5 +140,31 @@ class VillaPricing extends Model
         ];
 
         return $dayNames[$dayOfWeek] ?? '';
+    }
+
+    /**
+     * Get all day prices as array
+     */
+    public function getAllDayPrices()
+    {
+        return [
+            'sunday' => $this->sunday_pricing,
+            'monday' => $this->monday_pricing,
+            'tuesday' => $this->tuesday_pricing,
+            'wednesday' => $this->wednesday_pricing,
+            'thursday' => $this->thursday_pricing,
+            'friday' => $this->friday_pricing,
+            'saturday' => $this->saturday_pricing,
+        ];
+    }
+
+    /**
+     * Check if any price is set
+     */
+    public function hasAnyPrice()
+    {
+        return $this->sunday_pricing || $this->monday_pricing || $this->tuesday_pricing ||
+               $this->wednesday_pricing || $this->thursday_pricing || $this->friday_pricing ||
+               $this->saturday_pricing;
     }
 }
