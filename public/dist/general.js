@@ -709,11 +709,33 @@ document.addEventListener("DOMContentLoaded", () => {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
     try {
-      // Ambil ID reservasi dari respons Midtrans
-      const reservationId = result?.order_id ? result.order_id.split('-')[1] : null;
+      // Ambil ID reservasi dari respons Midtrans dengan cara yang lebih robust
+      let reservationId = null;
+
+      // Coba ambil dari order_id dengan berbagai format yang mungkin
+      if (result?.order_id) {
+        // Format ORDER-123456789
+        const orderParts = result.order_id.split('-');
+        if (orderParts.length > 1) {
+          reservationId = orderParts[1];
+        }
+        // Format ORDER_123456789
+        else if (result.order_id.includes('_')) {
+          reservationId = result.order_id.split('_')[1];
+        }
+        // Jika tidak ada format khusus, gunakan order_id langsung
+        else if (!isNaN(result.order_id)) {
+          reservationId = result.order_id;
+        }
+      }
+
+      // Jika masih tidak ada, coba ambil dari transaction_id
+      if (!reservationId && result?.transaction_id) {
+        reservationId = result.transaction_id;
+      }
 
       if (!reservationId) {
-        console.error('Reservation ID not found in transaction result');
+        console.error('Reservation ID not found in transaction result:', result);
         return;
       }
 

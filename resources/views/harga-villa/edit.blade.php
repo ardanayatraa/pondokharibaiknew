@@ -60,8 +60,84 @@
                             @enderror
                         </div>
 
-                        {{-- 3) Checkbox: Samakan Semua Hari --}}
-                        <div id="container-samakan-semua" class="flex items-center space-x-2" style="display: none;">
+                        {{-- 3) Pilih Jenis Harga --}}
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <h3 class="font-semibold text-gray-700 mb-4">Jenis Harga</h3>
+
+                            <div class="space-y-4">
+                                {{-- Opsi: Harga per hari --}}
+                                <div class="flex items-start">
+                                    <input type="radio" id="price_type_daily" name="price_type" value="daily"
+                                        class="h-4 w-4 text-indigo-600 border-gray-300 mt-1"
+                                        {{ old('use_special_price') ?? $pricing->use_special_price ? '' : 'checked' }} />
+                                    <label for="price_type_daily" class="ml-2 block">
+                                        <span class="font-medium text-gray-700">Harga per Hari</span>
+                                        <span class="block text-sm text-gray-500">
+                                            Atur harga berbeda untuk setiap hari dalam seminggu (Senin-Minggu)
+                                        </span>
+                                    </label>
+                                </div>
+
+                                {{-- Opsi: Harga khusus --}}
+                                <div class="flex items-start">
+                                    <input type="radio" id="price_type_special" name="price_type" value="special"
+                                        class="h-4 w-4 text-indigo-600 border-gray-300 mt-1"
+                                        {{ old('use_special_price') ?? $pricing->use_special_price ? 'checked' : '' }} />
+                                    <label for="price_type_special" class="ml-2 block">
+                                        <span class="font-medium text-gray-700">Harga Khusus</span>
+                                        <span class="block text-sm text-gray-500">
+                                            Atur satu harga untuk seluruh periode (misalnya: liburan, event khusus)
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- 4) Input untuk Harga Khusus --}}
+                        <div id="container-special-price" class="bg-white p-4 rounded-lg border border-gray-200"
+                            style="{{ old('use_special_price') ?? $pricing->use_special_price ? '' : 'display: none;' }}">
+                            <h3 class="font-semibold text-gray-700 mb-4">Detail Harga Khusus</h3>
+
+                            <div class="space-y-4">
+                                {{-- Input: Harga Khusus --}}
+                                <div>
+                                    <x-label for="special_price" value="Harga Khusus" />
+                                    <x-input id="special_price" name="special_price" type="number" min="0"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        :value="old('special_price', $pricing->special_price)" placeholder="Masukkan harga khusus" />
+                                    @error('special_price')
+                                        <span class="text-sm text-red-600">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                {{-- Input: Deskripsi Harga Khusus --}}
+                                <div>
+                                    <x-label for="special_price_description" value="Deskripsi Harga Khusus" />
+                                    <x-input id="special_price_description" name="special_price_description"
+                                        type="text"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                        :value="old(
+                                            'special_price_description',
+                                            $pricing->special_price_description,
+                                        )"
+                                        placeholder="Contoh: Harga Liburan Natal, Harga Event Khusus, dll." />
+                                    <span class="text-sm text-gray-500">
+                                        Deskripsi ini akan membantu mengidentifikasi tujuan harga khusus
+                                    </span>
+                                    @error('special_price_description')
+                                        <span class="text-sm text-red-600">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                {{-- Hidden input untuk use_special_price --}}
+                                <input type="hidden" id="use_special_price" name="use_special_price"
+                                    value="{{ old('use_special_price') ?? $pricing->use_special_price ? '1' : '0' }}" />
+                            </div>
+                        </div>
+
+                        {{-- 5) Checkbox: Samakan Semua Hari (hanya untuk harga per hari) --}}
+                        <div id="container-samakan-semua" class="flex items-center space-x-2"
+                            style="{{ old('use_special_price') ?? $pricing->use_special_price ? 'display: none;' : 'display: flex;' }}">
                             <input type="checkbox" id="samakan_semua"
                                 class="h-4 w-4 text-indigo-600 border-gray-300 rounded" />
                             <label for="samakan_semua" class="font-medium text-gray-700">
@@ -69,7 +145,7 @@
                             </label>
                         </div>
 
-                        {{-- 4) Input harga tunggal (muncul jika "samakan semua" dicentang) --}}
+                        {{-- 6) Input harga tunggal (muncul jika "samakan semua" dicentang) --}}
                         <div id="container-harga-semua" class="mt-2" style="display: none;">
                             <x-label for="harga_semua" value="Harga Semua Hari" />
                             <x-input id="harga_semua" name="harga_semua" type="number" min="0"
@@ -80,9 +156,10 @@
                             </span>
                         </div>
 
-                        {{-- 5) Container tempat input harga per-hari --}}
+                        {{-- 7) Container tempat input harga per-hari --}}
                         <div id="container-pricing-fields"
-                            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+                            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-4"
+                            style="{{ old('use_special_price') ?? $pricing->use_special_price ? 'display: none;' : '' }}">
                             {{-- Render awal berdasarkan $pricing->season->days_of_week --}}
                             @php
                                 $mappingNamaHari = [
@@ -145,12 +222,17 @@
                         'days' => $s->days_of_week,
                     ]));
 
+            // DOM Elements
             const selectSeason = document.getElementById('season_id');
             const containerFields = document.getElementById('container-pricing-fields');
             const checkboxSemua = document.getElementById('samakan_semua');
             const containerSamakan = document.getElementById('container-samakan-semua');
             const containerHargaAll = document.getElementById('container-harga-semua');
             const inputHargaAll = document.getElementById('harga_semua');
+            const containerSpecialPrice = document.getElementById('container-special-price');
+            const radioPriceTypeDaily = document.getElementById('price_type_daily');
+            const radioPriceTypeSpecial = document.getElementById('price_type_special');
+            const inputUseSpecialPrice = document.getElementById('use_special_price');
 
             // Hapus semua elemen child di container-pricing-fields
             function clearPricingFields() {
@@ -214,25 +296,40 @@
                 });
             }
 
+            // Toggle UI berdasarkan jenis harga yang dipilih
+            function togglePriceTypeUI() {
+                if (radioPriceTypeDaily.checked) {
+                    // Harga per hari
+                    containerSpecialPrice.style.display = 'none';
+                    containerFields.style.display = 'grid';
+                    containerSamakan.style.display = 'flex';
+                    inputUseSpecialPrice.value = '0';
+                } else {
+                    // Harga khusus
+                    containerSpecialPrice.style.display = 'block';
+                    containerFields.style.display = 'none';
+                    containerSamakan.style.display = 'none';
+                    containerHargaAll.style.display = 'none';
+                    inputUseSpecialPrice.value = '1';
+                }
+            }
+
             // Event: season_id berubah
             selectSeason.addEventListener('change', function() {
                 const selectedId = this.value;
                 const daysArray = getDaysBySeasonId(selectedId);
 
                 if (daysArray.length > 0) {
-                    containerSamakan.style.display = 'flex';
-                    checkboxSemua.checked = false;
-                    containerHargaAll.style.display = 'none';
-                    inputHargaAll.value = '';
                     renderPricingFields(daysArray);
+                    togglePriceTypeUI(); // Refresh UI berdasarkan jenis harga
                 } else {
+                    clearPricingFields();
                     containerSamakan.style.display = 'none';
                     containerHargaAll.style.display = 'none';
-                    clearPricingFields();
                 }
             });
 
-            // Event: checkbox “Samakan Semua Hari”
+            // Event: checkbox "Samakan Semua Hari"
             checkboxSemua.addEventListener('change', function() {
                 if (checkboxSemua.checked) {
                     containerHargaAll.style.display = 'block';
@@ -248,13 +345,17 @@
                 }
             });
 
+            // Event: radio button jenis harga berubah
+            radioPriceTypeDaily.addEventListener('change', togglePriceTypeUI);
+            radioPriceTypeSpecial.addEventListener('change', togglePriceTypeUI);
+
             // Inisialisasi awal: langsung render fields sesuai $pricing->season
             (function initialRender() {
                 const initialId = '{{ $pricing->season_id }}';
                 const initialDays = getDaysBySeasonId(initialId);
                 if (initialDays.length > 0) {
-                    containerSamakan.style.display = 'flex';
                     renderPricingFields(initialDays);
+                    togglePriceTypeUI(); // Set UI berdasarkan jenis harga yang dipilih
                 }
             })();
 

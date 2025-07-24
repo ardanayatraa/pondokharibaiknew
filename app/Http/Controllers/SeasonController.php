@@ -43,17 +43,34 @@ class SeasonController extends Controller
      */
     public function store(Request $request)
     {
-        // Ambil semua field sesuai fillable
+        // Validasi input
+        $rules = [
+            'nama_season' => 'required|string|max:255',
+            'repeat_weekly' => 'required|boolean',
+            'priority' => 'required|integer|min:0',
+        ];
+
+        // Tambahkan validasi berdasarkan tipe season
+        if ($request->repeat_weekly) {
+            $rules['days_of_week'] = 'required|array|min:1';
+            $rules['days_of_week.*'] = 'integer|between:0,6';
+        } else {
+            $rules['tgl_mulai_season'] = 'required|date';
+            $rules['tgl_akhir_season'] = 'required|date|after_or_equal:tgl_mulai_season';
+        }
+
+        $validated = $request->validate($rules);
+
+        // Persiapkan data untuk disimpan
         $data = [
-            'nama_season'      => $request->nama_season,
-            'repeat_weekly'    => (bool) $request->repeat_weekly,
-            // hanya set days_of_week jika weekly
-            'days_of_week'     => $request->repeat_weekly
-                                   ? $request->input('days_of_week', [])
+            'nama_season'      => $validated['nama_season'],
+            'repeat_weekly'    => (bool) $validated['repeat_weekly'],
+            'days_of_week'     => $validated['repeat_weekly']
+                                   ? $validated['days_of_week']
                                    : null,
-            'tgl_mulai_season' => $request->tgl_mulai_season,
-            'tgl_akhir_season' => $request->tgl_akhir_season,
-            'priority'         => $request->priority,
+            'tgl_mulai_season' => $validated['repeat_weekly'] ? null : $validated['tgl_mulai_season'],
+            'tgl_akhir_season' => $validated['repeat_weekly'] ? null : $validated['tgl_akhir_season'],
+            'priority'         => $validated['priority'],
         ];
 
         Season::create($data);
@@ -94,15 +111,34 @@ class SeasonController extends Controller
      */
     public function update(Request $request, Season $season)
     {
+        // Validasi input
+        $rules = [
+            'nama_season' => 'required|string|max:255',
+            'repeat_weekly' => 'required|boolean',
+            'priority' => 'required|integer|min:0',
+        ];
+
+        // Tambahkan validasi berdasarkan tipe season
+        if ($request->repeat_weekly) {
+            $rules['days_of_week'] = 'required|array|min:1';
+            $rules['days_of_week.*'] = 'integer|between:0,6';
+        } else {
+            $rules['tgl_mulai_season'] = 'required|date';
+            $rules['tgl_akhir_season'] = 'required|date|after_or_equal:tgl_mulai_season';
+        }
+
+        $validated = $request->validate($rules);
+
+        // Persiapkan data untuk disimpan
         $data = [
-            'nama_season'      => $request->nama_season,
-            'repeat_weekly'    => (bool) $request->repeat_weekly,
-            'days_of_week'     => $request->repeat_weekly
-                                   ? $request->input('days_of_week', [])
+            'nama_season'      => $validated['nama_season'],
+            'repeat_weekly'    => (bool) $validated['repeat_weekly'],
+            'days_of_week'     => $validated['repeat_weekly']
+                                   ? $validated['days_of_week']
                                    : null,
-            'tgl_mulai_season' => $request->tgl_mulai_season,
-            'tgl_akhir_season' => $request->tgl_akhir_season,
-            'priority'         => $request->priority,
+            'tgl_mulai_season' => $validated['repeat_weekly'] ? null : $validated['tgl_mulai_season'],
+            'tgl_akhir_season' => $validated['repeat_weekly'] ? null : $validated['tgl_akhir_season'],
+            'priority'         => $validated['priority'],
         ];
 
         $season->update($data);

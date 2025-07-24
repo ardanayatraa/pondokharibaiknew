@@ -37,15 +37,18 @@ class VillaPricingController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'villa_id'         => 'nullable|exists:tbl_villa,id_villa',
-            'season_id'        => 'nullable|exists:tbl_season,id_season',
-            'sunday_pricing'   => 'nullable|integer|min:0',
-            'monday_pricing'   => 'nullable|integer|min:0',
-            'tuesday_pricing'  => 'nullable|integer|min:0',
-            'wednesday_pricing'=> 'nullable|integer|min:0',
-            'thursday_pricing' => 'nullable|integer|min:0',
-            'friday_pricing'   => 'nullable|integer|min:0',
-            'saturday_pricing' => 'nullable|integer|min:0',
+            'villa_id'                 => 'nullable|exists:tbl_villa,id_villa',
+            'season_id'                => 'nullable|exists:tbl_season,id_season',
+            'sunday_pricing'           => 'nullable|integer|min:0',
+            'monday_pricing'           => 'nullable|integer|min:0',
+            'tuesday_pricing'          => 'nullable|integer|min:0',
+            'wednesday_pricing'        => 'nullable|integer|min:0',
+            'thursday_pricing'         => 'nullable|integer|min:0',
+            'friday_pricing'           => 'nullable|integer|min:0',
+            'saturday_pricing'         => 'nullable|integer|min:0',
+            'special_price'            => 'nullable|integer|min:0',
+            'use_special_price'        => 'nullable|boolean',
+            'special_price_description'=> 'nullable|string|max:255',
         ]);
 
         VillaPricing::create($validated);
@@ -83,15 +86,18 @@ class VillaPricingController extends Controller
         $pricing = VillaPricing::findOrFail($id_villa_pricing);
 
         $validated = $request->validate([
-            'villa_id'         => 'nullable|exists:tbl_villa,id_villa',
-            'season_id'        => 'nullable|exists:tbl_season,id_season',
-            'sunday_pricing'   => 'nullable|integer|min:0',
-            'monday_pricing'   => 'nullable|integer|min:0',
-            'tuesday_pricing'  => 'nullable|integer|min:0',
-            'wednesday_pricing'=> 'nullable|integer|min:0',
-            'thursday_pricing' => 'nullable|integer|min:0',
-            'friday_pricing'   => 'nullable|integer|min:0',
-            'saturday_pricing' => 'nullable|integer|min:0',
+            'villa_id'                 => 'nullable|exists:tbl_villa,id_villa',
+            'season_id'                => 'nullable|exists:tbl_season,id_season',
+            'sunday_pricing'           => 'nullable|integer|min:0',
+            'monday_pricing'           => 'nullable|integer|min:0',
+            'tuesday_pricing'          => 'nullable|integer|min:0',
+            'wednesday_pricing'        => 'nullable|integer|min:0',
+            'thursday_pricing'         => 'nullable|integer|min:0',
+            'friday_pricing'           => 'nullable|integer|min:0',
+            'saturday_pricing'         => 'nullable|integer|min:0',
+            'special_price'            => 'nullable|integer|min:0',
+            'use_special_price'        => 'nullable|boolean',
+            'special_price_description'=> 'nullable|string|max:255',
         ]);
 
         $pricing->update($validated);

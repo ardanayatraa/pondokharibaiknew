@@ -99,6 +99,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // Get CSRF token
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
+    // Validasi reservationId
+    if (!reservationId) {
+      console.error('Reservation ID is missing or invalid:', reservationId);
+      return;
+    }
+
+    console.log('Updating payment status for reservation:', reservationId, 'Status:', status);
+
     // Send request to update payment status
     fetch('/api/payment/update-status', {
       method: 'POST',

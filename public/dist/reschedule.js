@@ -453,8 +453,11 @@
       return
     }
 
+    console.log('Processing reschedule payment. Payment needed:', rescheduleState.paymentNeeded);
+
     if (rescheduleState.paymentNeeded <= 0) {
       // No payment needed, directly update reservation
+      console.log('No additional payment needed, updating reservation directly');
       const success = await updateReservationDates()
       if (success) {
         if (goToStep) goToStep(5)
@@ -476,6 +479,8 @@
     }
 
     try {
+      console.log('Requesting payment token with payload:', payload);
+
       const res = await fetch("/payment/token", {
         method: "POST",
         headers: {
@@ -493,18 +498,23 @@
       }
 
       const { snap_token } = await res.json()
+      console.log('Payment token received:', snap_token);
 
       // Open Midtrans payment
       if (window.snap) {
         window.snap.pay(snap_token, {
           onSuccess: async (result) => {
-            const success = await updateReservationDates()
+            console.log('Payment success:', result);
+            // Pass snap_token to updateReservationDates
+            const success = await updateReservationDates(snap_token)
             if (success) {
               if (goToStep) goToStep(5)
             }
           },
           onPending: async (result) => {
-            const success = await updateReservationDates()
+            console.log('Payment pending:', result);
+            // Pass snap_token to updateReservationDates
+            const success = await updateReservationDates(snap_token)
             if (success) {
               if (goToStep) goToStep(5)
             }
@@ -515,6 +525,7 @@
           },
           onClose: () => {
             // Payment modal closed
+            console.log('Payment modal closed without completing payment');
           },
         })
       } else {
@@ -529,13 +540,22 @@
   /**
    * Update reservation with new dates
    */
-  async function updateReservationDates() {
+  async function updateReservationDates(snapToken = null) {
+    console.log('Updating reservation dates with state:', {
+      reservationId: rescheduleState.reservationId,
+      newDates: [rescheduleState.newCheckIn, rescheduleState.newCheckOut],
+      newTotal: rescheduleState.newTotalAmount,
+      paymentNeeded: rescheduleState.paymentNeeded,
+      snapToken: snapToken
+    });
+
     const payload = {
       reservation_id: rescheduleState.reservationId,
       new_start_date: rescheduleState.newCheckIn,
       new_end_date: rescheduleState.newCheckOut,
       new_total_amount: rescheduleState.newTotalAmount,
       payment_amount: rescheduleState.paymentNeeded,
+      snap_token: snapToken
     }
 
     try {
@@ -555,7 +575,8 @@
         throw new Error(`HTTP ${res.status}: ${errorText}`)
       }
 
-      await res.json()
+      const data = await res.json()
+      console.log('Reschedule successful:', data);
       return true
     } catch (error) {
       console.error("Failed to update reservation:", error)

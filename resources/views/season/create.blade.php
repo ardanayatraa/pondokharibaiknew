@@ -107,26 +107,75 @@
         const radios = document.querySelectorAll('input[name="repeat_weekly"]');
         const weekly = document.getElementById('weekly-section');
         const range = document.getElementById('date-range-section');
+        const form = document.getElementById('season-form');
+        const checkboxes = weekly.querySelectorAll('input[type="checkbox"]');
+        const dateInputs = range.querySelectorAll('input[type="date"]');
+        const startDateInput = document.getElementById('tgl_mulai_season');
+        const endDateInput = document.getElementById('tgl_akhir_season');
 
         function toggle() {
             const val = document.querySelector('input[name="repeat_weekly"]:checked').value;
             if (val === '1') {
                 weekly.classList.remove('hidden');
                 range.classList.add('hidden');
-                // make weekly inputs required, range optional
-                weekly.querySelectorAll('input[type="checkbox"]')
-                    .forEach(cb => cb.required = false);
-                range.querySelectorAll('input[type="date"]')
-                    .forEach(d => d.required = false);
+
+                // Atur required fields
+                checkboxes.forEach(cb => cb.required = false);
+                dateInputs.forEach(d => {
+                    d.required = false;
+                    d.value = '';
+                });
             } else {
                 weekly.classList.add('hidden');
                 range.classList.remove('hidden');
-                weekly.querySelectorAll('input[type="checkbox"]')
-                    .forEach(cb => cb.required = false);
-                range.querySelectorAll('input[type="date"]')
-                    .forEach(d => d.required = false);
+
+                // Atur required fields
+                checkboxes.forEach(cb => {
+                    cb.required = false;
+                    cb.checked = false;
+                });
+                dateInputs.forEach(d => d.required = true);
             }
         }
+
+        // Validasi form sebelum submit
+        form.addEventListener('submit', function(e) {
+            const isWeekly = document.querySelector('input[name="repeat_weekly"]:checked').value ===
+            '1';
+
+            if (isWeekly) {
+                // Validasi minimal satu hari dipilih untuk tipe mingguan
+                const checkedDays = Array.from(checkboxes).filter(cb => cb.checked).length;
+                if (checkedDays === 0) {
+                    e.preventDefault();
+                    alert('Pilih minimal satu hari dalam seminggu.');
+                    return false;
+                }
+            } else {
+                // Validasi rentang tanggal
+                if (!startDateInput.value) {
+                    e.preventDefault();
+                    alert('Tanggal mulai harus diisi.');
+                    startDateInput.focus();
+                    return false;
+                }
+
+                if (!endDateInput.value) {
+                    e.preventDefault();
+                    alert('Tanggal akhir harus diisi.');
+                    endDateInput.focus();
+                    return false;
+                }
+
+                // Validasi tanggal akhir harus setelah atau sama dengan tanggal mulai
+                if (new Date(endDateInput.value) < new Date(startDateInput.value)) {
+                    e.preventDefault();
+                    alert('Tanggal akhir harus setelah atau sama dengan tanggal mulai.');
+                    endDateInput.focus();
+                    return false;
+                }
+            }
+        });
 
         radios.forEach(r => r.addEventListener('change', toggle));
         toggle();

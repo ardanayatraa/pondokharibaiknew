@@ -326,12 +326,9 @@ class BookingController extends Controller
      */
     public function processReschedule(Request $request)
     {
-        // Remove API token requirement for web requests
-        // if (!Auth::guard('guest')->check()) {
-        //     return response()->json(['error' => 'Unauthorized'], 401);
-        // }
-
         try {
+            Log::info('Reschedule request received:', $request->all());
+
             $validated = $request->validate([
                 'reservation_id' => 'required|integer',
                 'new_start_date' => 'required|date',
@@ -348,25 +345,55 @@ class BookingController extends Controller
                 return response()->json(['error' => 'Unauthorized access to reservation'], 403);
             }
 
+            // Validate H-7 rule
+            $checkInDate = Carbon::parse($validated['new_start_date']);
+            $today = Carbon::now();
+            $diffDays = $today->diffInDays($checkInDate, false);
+
+            if ($diffDays < 7) {
+                return response()->json([
+                    'error' => 'Validation failed',
+                    'message' => 'Reschedule hanya dapat dilakukan minimal 7 hari sebelum tanggal check-in'
+                ], 422);
+            }
+
+            Log::info('Processing reschedule for reservation:', [
+                'id' => $reservation->id_reservation,
+                'old_dates' => [$reservation->start_date, $reservation->end_date],
+                'new_dates' => [$validated['new_start_date'], $validated['new_end_date']],
+                'payment_amount' => $validated['payment_amount']
+            ]);
+
             // Update reservation with new dates and amount
             $reservation->update([
                 'start_date' => $validated['new_start_date'],
                 'end_date' => $validated['new_end_date'],
                 'total_amount' => $validated['new_total_amount'],
-                'status' => 'reschedule' // Change status to indicate it was rescheduled
+                'status' => 'rescheduled' // Change status to indicate it was rescheduled
             ]);
 
             // Create additional payment record if needed
             if ($validated['payment_amount'] > 0) {
-                Pembayaran::create([
+                $paymentStatus = isset($validated['snap_token']) ? 'pending' : 'paid';
+
+                $payment = Pembayaran::create([
                     'guest_id' => $reservation->guest_id,
                     'reservation_id' => $reservation->id_reservation,
                     'amount' => $validated['payment_amount'],
                     'payment_date' => now(),
                     'snap_token' => $validated['snap_token'] ?? null,
                     'notifikasi' => "Pembayaran tambahan reschedule #{$reservation->id_reservation}",
-                    'status' => 'paid',
+                    'status' => $paymentStatus,
+                    'order_id' => 'RESCHEDULE-' . $reservation->id_reservation . '-' . Carbon::now()->timestamp,
                 ]);
+
+                Log::info('Created additional payment record:', [
+                    'payment_id' => $payment->id_pembayaran,
+                    'amount' => $payment->amount,
+                    'status' => $payment->status
+                ]);
+            } else {
+                Log::info('No additional payment needed for reschedule');
             }
 
             // Send email notification
@@ -376,6 +403,7 @@ class BookingController extends Controller
 
             if ($latestPayment) {
                 Mail::to($reservation->guest->email)->queue(new ReservationCompleted($reservation, $latestPayment));
+                Log::info('Sent reschedule confirmation email to: ' . $reservation->guest->email);
             }
 
             return response()->json([
@@ -384,12 +412,19 @@ class BookingController extends Controller
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Reschedule validation error:', [
+                'errors' => $e->errors(),
+                'request' => $request->all()
+            ]);
             return response()->json([
                 'error' => 'Validation failed',
                 'details' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
-            Log::error('Reschedule error: ' . $e->getMessage());
+            Log::error('Reschedule error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
             return response()->json([
                 'error' => 'Failed to process reschedule',
                 'message' => $e->getMessage()
@@ -549,15 +584,24 @@ class BookingController extends Controller
     {
         try {
             $validated = $request->validate([
-                'reservation_id' => 'required|integer',
+                'reservation_id' => 'required',
                 'status' => 'required|string|in:success,pending,failed',
                 'transaction_data' => 'nullable',
             ]);
 
-            $reservation = Reservasi::findOrFail($validated['reservation_id']);
+            Log::info('Update payment status request:', [
+                'reservation_id' => $validated['reservation_id'],
+                'status' => $validated['status'],
+                'transaction_data' => $validated['transaction_data'] ?? null
+            ]);
+
+            // Konversi reservation_id ke integer jika perlu
+            $reservationId = is_numeric($validated['reservation_id']) ? (int)$validated['reservation_id'] : $validated['reservation_id'];
+
+            $reservation = Reservasi::findOrFail($reservationId);
 
             // Cek apakah user memiliki reservasi ini
-            if (Auth::guard('guest')->id() !== $reservation->guest_id) {
+            if (Auth::guard('guest')->check() && Auth::guard('guest')->id() !== $reservation->guest_id) {
                 return response()->json(['error' => 'Anda tidak memiliki akses ke reservasi ini.'], 403);
             }
 
@@ -578,12 +622,25 @@ class BookingController extends Controller
                 ]);
             }
 
+            Log::info('Payment status updated successfully', [
+                'reservation_id' => $reservationId,
+                'new_status' => $validated['status'],
+                'reservation_status' => $reservation->status,
+                'payment_status' => $reservation->status_pembayaran
+            ]);
+
             return response()->json([
                 'message' => 'Status pembayaran berhasil diupdate',
                 'status' => $validated['status'],
+                'reservation_status' => $reservation->status,
+                'payment_status' => $reservation->status_pembayaran
             ]);
         } catch (\Exception $e) {
-            Log::error('Update payment status error: ' . $e->getMessage());
+            Log::error('Update payment status error: ' . $e->getMessage(), [
+                'reservation_id' => $request->input('reservation_id'),
+                'status' => $request->input('status'),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json(['error' => 'Terjadi kesalahan saat update status pembayaran: ' . $e->getMessage()], 500);
         }
     }
