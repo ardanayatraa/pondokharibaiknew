@@ -17,8 +17,37 @@ class VillaPricingController extends Controller
      */
     public function index(Request $request)
     {
+        $query = VillaPricing::with(['villa', 'season']);
 
-        return view('villa-pricing.index');
+        // Filter by villa
+        if ($request->filled('villa_id')) {
+            $query->where('villa_id', $request->villa_id);
+        }
+
+        // Filter by season
+        if ($request->filled('season_id')) {
+            $query->where('season_id', $request->season_id);
+        }
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('villa', function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            })->orWhereHas('season', function($q) use ($search) {
+                $q->where('nama_season', 'like', "%{$search}%");
+            });
+        }
+
+        $villaPricings = $query->orderBy('villa_id')
+                             ->orderBy('season_id')
+                             ->paginate(15)
+                             ->withQueryString();
+
+        $villas = Villa::orderBy('name')->get();
+        $seasons = Season::orderBy('priority')->get();
+
+        return view('villa-pricing.index', compact('villaPricings', 'villas', 'seasons'));
     }
 
     /**
@@ -26,7 +55,7 @@ class VillaPricingController extends Controller
      */
     public function create()
     {
-        $villas = Villa::orderBy('nama_villa')->get();
+        $villas = Villa::orderBy('name')->get();
         $seasons = Season::orderBy('priority')->get();
 
         return view('villa-pricing.create', compact('villas', 'seasons'));
@@ -90,8 +119,8 @@ class VillaPricingController extends Controller
                 'friday_pricing' => $validated['friday_pricing'] ?? 0,
                 'saturday_pricing' => $validated['saturday_pricing'] ?? 0,
                 'special_price' => $validated['special_price'] ?? 0,
-                'use_special_price' => $validated['use_special_price'] ?? false,
-                'special_price_description' => $validated['special_price_description'],
+                'use_special_price' => isset($validated['use_special_price']) ? (bool)$validated['use_special_price'] : false,
+                'special_price_description' => $validated['special_price_description'] ?? null,
             ]);
 
             // Add range date prices
@@ -145,7 +174,7 @@ class VillaPricingController extends Controller
     public function edit(VillaPricing $villaPricing)
     {
         $villaPricing->load(['villa', 'season']);
-        $villas = Villa::orderBy('nama_villa')->get();
+        $villas = Villa::orderBy('name')->get();
         $seasons = Season::orderBy('priority')->get();
 
         // Get existing range data
@@ -220,8 +249,8 @@ class VillaPricingController extends Controller
                 'friday_pricing' => $validated['friday_pricing'] ?? 0,
                 'saturday_pricing' => $validated['saturday_pricing'] ?? 0,
                 'special_price' => $validated['special_price'] ?? 0,
-                'use_special_price' => $validated['use_special_price'] ?? false,
-                'special_price_description' => $validated['special_price_description'],
+                'use_special_price' => isset($validated['use_special_price']) ? (bool)$validated['use_special_price'] : false,
+                'special_price_description' => $validated['special_price_description'] ?? null,
             ]);
 
             // Reset range arrays
@@ -335,6 +364,11 @@ class VillaPricingController extends Controller
             $newPricing = $villaPricing->replicate();
             $newPricing->villa_id = $validated['target_villa_id'];
             $newPricing->season_id = $validated['target_season_id'];
+
+            // Explicitly copy array fields
+            $newPricing->range_date_price = $villaPricing->range_date_price;
+            $newPricing->special_price_range = $villaPricing->special_price_range;
+
             $newPricing->save();
 
             DB::commit();
@@ -394,7 +428,7 @@ class VillaPricingController extends Controller
 
             foreach ($pricings as $pricing) {
                 fputcsv($handle, [
-                    $pricing->villa->nama_villa ?? '',
+                    $pricing->villa->name ?? '',
                     $pricing->season->nama_season ?? '',
                     $pricing->sunday_pricing,
                     $pricing->monday_pricing,

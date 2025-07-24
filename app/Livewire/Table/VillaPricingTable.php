@@ -12,7 +12,7 @@ class VillaPricingTable extends DataTableComponent
 
     public function configure(): void
     {
-        $this->setPrimaryKey('id');
+        $this->setPrimaryKey('id_villa_pricing');
     }
 
     public function columns(): array

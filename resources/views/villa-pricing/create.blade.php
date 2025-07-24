@@ -67,7 +67,7 @@
                                     @foreach ($villas as $villa)
                                         <option value="{{ $villa->id_villa }}"
                                             {{ old('villa_id') == $villa->id_villa ? 'selected' : '' }}>
-                                            {{ $villa->nama_villa }}
+                                            {{ $villa->name }}
                                         </option>
                                     @endforeach
                                 </select>
