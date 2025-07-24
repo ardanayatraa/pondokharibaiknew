@@ -55,9 +55,7 @@
                                 <div class="text-sm text-blue-700 mt-1">
                                     <ul class="list-disc list-inside space-y-1">
                                         <li>Pilih Villa dan Season terlebih dahulu untuk melihat hari yang berlaku</li>
-                                        <li>Gunakan Quick Actions untuk mempercepat pengisian harga</li>
                                         <li>Harga dalam format Rupiah tanpa titik atau koma</li>
-                                        <li>Sistem akan otomatis menyimpan draft setiap 2 detik</li>
                                     </ul>
                                 </div>
                             </div>
