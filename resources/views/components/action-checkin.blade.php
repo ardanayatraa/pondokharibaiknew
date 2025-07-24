@@ -1,10 +1,12 @@
 @php
+    $isConfirmedOrRescheduled = in_array($row->status, ['confirmed', 'rescheduled']);
+
     $canCheckIn =
-        $row->status === 'confirmed' &&
-        $row->status_check_in === 'pending' &&
-        now()->toDateString() >= $row->start_date;
-    $canCheckOut = $row->status === 'confirmed' && $row->status_check_in === 'checked_in';
+        $isConfirmedOrRescheduled && $row->status_check_in === 'pending' && now()->toDateString() >= $row->start_date;
+
+    $canCheckOut = $isConfirmedOrRescheduled && $row->status_check_in === 'checked_in';
 @endphp
+
 @if ($row->status_check_in === 'checked_out')
     <span class="inline-block px-3 py-1 rounded-full bg-gray-200 text-gray-700 text-xs font-semibold">Sudah
         Check-out</span>

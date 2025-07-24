@@ -718,74 +718,42 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Function to update payment status
-  async function updatePaymentStatus(status, result) {
+  function updatePaymentStatus(status, result) {
     // Get CSRF token
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-    try {
-      // Ambil ID reservasi dari session storage yang disimpan saat membuat reservasi
-      // Ini lebih reliable daripada mencoba mengekstrak dari order_id
-      const sessionReservationId = sessionStorage.getItem('current_reservation_id');
+    // Get reservation ID from URL
+    const urlParts = window.location.pathname.split('/');
+    const reservationId = urlParts[urlParts.indexOf('reservation') + 1];
 
-      // Fallback ke ekstraksi dari order_id jika tidak ada di session
-      let reservationId = sessionReservationId;
+    if (!reservationId) {
+      console.error('Reservation ID not found in URL');
+      return Promise.reject(new Error('Reservation ID not found'));
+    }
 
-      if (!reservationId && result?.order_id) {
-        console.log('Trying to extract reservation ID from order_id:', result.order_id);
+    console.log('Updating payment status for reservation:', reservationId, 'Status:', status);
 
-        // Coba ekstrak dari berbagai format
-        if (result.order_id.startsWith('ORDER-')) {
-          // Format: ORDER-1234567890
-          reservationId = result.order_id.replace('ORDER-', '').split('-')[0];
-        }
-        else if (result.order_id.startsWith('ORDER_')) {
-          // Format: ORDER_1234567890
-          reservationId = result.order_id.replace('ORDER_', '').split('_')[0];
-        }
-        else if (result.order_id.startsWith('ORDER-RETRY-')) {
-          // Format: ORDER-RETRY-1234567890
-          reservationId = result.order_id.replace('ORDER-RETRY-', '').split('-')[0];
-        }
-        // Jika tidak ada format khusus, gunakan order_id langsung
-        else if (!isNaN(result.order_id)) {
-          reservationId = result.order_id;
-        }
-      }
-
-      // Jika masih tidak ada, coba ambil dari transaction_id
-      if (!reservationId && result?.transaction_id) {
-        reservationId = result.transaction_id;
-      }
-
-      if (!reservationId) {
-        console.error('Reservation ID not found in transaction result:', result);
-        throw new Error('Reservation ID not found');
-      }
-
-      console.log(`Updating payment status for reservation ${reservationId} to ${status}`);
-
-      // Send request to update payment status
-      const response = await fetch('/api/payment/update-status', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrfToken,
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          reservation_id: reservationId,
-          status: status,
-          transaction_data: result
-        })
-      });
-
+    // Send request to update payment status
+    return fetch('/api/payment/update-status', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfToken,
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        reservation_id: reservationId,
+        status: status,
+        transaction_data: result
+      })
+    })
+    .then(response => {
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Server response error:', errorText);
         throw new Error('Failed to update payment status');
       }
-
-      const data = await response.json();
+      return response.json();
+    })
+    .then(data => {
       console.log('Payment status updated:', data);
 
       // Verifikasi status yang diperbarui
@@ -796,10 +764,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       return data;
-    } catch (error) {
+    })
+    .catch(error => {
       console.error('Error updating payment status:', error);
       throw error;
-    }
+    });
   }
 
   // Expose functions to global scope
