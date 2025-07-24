@@ -28,12 +28,10 @@ class VillaPricing extends Model
         'special_price',
         'use_special_price',
         'special_price_description',
-        'range_date_price',
         'special_price_range',
     ];
 
     protected $casts = [
-        'range_date_price' => 'array',
         'special_price_range' => 'array',
         'use_special_price' => 'boolean',
     ];
@@ -47,5 +45,115 @@ class VillaPricing extends Model
     public function season()
     {
         return $this->belongsTo(Season::class, 'season_id', 'id_season');
+    }
+
+    /**
+     * Get price for specific day of week
+     * 0 = Sunday, 1 = Monday, etc.
+     */
+    public function getPriceForDay($dayOfWeek)
+    {
+        $dayFields = [
+            0 => 'sunday_pricing',
+            1 => 'monday_pricing',
+            2 => 'tuesday_pricing',
+            3 => 'wednesday_pricing',
+            4 => 'thursday_pricing',
+            5 => 'friday_pricing',
+            6 => 'saturday_pricing',
+        ];
+
+        return $this->{$dayFields[$dayOfWeek]} ?? 0;
+    }
+
+    /**
+     * Get range date price from season
+     */
+    public function getRangeDatePriceAttribute()
+    {
+        return $this->season ? $this->season->range_date_price : null;
+    }
+
+    /**
+     * Check if pricing is valid for specific date
+     */
+    public function isValidForDate($date)
+    {
+        $carbon = Carbon::parse($date);
+        $dayOfWeek = $carbon->dayOfWeek;
+
+        if (!$this->season) {
+            return false;
+        }
+
+        // If season is repeat weekly, check if day is in allowed days
+        if ($this->season->repeat_weekly) {
+            return in_array($dayOfWeek, $this->season->days_of_week ?? []);
+        }
+
+        // If season uses date range, check if date is within range
+        if ($this->season->range_date_price && is_array($this->season->range_date_price)) {
+            foreach ($this->season->range_date_price as $range) {
+                if (isset($range['start_date']) && isset($range['end_date'])) {
+                    $startDate = Carbon::parse($range['start_date']);
+                    $endDate = Carbon::parse($range['end_date']);
+
+                    if ($carbon->between($startDate, $endDate)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        // Check traditional season date range
+        if ($this->season->tgl_mulai_season && $this->season->tgl_akhir_season) {
+            $startDate = Carbon::parse($this->season->tgl_mulai_season);
+            $endDate = Carbon::parse($this->season->tgl_akhir_season);
+
+            return $carbon->between($startDate, $endDate);
+        }
+
+        return false;
+    }
+
+    /**
+     * Get effective price for a specific date
+     * Considers special price if active
+     */
+    public function getEffectivePriceForDate($date)
+    {
+        if (!$this->isValidForDate($date)) {
+            return null;
+        }
+
+        // If special price is active, return special price
+        if ($this->use_special_price && $this->special_price) {
+            return $this->special_price;
+        }
+
+        // Otherwise return day-specific price
+        $carbon = Carbon::parse($date);
+        $dayOfWeek = $carbon->dayOfWeek;
+
+        return $this->getPriceForDay($dayOfWeek);
+    }
+
+    /**
+     * Get day name in Indonesian
+     */
+    public function getDayName($dayOfWeek)
+    {
+        $dayNames = [
+            0 => 'Minggu',
+            1 => 'Senin',
+            2 => 'Selasa',
+            3 => 'Rabu',
+            4 => 'Kamis',
+            5 => 'Jumat',
+            6 => 'Sabtu'
+        ];
+
+        return $dayNames[$dayOfWeek] ?? '';
     }
 }
