@@ -673,18 +673,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (window.snap) {
           window.snap.pay(snap_token, {
-            onSuccess: async (r) => {
-              console.log('Payment successful:', r);
+            onSuccess: function(result) {
+              console.log('Payment successful:', result);
               // Update status pembayaran menjadi success
-              await updatePaymentStatus('success', r);
-              // Reservasi sudah dibuat, hanya perlu update status
-              window.goToStep(5)
+              updatePaymentStatus('success', result)
+                .then(() => {
+                  console.log('Payment status updated to success');
+                  // Reservasi sudah dibuat, hanya perlu update status
+                  window.goToStep(5)
+                })
+                .catch(err => {
+                  console.error('Error updating payment status:', err);
+                  alert('Pembayaran berhasil, tetapi gagal memperbarui status. Silakan refresh halaman.');
+                });
             },
-            onPending: async (r) => {
-              console.log('Payment pending:', r);
+            onPending: function(result) {
+              console.log('Payment pending:', result);
               // Update status pembayaran menjadi pending
-              await updatePaymentStatus('pending', r);
-              window.goToStep(5)
+              updatePaymentStatus('pending', result)
+                .then(() => {
+                  console.log('Payment status updated to pending');
+                  window.goToStep(5)
+                })
+                .catch(err => {
+                  console.error('Error updating payment status:', err);
+                  alert('Pembayaran dalam proses, tetapi gagal memperbarui status. Silakan refresh halaman.');
+                });
             },
             onError: (e) => {
               alert("Payment failed")
@@ -692,10 +706,16 @@ document.addEventListener("DOMContentLoaded", () => {
               btnPaynow.innerHTML = '<i class="fas fa-credit-card mr-2"></i> Pay Now';
               btnPaynow.disabled = false;
             },
-            onClose: async () => {
+            onClose: function() {
               // Payment modal closed
               // Update status pembayaran menjadi pending
-              await updatePaymentStatus('pending', { status: 'pending', message: 'Payment popup closed' });
+              updatePaymentStatus('pending', { status: 'pending', message: 'Payment popup closed' })
+                .then(() => {
+                  console.log('Payment status updated to pending after popup closed');
+                })
+                .catch(err => {
+                  console.error('Error updating payment status after popup closed:', err);
+                });
               // Kembalikan tombol ke keadaan semula
               btnPaynow.innerHTML = '<i class="fas fa-credit-card mr-2"></i> Pay Now';
               btnPaynow.disabled = false;
