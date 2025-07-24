@@ -128,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log('Updating payment status for reservation:', reservationId, 'Status:', status);
 
     // Send request to update payment status
-    return fetch('/payment/update-status', {
+    return fetch('api/payment/update-status', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
