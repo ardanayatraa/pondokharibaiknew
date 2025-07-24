@@ -46,9 +46,6 @@ class VillaPricingController extends Controller
             'thursday_pricing'         => 'nullable|integer|min:0',
             'friday_pricing'           => 'nullable|integer|min:0',
             'saturday_pricing'         => 'nullable|integer|min:0',
-            'special_price'            => 'nullable|integer|min:0',
-            'use_special_price'        => 'nullable|boolean',
-            'special_price_description'=> 'nullable|string|max:255',
         ]);
 
         VillaPricing::create($validated);
@@ -95,9 +92,6 @@ class VillaPricingController extends Controller
             'thursday_pricing'         => 'nullable|integer|min:0',
             'friday_pricing'           => 'nullable|integer|min:0',
             'saturday_pricing'         => 'nullable|integer|min:0',
-            'special_price'            => 'nullable|integer|min:0',
-            'use_special_price'        => 'nullable|boolean',
-            'special_price_description'=> 'nullable|string|max:255',
         ]);
 
         $pricing->update($validated);
