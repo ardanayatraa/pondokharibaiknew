@@ -17,37 +17,8 @@ class VillaPricingController extends Controller
      */
     public function index(Request $request)
     {
-        $query = VillaPricing::with(['villa', 'season']);
 
-        // Filter by villa
-        if ($request->filled('villa_id')) {
-            $query->where('villa_id', $request->villa_id);
-        }
-
-        // Filter by season
-        if ($request->filled('season_id')) {
-            $query->where('season_id', $request->season_id);
-        }
-
-        // Search functionality
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->whereHas('villa', function($q) use ($search) {
-                $q->where('nama_villa', 'like', "%{$search}%");
-            })->orWhereHas('season', function($q) use ($search) {
-                $q->where('nama_season', 'like', "%{$search}%");
-            });
-        }
-
-        $villaPricings = $query->orderBy('villa_id')
-                             ->orderBy('season_id')
-                             ->paginate(15)
-                             ->withQueryString();
-
-        $villas = Villa::orderBy('nama_villa')->get();
-        $seasons = Season::orderBy('priority')->get();
-
-        return view('villa-pricing.index', compact('villaPricings', 'villas', 'seasons'));
+        return view('villa-pricing.index');
     }
 
     /**
