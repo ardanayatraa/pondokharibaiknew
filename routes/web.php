@@ -152,6 +152,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{harga_villa}/edit', [VillaPricingController::class, 'edit'])->name('edit');
         Route::put('/{harga_villa}', [VillaPricingController::class, 'update'])->name('update');
         Route::delete('/{harga_villa}', [VillaPricingController::class, 'destroy'])->name('destroy');
+
+        // API untuk range_date_price dan special_price_range
+        Route::post('/{harga_villa}/range-date-price', [VillaPricingController::class, 'addRangeDatePrice'])->name('add-range-date-price');
+        Route::post('/{harga_villa}/special-price-range', [VillaPricingController::class, 'addSpecialPriceRange'])->name('add-special-price-range');
+        Route::get('/{harga_villa}/range-date-prices', [VillaPricingController::class, 'getRangeDatePrices'])->name('get-range-date-prices');
+        Route::get('/{harga_villa}/special-price-ranges', [VillaPricingController::class, 'getSpecialPriceRanges'])->name('get-special-price-ranges');
     });
 
     Route::get('villa-pricing/{villa_id}/date/{date}', [VillaPricingController::class, 'getPricingByDate']);

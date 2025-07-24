@@ -158,7 +158,7 @@
                                 Gunakan untuk override harga reguler atau special price pada tanggal tertentu
                             </p>
 
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                 <div>
                                     <x-label for="start_date" value="Tanggal Mulai" />
                                     <x-input id="start_date" name="start_date" type="date"
@@ -186,6 +186,21 @@
                                     <span class="text-sm text-gray-500">Kosongkan jika tidak ingin override</span>
                                 </div>
                             </div>
+
+                            {{-- Container untuk menampilkan range date price yang sudah ditambahkan --}}
+                            <div id="added-range-date-prices" class="mt-4 space-y-4" style="display: none;">
+                                <h4 class="font-medium text-gray-700">Range Date Price yang Ditambahkan:</h4>
+                                <div id="range-date-price-list" class="space-y-2">
+                                    <!-- Range date prices akan ditambahkan di sini via JavaScript -->
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end">
+                                <button type="button" id="btn-add-range-date-price"
+                                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    Tambah Range Date Price
+                                </button>
+                            </div>
                         </div>
 
                         {{-- 8) Special Price untuk Range Date Tertentu --}}
@@ -208,7 +223,7 @@
                             </div>
 
                             <div id="container-special-price-range" style="display: none;">
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                     <div>
                                         <x-label for="special_price_start_date" value="Tanggal Mulai Special Price" />
                                         <x-input id="special_price_start_date" name="special_price_start_date"
@@ -240,6 +255,21 @@
                                             <span class="text-sm text-red-600">{{ $message }}</span>
                                         @enderror
                                     </div>
+                                </div>
+
+                                {{-- Container untuk menampilkan special price range yang sudah ditambahkan --}}
+                                <div id="added-special-price-ranges" class="mt-4 space-y-4" style="display: none;">
+                                    <h4 class="font-medium text-gray-700">Special Price Range yang Ditambahkan:</h4>
+                                    <div id="special-price-range-list" class="space-y-2">
+                                        <!-- Special price ranges akan ditambahkan di sini via JavaScript -->
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-end mt-4">
+                                    <button type="button" id="btn-add-special-price-range"
+                                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                        Tambah Special Price Range
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -430,6 +460,120 @@
                 selectSeason.value = '{{ old('season_id') }}';
                 selectSeason.dispatchEvent(new Event('change'));
             @endif
+
+            // Event: Tambah Range Date Price
+            const btnAddRangeDatePrice = document.getElementById('btn-add-range-date-price');
+
+            const addedRangeDatePrices = document.getElementById('added-range-date-prices');
+            const rangeDatePriceList = document.getElementById('range-date-price-list');
+
+            if (btnAddRangeDatePrice) {
+                btnAddRangeDatePrice.addEventListener('click', function() {
+                    const startDate = document.getElementById('start_date').value;
+                    const endDate = document.getElementById('end_date').value;
+                    const price = document.getElementById('range_date_price_value').value;
+
+                    // Validasi
+                    if (!startDate || !endDate || !price) {
+                        alert('Semua field harus diisi!');
+                        return;
+                    }
+
+                    // Tampilkan di container
+                    addedRangeDatePrices.style.display = 'block';
+
+                    // Buat elemen untuk menampilkan range date price
+                    const newItem = document.createElement('div');
+                    newItem.classList.add('bg-gray-50', 'p-3', 'rounded-lg', 'border', 'border-gray-200');
+
+                    newItem.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="font-medium">${startDate} - ${endDate}</p>
+                                <p class="text-sm font-semibold text-green-600">Rp ${parseInt(price).toLocaleString('id-ID')}</p>
+                            </div>
+                        </div>
+                    `;
+
+                    rangeDatePriceList.appendChild(newItem);
+
+                    // Tambahkan hidden input untuk menyimpan data
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'range_date_prices[]';
+                    hiddenInput.value = JSON.stringify({
+                        start_date: startDate,
+                        end_date: endDate,
+                        price: price
+                    });
+
+                    document.getElementById('form-create-pricing').appendChild(hiddenInput);
+
+                    // Reset form
+                    document.getElementById('start_date').value = '';
+                    document.getElementById('end_date').value = '';
+                    document.getElementById('range_date_price_value').value = '';
+                });
+            }
+
+            // Event: Tambah Special Price Range
+            const btnAddSpecialPriceRange = document.getElementById('btn-add-special-price-range');
+
+            const addedSpecialPriceRanges = document.getElementById('added-special-price-ranges');
+            const specialPriceRangeList = document.getElementById('special-price-range-list');
+
+            if (btnAddSpecialPriceRange) {
+                btnAddSpecialPriceRange.addEventListener('click', function() {
+                    const startDate = document.getElementById('special_price_start_date').value;
+                    const endDate = document.getElementById('special_price_end_date').value;
+                    const price = document.getElementById('special_price_range').value;
+
+                    // Validasi
+                    if (!startDate || !endDate || !price) {
+                        alert('Semua field harus diisi!');
+                        return;
+                    }
+
+                    // Pastikan checkbox special price range dicentang
+                    document.getElementById('use_special_price_for_range').checked = true;
+                    containerSpecialPriceRange.style.display = 'block';
+
+                    // Tampilkan di container
+                    addedSpecialPriceRanges.style.display = 'block';
+
+                    // Buat elemen untuk menampilkan special price range
+                    const newItem = document.createElement('div');
+                    newItem.classList.add('bg-gray-50', 'p-3', 'rounded-lg', 'border', 'border-gray-200');
+
+                    newItem.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="font-medium">${startDate} - ${endDate}</p>
+                                <p class="text-sm font-semibold text-green-600">Rp ${parseInt(price).toLocaleString('id-ID')}</p>
+                            </div>
+                        </div>
+                    `;
+
+                    specialPriceRangeList.appendChild(newItem);
+
+                    // Tambahkan hidden input untuk menyimpan data
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'special_price_ranges[]';
+                    hiddenInput.value = JSON.stringify({
+                        start_date: startDate,
+                        end_date: endDate,
+                        price: price
+                    });
+
+                    document.getElementById('form-create-pricing').appendChild(hiddenInput);
+
+                    // Reset form
+                    document.getElementById('special_price_start_date').value = '';
+                    document.getElementById('special_price_end_date').value = '';
+                    document.getElementById('special_price_range').value = '';
+                });
+            }
         });
     </script>
 </x-app-layout>

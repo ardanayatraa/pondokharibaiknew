@@ -57,6 +57,8 @@ class VillaPricingController extends Controller
             'special_price_range'      => 'nullable|integer|min:0',
             'special_price_start_date' => 'nullable|date',
             'special_price_end_date'   => 'nullable|date|after_or_equal:special_price_start_date',
+            'range_date_prices'        => 'nullable|array',
+            'special_price_ranges'     => 'nullable|array',
         ]);
 
         // Cek apakah sudah ada pricing untuk villa dan season yang sama
@@ -71,8 +73,37 @@ class VillaPricingController extends Controller
         }
 
         // Handle range_date_price (untuk override harga reguler pada tanggal tertentu)
-        $rangeDatePrice = null;
-        if (!empty($validated['start_date']) && !empty($validated['end_date'])) {
+        $rangeDatePrices = [];
+
+        // Jika ada range_date_prices[] dari form
+        if ($request->has('range_date_prices') && is_array($request->range_date_prices)) {
+            foreach ($request->range_date_prices as $rangeDatePriceJson) {
+                $rangeDatePriceData = json_decode($rangeDatePriceJson, true);
+
+                if (isset($rangeDatePriceData['start_date']) && isset($rangeDatePriceData['end_date']) && isset($rangeDatePriceData['price'])) {
+                    $startDate = Carbon::parse($rangeDatePriceData['start_date']);
+                    $endDate = Carbon::parse($rangeDatePriceData['end_date']);
+
+                    $dates = [];
+                    $currentDate = $startDate->copy();
+                    while ($currentDate->lte($endDate)) {
+                        $dates[] = $currentDate->format('Y-m-d');
+                        $currentDate->addDay();
+                    }
+
+                    $rangeDatePrices[] = [
+                        'start_date' => $rangeDatePriceData['start_date'],
+                        'end_date' => $rangeDatePriceData['end_date'],
+                        'dates' => $dates,
+                        'price' => $rangeDatePriceData['price'],
+                        'description' => $rangeDatePriceData['description'] ?? 'Harga khusus untuk periode tertentu'
+                    ];
+                }
+            }
+        }
+
+        // Jika ada input langsung dari form
+        if (!empty($validated['start_date']) && !empty($validated['end_date']) && !empty($validated['range_date_price_value'])) {
             $startDate = Carbon::parse($validated['start_date']);
             $endDate = Carbon::parse($validated['end_date']);
 
@@ -83,19 +114,49 @@ class VillaPricingController extends Controller
                 $currentDate->addDay();
             }
 
-            $rangeDatePrice = [
+            $rangeDatePrices[] = [
                 'start_date' => $validated['start_date'],
                 'end_date' => $validated['end_date'],
                 'dates' => $dates,
-                'price' => $validated['special_price'] ?? null,
-                'description' => $validated['special_price_description'] ?? null
+                'price' => $validated['range_date_price_value'],
+                'description' => $validated['special_price_description'] ?? 'Harga khusus untuk periode tertentu'
             ];
         }
 
         // Handle special_price_range (untuk special price pada tanggal tertentu)
-        $specialPriceRange = null;
+        $specialPriceRanges = [];
+
+        // Jika ada special_price_ranges[] dari form
+        if ($request->has('special_price_ranges') && is_array($request->special_price_ranges)) {
+            foreach ($request->special_price_ranges as $specialPriceRangeJson) {
+                $specialPriceRangeData = json_decode($specialPriceRangeJson, true);
+
+                if (isset($specialPriceRangeData['start_date']) && isset($specialPriceRangeData['end_date']) && isset($specialPriceRangeData['price'])) {
+                    $startDate = Carbon::parse($specialPriceRangeData['start_date']);
+                    $endDate = Carbon::parse($specialPriceRangeData['end_date']);
+
+                    $dates = [];
+                    $currentDate = $startDate->copy();
+                    while ($currentDate->lte($endDate)) {
+                        $dates[] = $currentDate->format('Y-m-d');
+                        $currentDate->addDay();
+                    }
+
+                    $specialPriceRanges[] = [
+                        'start_date' => $specialPriceRangeData['start_date'],
+                        'end_date' => $specialPriceRangeData['end_date'],
+                        'dates' => $dates,
+                        'price' => $specialPriceRangeData['price'],
+                        'description' => $specialPriceRangeData['description'] ?? 'Special price untuk tanggal tertentu'
+                    ];
+                }
+            }
+        }
+
+        // Jika ada input langsung dari form
         if (!empty($validated['special_price_start_date']) &&
             !empty($validated['special_price_end_date']) &&
+            !empty($validated['special_price_range']) &&
             $validated['use_special_price_for_range']) {
 
             $spStartDate = Carbon::parse($validated['special_price_start_date']);
@@ -108,11 +169,11 @@ class VillaPricingController extends Controller
                 $currentDate->addDay();
             }
 
-            $specialPriceRange = [
+            $specialPriceRanges[] = [
                 'start_date' => $validated['special_price_start_date'],
                 'end_date' => $validated['special_price_end_date'],
                 'dates' => $spDates,
-                'price' => $validated['special_price_range'] ?? null,
+                'price' => $validated['special_price_range'],
                 'description' => $validated['special_price_description'] ?? 'Special price untuk tanggal tertentu'
             ];
         }
@@ -121,14 +182,16 @@ class VillaPricingController extends Controller
         unset($validated['start_date'], $validated['end_date']);
         unset($validated['use_special_price_for_range'], $validated['special_price_range']);
         unset($validated['special_price_start_date'], $validated['special_price_end_date']);
+        unset($validated['range_date_prices'], $validated['special_price_ranges']);
+        unset($validated['range_date_price_value']);
 
         // Add arrays to validated data
-        if ($rangeDatePrice) {
-            $validated['range_date_price'] = $rangeDatePrice;
+        if (!empty($rangeDatePrices)) {
+            $validated['range_date_price'] = count($rangeDatePrices) === 1 ? $rangeDatePrices[0] : $rangeDatePrices;
         }
 
-        if ($specialPriceRange) {
-            $validated['special_price_range'] = $specialPriceRange;
+        if (!empty($specialPriceRanges)) {
+            $validated['special_price_range'] = count($specialPriceRanges) === 1 ? $specialPriceRanges[0] : $specialPriceRanges;
         }
 
         VillaPricing::create($validated);
@@ -185,6 +248,8 @@ class VillaPricingController extends Controller
             'special_price_range'      => 'nullable|integer|min:0',
             'special_price_start_date' => 'nullable|date',
             'special_price_end_date'   => 'nullable|date|after_or_equal:special_price_start_date',
+            'range_date_prices'        => 'nullable|array',
+            'special_price_ranges'     => 'nullable|array',
         ]);
 
         // Cek apakah ada pricing lain dengan villa dan season yang sama (kecuali yang sedang di-edit)
@@ -199,9 +264,31 @@ class VillaPricingController extends Controller
                            ->withInput();
         }
 
+        // Get existing range_date_price and special_price_range
+        $existingRangeDatePrices = [];
+        if ($pricing->range_date_price) {
+            if (isset($pricing->range_date_price['dates'])) {
+                // Single object format
+                $existingRangeDatePrices = [$pricing->range_date_price];
+            } else {
+                // Array of objects format
+                $existingRangeDatePrices = $pricing->range_date_price;
+            }
+        }
+
+        $existingSpecialPriceRanges = [];
+        if ($pricing->special_price_range) {
+            if (isset($pricing->special_price_range['dates'])) {
+                // Single object format
+                $existingSpecialPriceRanges = [$pricing->special_price_range];
+            } else {
+                // Array of objects format
+                $existingSpecialPriceRanges = $pricing->special_price_range;
+            }
+        }
+
         // Handle range_date_price (untuk override harga reguler pada tanggal tertentu)
-        $rangeDatePrice = null;
-        if (!empty($validated['start_date']) && !empty($validated['end_date'])) {
+        if (!empty($validated['start_date']) && !empty($validated['end_date']) && !empty($validated['range_date_price_value'])) {
             $startDate = Carbon::parse($validated['start_date']);
             $endDate = Carbon::parse($validated['end_date']);
 
@@ -216,15 +303,18 @@ class VillaPricingController extends Controller
                 'start_date' => $validated['start_date'],
                 'end_date' => $validated['end_date'],
                 'dates' => $dates,
-                'price' => $validated['special_price'] ?? null,
-                'description' => $validated['special_price_description'] ?? null
+                'price' => $validated['range_date_price_value'],
+                'description' => $validated['special_price_description'] ?? 'Harga khusus untuk periode tertentu'
             ];
+
+            // Tambahkan ke array yang sudah ada
+            $existingRangeDatePrices[] = $rangeDatePrice;
         }
 
         // Handle special_price_range (untuk special price pada tanggal tertentu)
-        $specialPriceRange = null;
         if (!empty($validated['special_price_start_date']) &&
             !empty($validated['special_price_end_date']) &&
+            !empty($validated['special_price_range']) &&
             $validated['use_special_price_for_range']) {
 
             $spStartDate = Carbon::parse($validated['special_price_start_date']);
@@ -241,23 +331,28 @@ class VillaPricingController extends Controller
                 'start_date' => $validated['special_price_start_date'],
                 'end_date' => $validated['special_price_end_date'],
                 'dates' => $spDates,
-                'price' => $validated['special_price_range'] ?? null,
+                'price' => $validated['special_price_range'],
                 'description' => $validated['special_price_description'] ?? 'Special price untuk tanggal tertentu'
             ];
+
+            // Tambahkan ke array yang sudah ada
+            $existingSpecialPriceRanges[] = $specialPriceRange;
         }
 
         // Remove fields yang tidak ada di model
         unset($validated['start_date'], $validated['end_date']);
         unset($validated['use_special_price_for_range'], $validated['special_price_range']);
         unset($validated['special_price_start_date'], $validated['special_price_end_date']);
+        unset($validated['range_date_prices'], $validated['special_price_ranges']);
+        unset($validated['range_date_price_value']);
 
         // Add arrays to validated data
-        if ($rangeDatePrice) {
-            $validated['range_date_price'] = $rangeDatePrice;
+        if (!empty($existingRangeDatePrices)) {
+            $validated['range_date_price'] = count($existingRangeDatePrices) === 1 ? $existingRangeDatePrices[0] : $existingRangeDatePrices;
         }
 
-        if ($specialPriceRange) {
-            $validated['special_price_range'] = $specialPriceRange;
+        if (!empty($existingSpecialPriceRanges)) {
+            $validated['special_price_range'] = count($existingSpecialPriceRanges) === 1 ? $existingSpecialPriceRanges[0] : $existingSpecialPriceRanges;
         }
 
         $pricing->update($validated);
@@ -331,49 +426,43 @@ class VillaPricingController extends Controller
             $description = null;
 
             // 1. Cek Special Price Range terlebih dahulu
-            if ($pricing->special_price_range &&
-                isset($pricing->special_price_range['dates']) &&
-                in_array($dateString, $pricing->special_price_range['dates']) &&
-                isset($pricing->special_price_range['price']) &&
-                $pricing->special_price_range['price'] > 0) {
-
-                $price = $pricing->special_price_range['price'];
+            $specialPriceRange = $pricing->getSpecialPriceRangeForDate($dateString);
+            if ($specialPriceRange && isset($specialPriceRange['price']) && $specialPriceRange['price'] > 0) {
+                $price = $specialPriceRange['price'];
                 $pricingSource = 'special_price_range';
-                $description = $pricing->special_price_range['description'] ?? 'Special price untuk tanggal tertentu';
+                $description = $specialPriceRange['description'] ?? 'Special price untuk tanggal tertentu';
             }
             // 2. Cek Range Date Price
-            else if ($pricing->range_date_price &&
-                     isset($pricing->range_date_price['dates']) &&
-                     in_array($dateString, $pricing->range_date_price['dates']) &&
-                     isset($pricing->range_date_price['price']) &&
-                     $pricing->range_date_price['price'] > 0) {
-
-                $price = $pricing->range_date_price['price'];
-                $pricingSource = 'range_date_price';
-                $description = $pricing->range_date_price['description'] ?? 'Harga khusus untuk periode tertentu';
-            }
-            // 3. Cek Global Special Price
-            else if ($pricing->use_special_price && $pricing->special_price > 0) {
-                $price = $pricing->special_price;
-                $pricingSource = 'global_special_price';
-                $description = $pricing->special_price_description ?? 'Special price';
-            }
-            // 4. Gunakan harga per hari
             else {
-                $dayMapping = [
-                    0 => 'sunday_pricing',
-                    1 => 'monday_pricing',
-                    2 => 'tuesday_pricing',
-                    3 => 'wednesday_pricing',
-                    4 => 'thursday_pricing',
-                    5 => 'friday_pricing',
-                    6 => 'saturday_pricing'
-                ];
+                $rangeDatePrice = $pricing->getRangeDatePriceForDate($dateString);
+                if ($rangeDatePrice && isset($rangeDatePrice['price']) && $rangeDatePrice['price'] > 0) {
+                    $price = $rangeDatePrice['price'];
+                    $pricingSource = 'range_date_price';
+                    $description = $rangeDatePrice['description'] ?? 'Harga khusus untuk periode tertentu';
+                }
+                // 3. Cek Global Special Price
+                else if ($pricing->use_special_price && $pricing->special_price > 0) {
+                    $price = $pricing->special_price;
+                    $pricingSource = 'global_special_price';
+                    $description = $pricing->special_price_description ?? 'Special price';
+                }
+                // 4. Gunakan harga per hari
+                else {
+                    $dayMapping = [
+                        0 => 'sunday_pricing',
+                        1 => 'monday_pricing',
+                        2 => 'tuesday_pricing',
+                        3 => 'wednesday_pricing',
+                        4 => 'thursday_pricing',
+                        5 => 'friday_pricing',
+                        6 => 'saturday_pricing'
+                    ];
 
-                $pricingField = $dayMapping[$dayOfWeek];
-                $price = $pricing->$pricingField;
-                $pricingSource = 'day_of_week';
-                $description = 'Harga reguler';
+                    $pricingField = $dayMapping[$dayOfWeek];
+                    $price = $pricing->$pricingField;
+                    $pricingSource = 'day_of_week';
+                    $description = 'Harga reguler';
+                }
             }
 
             if ($price === null || $price === 0) {
@@ -473,6 +562,152 @@ class VillaPricingController extends Controller
                     'date' => $targetDate->format('Y-m-d'),
                     'active_seasons' => $activeSeasons
                 ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * API untuk menambahkan range date price baru
+     */
+    public function addRangeDatePrice(Request $request, $id_villa_pricing)
+    {
+        try {
+            $pricing = VillaPricing::findOrFail($id_villa_pricing);
+
+            $validated = $request->validate([
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+                'price' => 'required|integer|min:0',
+                'description' => 'nullable|string|max:255',
+            ]);
+
+            // Generate dates array
+            $startDate = Carbon::parse($validated['start_date']);
+            $endDate = Carbon::parse($validated['end_date']);
+
+            $dates = [];
+            $currentDate = $startDate->copy();
+            while ($currentDate->lte($endDate)) {
+                $dates[] = $currentDate->format('Y-m-d');
+                $currentDate->addDay();
+            }
+
+            $rangeDatePrice = [
+                'start_date' => $validated['start_date'],
+                'end_date' => $validated['end_date'],
+                'dates' => $dates,
+                'price' => $validated['price'],
+                'description' => $validated['description'] ?? 'Harga khusus untuk periode tertentu'
+            ];
+
+            // Tambahkan range date price baru
+            $pricing->addRangeDatePrice($rangeDatePrice);
+            $pricing->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Range date price berhasil ditambahkan',
+                'data' => $rangeDatePrice
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * API untuk menambahkan special price range baru
+     */
+    public function addSpecialPriceRange(Request $request, $id_villa_pricing)
+    {
+        try {
+            $pricing = VillaPricing::findOrFail($id_villa_pricing);
+
+            $validated = $request->validate([
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+                'price' => 'required|integer|min:0',
+                'description' => 'nullable|string|max:255',
+            ]);
+
+            // Generate dates array
+            $startDate = Carbon::parse($validated['start_date']);
+            $endDate = Carbon::parse($validated['end_date']);
+
+            $dates = [];
+            $currentDate = $startDate->copy();
+            while ($currentDate->lte($endDate)) {
+                $dates[] = $currentDate->format('Y-m-d');
+                $currentDate->addDay();
+            }
+
+            $specialPriceRange = [
+                'start_date' => $validated['start_date'],
+                'end_date' => $validated['end_date'],
+                'dates' => $dates,
+                'price' => $validated['price'],
+                'description' => $validated['description'] ?? 'Special price untuk tanggal tertentu'
+            ];
+
+            // Tambahkan special price range baru
+            $pricing->addSpecialPriceRange($specialPriceRange);
+            $pricing->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Special price range berhasil ditambahkan',
+                'data' => $specialPriceRange
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * API untuk mendapatkan semua range date price
+     */
+    public function getRangeDatePrices($id_villa_pricing)
+    {
+        try {
+            $pricing = VillaPricing::findOrFail($id_villa_pricing);
+
+            return response()->json([
+                'success' => true,
+                'data' => $pricing->getAllRangeDatePrices()
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * API untuk mendapatkan semua special price range
+     */
+    public function getSpecialPriceRanges($id_villa_pricing)
+    {
+        try {
+            $pricing = VillaPricing::findOrFail($id_villa_pricing);
+
+            return response()->json([
+                'success' => true,
+                'data' => $pricing->getAllSpecialPriceRanges()
             ]);
 
         } catch (\Exception $e) {
