@@ -44,13 +44,6 @@ Route::post('/payment/token', [BookingController::class,'paymentToken']);
 // Public utility routes
 Route::get('/refund/status/{orderId}', [RefundController::class, 'checkRefundStatus']);
 
-// Dummy mail tester (should be removed in production)
-Route::get('/send', function () {
-    $nama  = 'Budi Santoso';
-    $email = 'madaryadev@gmail.com';
-    Mail::to($email)->send(new MailToGuest($nama));
-    return "Dummy email telah dikirim ke {$email} dengan nama "{$nama}".";
-})->name('mail.test');
 
 // Protected Routes - General Auth
 Route::middleware('auth')->group(function () {
