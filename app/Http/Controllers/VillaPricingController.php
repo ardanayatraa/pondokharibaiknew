@@ -301,9 +301,9 @@ class VillaPricingController extends Controller
     }
 
     /**
-     * Get pricing for a specific date - AJAX endpoint
+     * Check pricing for a specific date
      */
-    public function getPriceForDate(Request $request, VillaPricing $villaPricing)
+    public function checkPrice(Request $request, VillaPricing $villaPricing)
     {
         $request->validate([
             'date' => 'required|date'
@@ -311,16 +311,16 @@ class VillaPricingController extends Controller
 
         $priceData = $villaPricing->getPriceForDate($request->date);
 
-        return response()->json([
-            'success' => true,
-            'data' => $priceData
+        return back()->with([
+            'price_check_result' => $priceData,
+            'checked_date' => $request->date
         ]);
     }
 
     /**
-     * Get pricing summary for date range - AJAX endpoint
+     * Get pricing summary for date range
      */
-    public function getPricingSummary(Request $request, VillaPricing $villaPricing)
+    public function pricingSummary(Request $request, VillaPricing $villaPricing)
     {
         $request->validate([
             'start_date' => 'required|date',
@@ -332,9 +332,10 @@ class VillaPricingController extends Controller
             $request->end_date
         );
 
-        return response()->json([
-            'success' => true,
-            'data' => $summary
+        return back()->with([
+            'pricing_summary' => $summary,
+            'summary_start_date' => $request->start_date,
+            'summary_end_date' => $request->end_date
         ]);
     }
 

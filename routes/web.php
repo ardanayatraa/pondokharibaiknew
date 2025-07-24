@@ -144,21 +144,34 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Harga Villa
-    Route::prefix('harga-villa')->name('harga-villa.')->group(function () {
-        Route::get('/', [VillaPricingController::class, 'index'])->name('index');
-        Route::get('/create', [VillaPricingController::class, 'create'])->name('create');
-        Route::post('/', [VillaPricingController::class, 'store'])->name('store');
-        Route::get('/{harga_villa}', [VillaPricingController::class, 'show'])->name('show');
-        Route::get('/{harga_villa}/edit', [VillaPricingController::class, 'edit'])->name('edit');
-        Route::put('/{harga_villa}', [VillaPricingController::class, 'update'])->name('update');
-        Route::delete('/{harga_villa}', [VillaPricingController::class, 'destroy'])->name('destroy');
+    Route::resource('villa-pricing', VillaPricingController::class)->names([
+        'index' => 'villa-pricing.index',
+        'create' => 'villa-pricing.create',
+        'store' => 'villa-pricing.store',
+        'show' => 'villa-pricing.show',
+        'edit' => 'villa-pricing.edit',
+        'update' => 'villa-pricing.update',
+        'destroy' => 'villa-pricing.destroy'
+    ]);
 
-        // API untuk range_date_price dan special_price_range
-        Route::post('/{harga_villa}/range-date-price', [VillaPricingController::class, 'addRangeDatePrice'])->name('add-range-date-price');
-        Route::post('/{harga_villa}/special-price-range', [VillaPricingController::class, 'addSpecialPriceRange'])->name('add-special-price-range');
-        Route::get('/{harga_villa}/range-date-prices', [VillaPricingController::class, 'getRangeDatePrices'])->name('get-range-date-prices');
-        Route::get('/{harga_villa}/special-price-ranges', [VillaPricingController::class, 'getSpecialPriceRanges'])->name('get-special-price-ranges');
+    Route::prefix('villa-pricing')->name('villa-pricing.')->group(function () {
+        // Check price for specific date
+        Route::post('{villaPricing}/check-price', [VillaPricingController::class, 'checkPrice'])
+             ->name('check-price');
+
+        // Get pricing summary for date range
+        Route::post('{villaPricing}/pricing-summary', [VillaPricingController::class, 'pricingSummary'])
+             ->name('pricing-summary');
+
+        // Clone pricing to another villa/season
+        Route::post('{villaPricing}/clone', [VillaPricingController::class, 'clone'])
+             ->name('clone');
+
+        // Export pricing data to CSV
+        Route::get('export', [VillaPricingController::class, 'export'])
+             ->name('export');
     });
+
 
 
 
