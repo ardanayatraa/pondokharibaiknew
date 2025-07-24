@@ -475,11 +475,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (!res.ok) {
         console.error("❌ Gagal push ke API:", await res.text())
+        return false;
       } else {
-        console.log("✅ Reservasi berhasil dikirim ke API")
+        const data = await res.json();
+        console.log("✅ Reservasi berhasil dikirim ke API", data);
+
+        // Simpan ID reservasi ke sessionStorage untuk digunakan saat update status pembayaran
+        if (data && data.data && data.data.reservasi && data.data.reservasi.id_reservation) {
+          const reservationId = data.data.reservasi.id_reservation;
+          sessionStorage.setItem('current_reservation_id', reservationId);
+          console.log("✅ ID Reservasi disimpan ke sessionStorage:", reservationId);
+        }
+
+        return true;
       }
     } catch (err) {
       console.error("❌ Error saat push reservasi ke API:", err)
+      return false;
     }
   }
 
@@ -711,19 +723,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
     try {
-      // Ambil ID reservasi dari respons Midtrans dengan cara yang lebih robust
-      let reservationId = null;
+      // Ambil ID reservasi dari session storage yang disimpan saat membuat reservasi
+      // Ini lebih reliable daripada mencoba mengekstrak dari order_id
+      const sessionReservationId = sessionStorage.getItem('current_reservation_id');
 
-      // Coba ambil dari order_id dengan berbagai format yang mungkin
-      if (result?.order_id) {
-        // Format ORDER-123456789
-        const orderParts = result.order_id.split('-');
-        if (orderParts.length > 1) {
-          reservationId = orderParts[1];
+      // Fallback ke ekstraksi dari order_id jika tidak ada di session
+      let reservationId = sessionReservationId;
+
+      if (!reservationId && result?.order_id) {
+        console.log('Trying to extract reservation ID from order_id:', result.order_id);
+
+        // Coba ekstrak dari berbagai format
+        if (result.order_id.startsWith('ORDER-')) {
+          // Format: ORDER-1234567890
+          reservationId = result.order_id.replace('ORDER-', '').split('-')[0];
         }
-        // Format ORDER_123456789
-        else if (result.order_id.includes('_')) {
-          reservationId = result.order_id.split('_')[1];
+        else if (result.order_id.startsWith('ORDER_')) {
+          // Format: ORDER_1234567890
+          reservationId = result.order_id.replace('ORDER_', '').split('_')[0];
+        }
+        else if (result.order_id.startsWith('ORDER-RETRY-')) {
+          // Format: ORDER-RETRY-1234567890
+          reservationId = result.order_id.replace('ORDER-RETRY-', '').split('-')[0];
         }
         // Jika tidak ada format khusus, gunakan order_id langsung
         else if (!isNaN(result.order_id)) {
@@ -738,7 +759,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (!reservationId) {
         console.error('Reservation ID not found in transaction result:', result);
-        return;
+        throw new Error('Reservation ID not found');
       }
 
       console.log(`Updating payment status for reservation ${reservationId} to ${status}`);
@@ -759,6 +780,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Server response error:', errorText);
         throw new Error('Failed to update payment status');
       }
 
@@ -771,8 +794,11 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         console.log('Reservation remains in pending status');
       }
+
+      return data;
     } catch (error) {
       console.error('Error updating payment status:', error);
+      throw error;
     }
   }
 

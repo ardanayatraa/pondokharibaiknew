@@ -24,6 +24,10 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
+        // Simpan ID reservasi ke sessionStorage untuk digunakan saat update status pembayaran
+        sessionStorage.setItem('current_reservation_id', reservationId);
+        console.log("✅ ID Reservasi disimpan ke sessionStorage:", reservationId);
+
         try {
           // Ambil snap token dari server
           const response = await fetch(`/api/payment/get-snap-token/${reservationId}`, {

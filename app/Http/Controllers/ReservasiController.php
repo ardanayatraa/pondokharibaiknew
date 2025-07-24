@@ -120,19 +120,46 @@ class ReservasiController extends Controller
 
     public function checkin(Reservasi $reservasi)
     {
+        // Hanya reservasi dengan status confirmed yang bisa di-checkin
+        if ($reservasi->status !== 'confirmed') {
+            return back()->with('error', 'Hanya reservasi dengan status confirmed yang bisa di-checkin.');
+        }
+
+        // Pastikan status check-in masih pending
+        if ($reservasi->status_check_in !== 'pending') {
+            return back()->with('error', 'Reservasi ini tidak dalam status pending check-in.');
+        }
+
+        // Pastikan tanggal check-in sudah tiba
+        if (Carbon::now()->toDateString() < $reservasi->start_date) {
+            return back()->with('error', 'Belum waktunya check-in untuk reservasi ini.');
+        }
+
         $reservasi->update([
             'status_check_in' => 'checked_in',
             'tanggal_check_in_aktual' => Carbon::now(),
         ]);
+
         return back()->with('success', 'Tamu berhasil check-in.');
     }
 
     public function checkout(Reservasi $reservasi)
     {
+        // Hanya reservasi dengan status confirmed yang bisa di-checkout
+        if ($reservasi->status !== 'confirmed') {
+            return back()->with('error', 'Hanya reservasi dengan status confirmed yang bisa di-checkout.');
+        }
+
+        // Pastikan status check-in adalah checked_in
+        if ($reservasi->status_check_in !== 'checked_in') {
+            return back()->with('error', 'Tamu belum check-in, tidak bisa melakukan check-out.');
+        }
+
         $reservasi->update([
             'status_check_in' => 'checked_out',
             'tanggal_check_out_aktual' => Carbon::now(),
         ]);
+
         return back()->with('success', 'Tamu berhasil check-out.');
     }
 }

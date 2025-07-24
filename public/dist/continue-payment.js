@@ -20,6 +20,16 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      // Ambil ID reservasi dari URL
+      const urlParts = window.location.pathname.split('/');
+      const reservationId = urlParts[urlParts.indexOf('reservation') + 1];
+
+      if (reservationId) {
+        // Simpan ID reservasi ke sessionStorage untuk digunakan saat update status pembayaran
+        sessionStorage.setItem('current_reservation_id', reservationId);
+        console.log("✅ ID Reservasi disimpan ke sessionStorage:", reservationId);
+      }
+
       // Jalankan Snap
       if (window.snap) {
         window.snap.pay(snapToken, {
