@@ -121,9 +121,9 @@ class ReservasiController extends Controller
     public function checkin(Reservasi $reservasi)
     {
         // Hanya reservasi dengan status confirmed yang bisa di-checkin
-        if ($reservasi->status !== 'confirmed') {
-            return back()->with('error', 'Hanya reservasi dengan status confirmed yang bisa di-checkin.');
-        }
+      if (!in_array($reservasi->status, ['confirmed', 'resheduled'])) {
+    return back()->with('error', 'Hanya reservasi dengan status confirmed atau resheduled yang bisa di-checkin.');
+}
 
         // Pastikan status check-in masih pending
         if ($reservasi->status_check_in !== 'pending') {
