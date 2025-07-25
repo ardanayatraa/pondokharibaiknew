@@ -1,184 +1,190 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
+use Illuminate\Support\Collection;
+use App\Models\Facility;
+use App\Models\Reservasi;
 use App\Models\VillaPricing;
-use App\Models\Villa;
-use App\Models\Season;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Models\CekKetersediaan;
 
-class VillaPricingController extends Controller
+class Villa extends Model
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        $pricings = VillaPricing::with(['villa', 'season'])
-            ->orderBy('villa_id')
-            ->orderBy('season_id')
-            ->paginate(15);
+    use HasFactory;
 
-        return view('villa-pricing.index', compact('pricings'));
+    protected $table = 'tbl_villa';
+    protected $primaryKey = 'id_villa';
+    public $incrementing = true;
+    protected $keyType = 'int';
+
+    protected $fillable = [
+        'facility_id',
+        'name',
+        'description',
+        'picture',
+        'capacity',
+    ];
+
+    protected $casts = [
+        'facility_id' => 'array',
+    ];
+
+    // —— RELATIONS —— //
+
+    public function reservasi()
+    {
+        return $this->hasMany(Reservasi::class, 'villa_id');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function pricings()
     {
-        $villas = Villa::orderBy('name')->get();
-        $seasons = Season::orderBy('nama_season')->get();
-
-        return view('villa-pricing.create', compact('villas', 'seasons'));
+        return $this->hasMany(VillaPricing::class, 'villa_id', 'id_villa');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function cekKetersediaan()
     {
-        $validator = Validator::make($request->all(), [
-            'villa_id' => 'required|exists:tbl_villa,id_villa',
-            'season_id' => 'required|exists:tbl_season,id_season',
-            'sunday_pricing' => 'nullable|numeric|min:0',
-            'monday_pricing' => 'nullable|numeric|min:0',
-            'tuesday_pricing' => 'nullable|numeric|min:0',
-            'wednesday_pricing' => 'nullable|numeric|min:0',
-            'thursday_pricing' => 'nullable|numeric|min:0',
-            'friday_pricing' => 'nullable|numeric|min:0',
-            'saturday_pricing' => 'nullable|numeric|min:0',
-            'special_price' => 'nullable|numeric|min:0',
-            'use_special_price' => 'boolean',
-            'special_price_description' => 'nullable|string|max:255',
-            'range_date_price' => 'nullable|array',
-            'range_date_price.*.start_date' => 'nullable|date',
-            'range_date_price.*.end_date' => 'nullable|date|after_or_equal:range_date_price.*.start_date',
-            'range_date_price.*.price' => 'nullable|numeric|min:0',
-            'special_price_range' => 'nullable|array',
-        ]);
+        return $this->hasMany(CekKetersediaan::class, 'villa_id', 'id_villa');
+    }
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+
+
+     // —— UTILITY —— //
+
+    public function getFacilityNamesAttribute(): array
+    {
+        if (! is_array($this->facility_id)) {
+            return [];
         }
 
-        // Check if combination already exists
-        $exists = VillaPricing::where('villa_id', $request->villa_id)
-            ->where('season_id', $request->season_id)
-            ->exists();
+        return Facility::whereIn('id_facility', $this->facility_id)
+                       ->pluck('name_facility')
+                       ->toArray();
+    }
 
-        if ($exists) {
-            return redirect()->back()
-                ->with('error', 'Pricing untuk villa dan season ini sudah ada!')
-                ->withInput();
+    // —— PRICING LOGIC —— //
+
+    /**
+     * Cari VillaPricing yang berlaku pada $date:
+     * - season.repeat_weekly = true & days_of_week berisi hari itu
+     * - season.repeat_weekly = false & date di antara tgl_mulai & tgl_akhir
+     * Pilih yang punya season.priority tertinggi.
+     *
+     * @param  string|\DateTime|null  $date
+     * @return VillaPricing|null
+     */
+    public function currentPricing($date = null): ?VillaPricing
+    {
+        $dateObj      = $date ? Carbon::parse($date) : Carbon::today();
+        $dateString   = $dateObj->toDateString();
+        $weekdayIndex = $dateObj->dayOfWeek; // 0=Sunday…6=Saturday
+
+        /** @var Collection<VillaPricing> $allPricings */
+        $allPricings = $this->pricings()
+                           ->with('season')
+                           ->get();
+
+        // Filter season yang match tanggal/hari
+        $matched = $allPricings->filter(function(VillaPricing $p) use ($dateString, $weekdayIndex) {
+            $s = $p->season;
+            if (! $s) return false;
+
+            if ($s->repeat_weekly) {
+                return is_array($s->days_of_week)
+                    && in_array($weekdayIndex, $s->days_of_week, true);
+            }
+
+            return $s->tgl_mulai_season->toDateString() <= $dateString
+                && $s->tgl_akhir_season->toDateString() >= $dateString;
+        });
+
+        if ($matched->isNotEmpty()) {
+            return $matched
+                ->sortByDesc(fn($p) => $p->season->priority)
+                ->first();
         }
 
-        $data = $request->all();
-        $data['use_special_price'] = $request->has('use_special_price');
-
-        // Clean up range_date_price array
-        if ($request->has('range_date_price')) {
-            $data['range_date_price'] = array_filter($request->range_date_price, function($item) {
-                return !empty($item['start_date']) && !empty($item['end_date']) && !empty($item['price']);
-            });
-        }
-
-        VillaPricing::create($data);
-
-        return redirect()->route('villa-pricing.index')
-            ->with('success', 'Villa pricing berhasil ditambahkan!');
+        return null;
     }
 
     /**
-     * Display the specified resource.
+     * Accessor agar bisa dipanggil $villa->current_pricing
      */
-    public function show(VillaPricing $villaPricing)
+    public function getCurrentPricingAttribute(): ?VillaPricing
     {
-        $villaPricing->load(['villa', 'season']);
-        return view('villa-pricing.show', compact('villaPricing'));
+        return $this->currentPricing();
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Ambil harga untuk $date (atau hari ini):
+     * 1) dari season utama
+     * 2) jika null, fallback ke season lain dengan harga tidak null, by priority
+     *
+     * @param  string|\DateTime|null  $date
+     * @return int|null
      */
-    public function edit(VillaPricing $villaPricing)
+    public function priceForDate($date = null): ?int
     {
-        $villas = Villa::orderBy('name')->get();
-        $seasons = Season::orderBy('nama_season')->get();
+        $dateObj = $date ? Carbon::parse($date) : Carbon::today();
+        $dayName = strtolower($dateObj->format('l')); // monday, tuesday, ...
+        $column  = "{$dayName}_pricing";
 
-        return view('villa-pricing.edit', compact('villaPricing', 'villas', 'seasons'));
+        // 1) Coba dari season utama
+        $primary = $this->currentPricing($dateObj);
+        $price   = $primary->{$column} ?? null;
+        if (! is_null($price)) {
+            return $price;
+        }
+
+        // 2) Fallback: cari di semua pricing yang punya kolom hari itu tidak null
+        $fallback = $this->pricings()
+                         ->with('season')
+                         ->get()
+                         ->filter(fn($p) => ! is_null($p->{$column}))
+                         ->sortByDesc(fn($p) => $p->season->priority)
+                         ->first();
+
+        return $fallback->{$column} ?? null;
     }
 
     /**
-     * Update the specified resource in storage.
+     * Accessor agar bisa dipanggil $villa->today_price
      */
-    public function update(Request $request, VillaPricing $villaPricing)
+    public function getTodayPriceAttribute(): ?int
     {
-        $validator = Validator::make($request->all(), [
-            'villa_id' => 'required|exists:tbl_villa,id_villa',
-            'season_id' => 'required|exists:tbl_season,id_season',
-            'sunday_pricing' => 'nullable|numeric|min:0',
-            'monday_pricing' => 'nullable|numeric|min:0',
-            'tuesday_pricing' => 'nullable|numeric|min:0',
-            'wednesday_pricing' => 'nullable|numeric|min:0',
-            'thursday_pricing' => 'nullable|numeric|min:0',
-            'friday_pricing' => 'nullable|numeric|min:0',
-            'saturday_pricing' => 'nullable|numeric|min:0',
-            'special_price' => 'nullable|numeric|min:0',
-            'use_special_price' => 'boolean',
-            'special_price_description' => 'nullable|string|max:255',
-            'range_date_price' => 'nullable|array',
-            'range_date_price.*.start_date' => 'nullable|date',
-            'range_date_price.*.end_date' => 'nullable|date|after_or_equal:range_date_price.*.start_date',
-            'range_date_price.*.price' => 'nullable|numeric|min:0',
-            'special_price_range' => 'nullable|array',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        // Check if combination already exists (excluding current record)
-        $exists = VillaPricing::where('villa_id', $request->villa_id)
-            ->where('season_id', $request->season_id)
-            ->where('id_villa_pricing', '!=', $villaPricing->id_villa_pricing)
-            ->exists();
-
-        if ($exists) {
-            return redirect()->back()
-                ->with('error', 'Pricing untuk villa dan season ini sudah ada!')
-                ->withInput();
-        }
-
-        $data = $request->all();
-        $data['use_special_price'] = $request->has('use_special_price');
-
-        // Clean up range_date_price array
-        if ($request->has('range_date_price')) {
-            $data['range_date_price'] = array_filter($request->range_date_price, function($item) {
-                return !empty($item['start_date']) && !empty($item['end_date']) && !empty($item['price']);
-            });
-        }
-
-        $villaPricing->update($data);
-
-        return redirect()->route('villa-pricing.index')
-            ->with('success', 'Villa pricing berhasil diupdate!');
+        return $this->priceForDate();
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Hitung harga per-hari untuk rentang [start, end) dan kembalikan array date=>rate.
+     *
+     * @param  string|\DateTime  $start
+     * @param  string|\DateTime  $end
+     * @return array  ['2025-05-10'=>20000, '2025-05-11'=>20000, …]
      */
-    public function destroy(VillaPricing $villaPricing)
+    public function pricesForRange($start, $end): array
     {
-        $villaPricing->delete();
+        $from = Carbon::parse($start)->startOfDay();
+        $to   = Carbon::parse($end)->startOfDay();
 
-        return redirect()->route('villa-pricing.index')
-            ->with('success', 'Villa pricing berhasil dihapus!');
+        $results = [];
+        for ($dt = $from->copy(); $dt->lt($to); $dt->addDay()) {
+            $dateKey = $dt->toDateString();
+            $results[$dateKey] = $this->priceForDate($dt) ?? 0;
+        }
+
+        return $results;
     }
+
+    /**
+     * Accessor agar bisa dipanggil $villa->prices_for_range
+     */
+    public function getPricesForRangeAttribute(): array
+    {
+        // default contoh 7 hari dari hari ini
+        return $this->pricesForRange(now(), now()->addDays(7));
+    }
+
 }
